@@ -9,7 +9,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/ug1y/ditto',
-    packages=find_packages(),
+    packages='ditto',
     install_requires=[
         'networkx==3.3.0',
     ],
