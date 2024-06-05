@@ -17,6 +17,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from collections.abc import Hashable
+from typing import AbstractSet, Tuple
+from enum import Enum
+
+
+class BlockType(Enum):
+    """
+    Define different types of blocks.
+    """
+    ORPHAN = 0  # orphan block
+    GENESIS = 1  # genesis block
+    MINED = 2  # mined block
 
 
 class Block(Hashable):
@@ -26,12 +37,30 @@ class Block(Hashable):
     Global ID of a block - the hash of the block.
     """
 
-    # type aliases, no practical use.
+    # Type aliases, no practical use.
     GlobalID = int
+    MinerName = str
+    BlockHeight = int
     BlockSize = float
 
-    def __init__(self):
-        pass
+    def __init__(self, global_id: GlobalID = 0,
+                 block_type: BlockType = BlockType.ORPHAN,
+                 miner_name: MinerName = str(),
+                 pivot_reference: MinerName = str(),
+                 common_references: AbstractSet[MinerName] = frozenset(),
+                 block_height: BlockHeight = 0,
+                 block_size: BlockSize = 0,
+                 transactions: Tuple[str] = tuple(),
+                 block_data: Hashable = None):
+        self._gid = global_id
+        self._type = block_type
+        self._miner = miner_name
+        self._pref = pivot_reference
+        self._crefs = common_references
+        self._height = block_height
+        self._size = block_size
+        self._txs = transactions
+        self._data = block_data
 
     def __hash__(self) -> int:
-        pass
+        return self._gid
