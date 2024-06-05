@@ -22,6 +22,7 @@ setup(
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.10',
+    extra_index_url={'pypi-tsinghua': 'https://pypi.tuna.tsinghua.edu.cn/simple'},
     extras_require={
         'test': ['pytest'],
     }
