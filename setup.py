@@ -6,10 +6,10 @@ setup(
     author='ug1y',
     author_email='yinhao@icode.pku.edu.cn',
     description='A blockDAG simulation framework',
-    long_description=open('README.md').read(),
+    long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/ug1y/ditto',
-    packages='ditto',
+    packages=['ditto'],
     install_requires=[
         'networkx==3.3.0',
     ],
