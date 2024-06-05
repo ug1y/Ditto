@@ -7,7 +7,7 @@ stages:
 setup-job:
   stage: setup
   script:
-    - python setup.py install --extras test
+    - pip install .[test]
 
 test-job:
   stage: test
