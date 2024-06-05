@@ -1,0 +1,15 @@
+image: python:3.10
+
+stages:
+  - setup
+  - test
+
+setup-job:
+  stage: setup
+  script:
+    - python setup.py install
+
+test-job:
+  stage: test
+  script:
+    - python -m pytest
