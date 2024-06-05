@@ -8,7 +8,7 @@ setup(
     description='A blockDAG simulation framework',
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/ug1y/ditto',
+    # url='https://github.com/ug1y/ditto',
     packages=['ditto'],
     install_requires=[
         'networkx==3.3.0',
