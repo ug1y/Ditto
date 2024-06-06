@@ -14,4 +14,4 @@ test-job:
   script:
     - python -m pytest
   needs:
-    - setup-build
+    - setup-job
