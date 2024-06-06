@@ -7,9 +7,11 @@ stages:
 setup-job:
   stage: setup
   script:
-    - pip install .[test]
+    - pip install .[test] -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 test-job:
   stage: test
+  dependencies:
+    - setup-job
   script:
     - python -m pytest
