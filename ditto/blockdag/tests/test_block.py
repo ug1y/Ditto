@@ -7,8 +7,8 @@ class TestBlock:
         b = Block()
         assert b._bid == 0
         assert type(b._type) == BlockType
-        assert b._miner == ""
-        assert b._pref == ""
+        assert b._miner is None
+        assert b._pref is None
         assert b._crefs == set("")
         assert b._height == 0
         assert b._size == 0
