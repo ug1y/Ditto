@@ -3,15 +3,21 @@ image: python:3.10
 stages:
   - setup
   - test
+  - build
+  - deploy
 
 setup-job:
   stage: setup
   script:
     - pip install .[test] -i https://pypi.tuna.tsinghua.edu.cn/simple
+  environment:
+    name: test-env
+    inherit: true
 
 test-job:
-  stage: setup
+  stage: test
   script:
     - python -m pytest
-  needs:
-    - setup-job
+  environment:
+    name: test-env
+    inherit: true
