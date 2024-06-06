@@ -11,7 +11,7 @@ setup-job:
 
 test-job:
   stage: test
-  dependencies:
-    - setup-job
   script:
     - python -m pytest
+  needs:
+    - setup-build
