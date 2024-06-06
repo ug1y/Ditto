@@ -10,7 +10,7 @@ setup-job:
     - pip install .[test] -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 test-job:
-  stage: test
+  stage: setup
   script:
     - python -m pytest
   needs:
