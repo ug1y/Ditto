@@ -12,7 +12,6 @@ setup-job:
     - pip install .[test] -i https://pypi.tuna.tsinghua.edu.cn/simple
   environment:
     name: test-env
-    inherit: true
 
 test-job:
   stage: test
@@ -20,4 +19,3 @@ test-job:
     - python -m pytest
   environment:
     name: test-env
-    inherit: true
