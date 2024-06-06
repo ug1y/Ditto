@@ -5,7 +5,7 @@ class TestBlock:
 
     def test_init(self):
         b = Block()
-        assert b._gid == 0
+        assert b._bid == 0
         assert type(b._type) == BlockType
         assert b._miner == ""
         assert b._pref == ""
@@ -18,5 +18,5 @@ class TestBlock:
     def test_hash(self):
         b = Block(1)
         assert hash(b) == 1
-        b._gid = 2
+        b._bid = 2
         assert hash(b) == 2
