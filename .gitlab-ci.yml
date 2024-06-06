@@ -1,21 +1,17 @@
 image: python:3.10
 
 stages:
-  - setup
   - test
-  - build
   - deploy
-
-setup-job:
-  stage: setup
-  script:
-    - pip install .[test] -i https://pypi.tuna.tsinghua.edu.cn/simple
-  environment:
-    name: test-env
 
 test-job:
   stage: test
   script:
+    - pip install .[test] -i https://pypi.tuna.tsinghua.edu.cn/simple
     - python -m pytest
-  environment:
-    name: test-env
+
+deploy-job:
+  stage: deploy
+  script:
+    - pip install . -i https://pypi.tuna.tsinghua.edu.cn/simple
+    - python -m ditto.main
