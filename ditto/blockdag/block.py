@@ -17,8 +17,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from collections.abc import Hashable
-from typing import AbstractSet, Tuple
+from dataclasses import dataclass
+from typing import Set, Tuple
 from enum import Enum
+
+from transaction import Transaction
 
 
 class BlockType(Enum):
@@ -30,6 +33,7 @@ class BlockType(Enum):
     MINED = 2  # mined block
 
 
+@dataclass
 class Block(Hashable):
     """
     An implementation of a generic Block.
@@ -43,39 +47,20 @@ class Block(Hashable):
     BlockHeight = int
     BlockSize = float
 
-    def __init__(self, block_id: BlockID = 0,
-                 block_type: BlockType = BlockType.ORPHAN,
-                 miner_name: MinerName = None,
-                 pivot_reference: BlockID = None,
-                 common_references: AbstractSet[BlockID] = frozenset(),
-                 block_height: BlockHeight = 0,
-                 block_size: BlockSize = 0,
-                 transactions: Tuple[str] = tuple(),
-                 block_data: Hashable = None):
-        """
-        Constructor, the basic method to initialize a block.
-        :param block_id: the unique ID of the block.
-        :param block_type: the type of the block, see BlockType.
-        :param miner_name: the name of the miner who mined the block.
-        :param pivot_reference: the block reference from the pivot chain.
-        :param common_references: the blocks reference in the blockDAG.
-        :param block_height: the height of the block in the blockDAG.
-        :param block_size: the size of the block to simulate network latency.
-        :param transactions: the special transaction marks in the block.
-        :param block_data: optional, additional data included in the block.
-        """
+    # Basic parameters controlled by simulation module.
+    bid: BlockID = 0  # The unique ID of the block.
+    type: BlockType = BlockType.ORPHAN  # The type of the block, see BlockType.
+    miner: MinerName = None  # The name of the miner who mined the block.
 
-        # Basic parameters
-        self._bid = block_id
-        self._type = block_type
-        self._miner = miner_name
-        self._pref = pivot_reference
-        self._crefs = common_references
-        self._height = block_height
-        # Advanced parameters
-        self._size = block_size
-        self._txs = transactions
-        self._data = block_data
+    # Crucial parameters controlled by nodes module.
+    pref: BlockID = None  # The block reference from the pivot chain.
+    crefs: Set[BlockID] = frozenset()  # The blocks reference in the blockDAG.
+    height: BlockHeight = 0  # The height of the block in the blockDAG.
+
+    # Advanced parameters controlled by interaction module.
+    size: BlockSize = 0  # The size of the block to simulate network latency.
+    txs: Tuple[Transaction] = tuple()  # The special transaction marks in the block.
+    data: Hashable = None  # Optional, additional data included in the block.
 
     def get_parents(self):
         """
@@ -83,17 +68,17 @@ class Block(Hashable):
         The first item is the pivot reference if the blockDAG type is convergence.
         :return: the bids of the block's parent blocks.
         """
-        if self._pref is None:
-            return list(self._crefs)
+        if self.pref is None:
+            return list(self.crefs)
         else:
-            return [self._pref] + list(self._crefs)
+            return [self.pref] + list(self.crefs)
 
     def __hash__(self) -> int:
-        return self._bid
+        return self.bid
 
     def __str__(self):
-        return "{Block: " + str(self._bid) + \
-            ", Type: " + str(self._type.name) + \
-            ", Miner: " + str(self._miner) + \
+        return "{Block: " + str(self.bid) + \
+            ", Type: " + str(self.type.name) + \
+            ", Miner: " + str(self.miner) + \
             ", Parents: " + str(self.get_parents()) + \
-            ", Height: " + str(self._height) + "}"
+            ", Height: " + str(self.height) + "}"
