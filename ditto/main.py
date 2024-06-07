@@ -1,4 +1,4 @@
-from ditto.blockdag import Block, Transaction, TransactionType
+from ditto.blockdag import Block, Transaction, TransactionType, BlockDAG
 
 if __name__ == '__main__':
     b = Block(bid=1,
@@ -14,3 +14,8 @@ if __name__ == '__main__':
     t.type = TransactionType.CONFLICT
     print(repr(t))
     print(t)
+
+    g = BlockDAG()
+    print(repr(g))
+    print(g)
+    print(len(g))
