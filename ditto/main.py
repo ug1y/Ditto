@@ -1,4 +1,4 @@
-from ditto.blockdag import Block, Transaction, TransactionType
+from ditto.blockdag import Block
 
 if __name__ == '__main__':
     b = Block(bid=1,
