@@ -19,3 +19,5 @@ if __name__ == '__main__':
     print(repr(g))
     print(g)
     print(len(g))
+    print(g.add_block(b))
+    print(g.add_block(b))
