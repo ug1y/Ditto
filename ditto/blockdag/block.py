@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from typing import Set, Tuple
 from enum import Enum
 
-from transaction import Transaction
+from .transaction import Transaction
 
 
 class BlockType(Enum):
@@ -38,7 +38,7 @@ class Block(Hashable):
     """
     An implementation of a generic Block.
 
-    Global ID of a block - the hash of the block.
+    Block ID of a block - the hash of the block.
     """
 
     # Type aliases, no practical use.
