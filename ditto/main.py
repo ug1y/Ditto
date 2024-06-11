@@ -1,23 +1,13 @@
-from ditto.blockdag import Block, Transaction, TransactionType, BlockDAG
+from ditto.blockdag import Block, BlockType, BlockDAG, DAGType
 
 if __name__ == '__main__':
-    b = Block(bid=1,
-              miner='H1',
-              pref=1,
-              crefs={2, 3})
-
-    b2 = Block()
-    print(repr(b2))
-    print(b2)
-
-    t = Transaction(tid=1)
-    t.type = TransactionType.CONFLICT
-    print(repr(t))
-    print(t)
-
-    g = BlockDAG()
+    b = Block(bid=1, type=BlockType.GENESIS, height=1)
+    b2 = Block(bid=2, type=BlockType.MINED, miner="hao", crefs={hash(b)}, height=2)
+    b3 = Block(bid=3, type=BlockType.MINED, miner="hao", crefs={hash(b2)}, height=3)
+    g = BlockDAG(gtype=DAGType.DIVERGENCE)
+    g.add_block(b)
     print(repr(g))
-    print(g)
-    print(len(g))
-    print(g.add_block(b))
-    print(g.add_block(b))
+    g.add_block(b2)
+    print(repr(g))
+    g.add_block(b3)
+    print(repr(g))

@@ -16,12 +16,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
 from collections.abc import Collection
 from enum import Enum
 from typing import Iterator
 import networkx as nx
 
-from .block import Block
+from .block import Block, BlockType
 
 
 class DAGType(Enum):
@@ -33,6 +34,14 @@ class DAGType(Enum):
     CONVERGENCE = 2  # convergence blockDAG
 
 
+class EdgeType(Enum):
+    """
+    Define different types of edges in the blockDAG.
+    """
+    PIVOT = 0  # pivot edge by pivot reference.
+    COMMON = 1  # common edge by common reference.
+
+
 class BlockDAG(Collection):
     """
     An implementation of a generic BlockDAG, organizing blocks in a collection.
@@ -42,6 +51,8 @@ class BlockDAG(Collection):
 
     # Dictionary key for the block's data.
     BLOCK_DATA_KEY = "block_data"
+    # Dictionary key for the edge's type.
+    EDGE_TYPE_KEY = "edge_type"
 
     # Type aliases, no practical use.
     BlockID = int
@@ -51,6 +62,12 @@ class BlockDAG(Collection):
         self._gtype = gtype  # The type of the blockDAG.
         self._leaves = set()  # Set of all the leaves in the graph.
         self._column = list(set())  # List of the set of blocks in the specified height.
+
+        logging.basicConfig(level=logging.DEBUG,
+                            format='[%(asctime)s] %(levelname)s - [Module] %(name)s - '
+                                   '[Location] %(filename)s:%(lineno)d - [%(funcName)s] %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S')
+        self._logger = logging.getLogger(__name__)  # Logger for this class.
 
     def __contains__(self, bid: type(Block.BlockID)) -> bool:
         return bid in self._G
@@ -109,8 +126,74 @@ class BlockDAG(Collection):
         Add a block into the graph.
         :return: true or false.
         """
-        if self._G.has_node(block.bid):
+
+        # Check the object type.
+        if type(block) is not Block:
+            self._logger.warning("Input is not an instance of Block.")
             return False
-        # TODO 添加新区块，检查是否满足图结构类型要求。
-        self._G.add_node(block.bid, **{self.BLOCK_DATA_KEY: block})
-        return True
+
+        # Check if the block already exists.
+        if self._G.has_node(block.bid):
+            self._logger.warning("Block " + str(block.bid) + " already exists.")
+            return False
+
+        # Skip the orphan block.
+        if block.type == BlockType.ORPHAN:
+            self._logger.warning("Orphan block cannot be added.")
+            return False
+
+        # Handle the genesis block.
+        if block.type == BlockType.GENESIS:
+            if block.miner is not None or block.pref is not None or len(block.crefs) != 0:
+                self._logger.warning("Genesis block must be empty.")
+                return False
+            if block.height != 1:
+                self._logger.warning("Genesis block must be at height 1.")
+                return False
+            self._G.add_node(block.bid)
+            self._G.nodes[block.bid][self.BLOCK_DATA_KEY] = block
+            self._leaves.add(block.bid)
+            if len(self._column) == 0:
+                self._column.append(set())
+            self._column[0].add(block.bid)
+            return True
+
+        # Handle the mined block.
+        if block.type == BlockType.MINED:
+            if block.miner is None:
+                self._logger.warning("Mined block must have a miner.")
+                return False
+            if self._gtype == DAGType.DIVERGENCE:
+                # Check the key data fields of the block.
+                if block.pref is not None:
+                    self._logger.warning("The block in divergence graph has no pivot parent.")
+                    return False
+                if len(block.crefs) == 0:
+                    self._logger.warning("The block in divergence graph must have at least one reference.")
+                    return False
+                max_h = 0
+                for cref in block.crefs:
+                    if cref not in self._G:
+                        self._logger.warning("The referenced block " + str(cref) + " does not exist.")
+                        return False
+                    max_h = max(self._G.nodes[cref][self.BLOCK_DATA_KEY].height, max_h)
+                if block.height != max_h + 1:
+                    self._logger.warning("Incorrect height of the mined block.")
+                    return False
+                # Add the block into the graph.
+                self._G.add_node(block.bid)
+                self._G.nodes[block.bid][self.BLOCK_DATA_KEY] = block
+                for cref in block.crefs:
+                    self._G.add_edge(block.bid, cref)
+                    self._G.edges[block.bid, cref][self.EDGE_TYPE_KEY] = EdgeType.COMMON
+                    if cref in self._leaves:
+                        self._leaves.remove(cref)
+                self._leaves.add(block.bid)
+                if len(self._column) < block.height:
+                    self._column.append(set())
+                self._column[block.height - 1].add(block.bid)
+                return True
+            else:
+                pass  # TODO 添加挖掘的新区块（平行型图和收敛型图）。
+            return True
+        return False
