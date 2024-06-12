@@ -19,7 +19,7 @@ limitations under the License.
 import logging
 from collections.abc import Collection
 from enum import Enum
-from typing import Iterator
+from typing import Iterator, Any
 import networkx as nx
 
 from .block import Block, BlockType
@@ -97,19 +97,24 @@ class BlockDAG(Collection):
         """
         return self._gtype
 
-    def get_virtual_parents(self) -> set[BlockID]:
+    def get_virtual_parents(self) -> list[BlockID]:
         """
         Get the set of blocks located in the leaves of the graph.
-        :return: set[BlockID].
+        :return: list[BlockID].
         """
-        return self._leaves
+        return list(self._leaves)
 
-    def get_column_blocks(self, height: int = 0) -> set[BlockID]:
+    def get_column_blocks(self, height: int = 0) -> list[BlockID]:
         """
         Get the set of blocks at specified height of the graph.
-        :return: set[BlockID].
+        :return: list[BlockID].
         """
-        return self._column[height]
+        if height == 0:
+            return list(self._column)
+        elif 0 < height < len(self._column):
+            return list(self._column[height - 1])
+        self._logger.warning("Invalid height.")
+        return []
 
     def get_pivot_chain(self, bid: BlockID) -> list[BlockID]:
         """
@@ -117,9 +122,20 @@ class BlockDAG(Collection):
         :return: list[BlockID].
         """
         if self._gtype == DAGType.DIVERGENCE:
+            self._logger.warning("The divergence graph has no pivot chain.")
             return []
-        # TODO 通过枢纽引用回溯到创世区块形成一条单链返回。
-        return []
+        if bid not in self._G:
+            self._logger.warning("Block " + str(bid) + " does not exist.")
+            return []
+
+        # Get the pivot chain.
+        chain = []
+        while True:
+            chain.insert(0, bid)
+            bid = self._G.nodes[bid][self.BLOCK_DATA_KEY].pref
+            if bid is None:
+                break
+        return chain
 
     def add_block(self, block: Block) -> bool:
         """
@@ -144,12 +160,15 @@ class BlockDAG(Collection):
 
         # Handle the genesis block.
         if block.type == BlockType.GENESIS:
+            # Check the key data fields of the block.
             if block.miner is not None or block.pref is not None or len(block.crefs) != 0:
                 self._logger.warning("Genesis block must be empty.")
                 return False
             if block.height != 1:
                 self._logger.warning("Genesis block must be at height 1.")
                 return False
+
+            # Add the block into the graph.
             self._G.add_node(block.bid)
             self._G.nodes[block.bid][self.BLOCK_DATA_KEY] = block
             self._leaves.add(block.bid)
@@ -163,37 +182,91 @@ class BlockDAG(Collection):
             if block.miner is None:
                 self._logger.warning("Mined block must have a miner.")
                 return False
+
+            # Check the key data fields of the block in the divergence graph.
             if self._gtype == DAGType.DIVERGENCE:
-                # Check the key data fields of the block.
                 if block.pref is not None:
-                    self._logger.warning("The block in divergence graph has no pivot parent.")
+                    self._logger.warning("The block in " + str(self._gtype.name) +
+                                         " graph has no pivot parent.")
                     return False
                 if len(block.crefs) == 0:
-                    self._logger.warning("The block in divergence graph must have at least one reference.")
+                    self._logger.warning("The block in " + str(self._gtype.name) +
+                                         " graph must have at least one reference.")
                     return False
                 max_h = 0
                 for cref in block.crefs:
                     if cref not in self._G:
-                        self._logger.warning("The referenced block " + str(cref) + " does not exist.")
+                        self._logger.warning("The referenced block " + str(cref) +
+                                             " does not exist.")
                         return False
                     max_h = max(self._G.nodes[cref][self.BLOCK_DATA_KEY].height, max_h)
                 if block.height != max_h + 1:
                     self._logger.warning("Incorrect height of the mined block.")
                     return False
-                # Add the block into the graph.
-                self._G.add_node(block.bid)
-                self._G.nodes[block.bid][self.BLOCK_DATA_KEY] = block
+
+            # Check the key data fields of the block in the parallel and convergence graph.
+            elif self._gtype == (DAGType.PARALLEL or DAGType.CONVERGENCE):
+                if block.pref is None:
+                    self._logger.warning("The block in " + str(self._gtype.name) +
+                                         " graph must have a pivot parent.")
+                    return False
+                if block.pref not in self._G:
+                    self._logger.warning("The pivot parent " + str(block.pref) +
+                                         " does not exist.")
+                    return False
+                if block.pref in block.crefs:
+                    self._logger.warning("The pivot parent is repeated in common references.")
+                    return False
+                max_h = 0
                 for cref in block.crefs:
-                    self._G.add_edge(block.bid, cref)
-                    self._G.edges[block.bid, cref][self.EDGE_TYPE_KEY] = EdgeType.COMMON
-                    if cref in self._leaves:
-                        self._leaves.remove(cref)
-                self._leaves.add(block.bid)
-                if len(self._column) < block.height:
-                    self._column.append(set())
-                self._column[block.height - 1].add(block.bid)
-                return True
-            else:
-                pass  # TODO 添加挖掘的新区块（平行型图和收敛型图）。
+                    if cref not in self._G:
+                        self._logger.warning("The referenced block " + str(cref) +
+                                             " does not exist.")
+                        return False
+                    max_h = max(self._G.nodes[cref][self.BLOCK_DATA_KEY].height, max_h)
+                par_h = self._G.nodes[block.pref][self.BLOCK_DATA_KEY].height
+                if max_h > par_h:
+                    self._logger.warning("Invalid height of the mined block.")
+                    return False
+                if block.height != par_h + 1:
+                    self._logger.warning("Incorrect height of the mined block.")
+                    return False
+
+            # Add the block into the graph.
+            self._G.add_node(block.bid)
+            self._G.nodes[block.bid][self.BLOCK_DATA_KEY] = block
+            if block.pref is not None:
+                self._G.add_edge(block.bid, block.pref)
+                self._G.edges[block.bid, block.pref][self.EDGE_TYPE_KEY] = EdgeType.PIVOT
+                if block.pref in self._leaves:
+                    self._leaves.remove(block.pref)
+            for cref in block.crefs:
+                self._G.add_edge(block.bid, cref)
+                self._G.edges[block.bid, cref][self.EDGE_TYPE_KEY] = EdgeType.COMMON
+                if cref in self._leaves:
+                    self._leaves.remove(cref)
+            self._leaves.add(block.bid)
+            if len(self._column) < block.height:
+                self._column.append(set())
+            self._column[block.height - 1].add(block.bid)
             return True
+
         return False
+
+    def del_block(self, bid: BlockID) -> bool:
+        """
+        Delete the specified block in the graph.
+        :return: bool.
+        """
+        # TODO : 实现删除指定区块，更新相关集合，删除相关边。
+        pass
+
+    def ask_block(self, bid: BlockID) -> Block | None:
+        """
+        Get the specified block data in the graph.
+        :return: Block.
+        """
+        if bid not in self._G:
+            self._logger.warning("Block " + str(bid) + " does not exist.")
+            return None
+        return self._G.nodes[bid][self.BLOCK_DATA_KEY]
