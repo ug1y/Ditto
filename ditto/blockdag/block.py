@@ -62,7 +62,7 @@ class Block(Hashable):
     txs: Tuple[Transaction] = tuple()  # The special transaction marks in the block.
     data: Hashable = None  # Optional, additional data included in the block.
 
-    def get_parents(self):
+    def get_parents(self) -> list[BlockID]:
         """
         Get the parents of the block.
         The first item is the pivot reference if the blockDAG type is convergence.

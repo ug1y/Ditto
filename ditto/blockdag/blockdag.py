@@ -107,6 +107,8 @@ class BlockDAG(Collection):
     def get_column_blocks(self, height: int = 0) -> list[BlockID]:
         """
         Get the set of blocks at specified height of the graph.
+        If height is 0, return all the blocks in the graph.
+        :param height: int.
         :return: list[BlockID].
         """
         if height == 0:
@@ -119,6 +121,7 @@ class BlockDAG(Collection):
     def get_pivot_chain(self, bid: BlockID) -> list[BlockID]:
         """
         Get the pivot chain if the graph type is convergence or parallel.
+        :param bid: BlockID.
         :return: list[BlockID].
         """
         if self._gtype == DAGType.DIVERGENCE:
@@ -140,6 +143,7 @@ class BlockDAG(Collection):
     def add_block(self, block: Block) -> bool:
         """
         Add a block into the graph.
+        :param block: Block.
         :return: true or false.
         """
 
@@ -175,6 +179,7 @@ class BlockDAG(Collection):
             if len(self._column) == 0:
                 self._column.append(set())
             self._column[0].add(block.bid)
+            self._logger.info("Genesis block " + str(block.bid) + " added.")
             return True
 
         # Handle the mined block.
@@ -249,24 +254,98 @@ class BlockDAG(Collection):
             if len(self._column) < block.height:
                 self._column.append(set())
             self._column[block.height - 1].add(block.bid)
+            self._logger.info("Mined block " + str(block.bid) + " added.")
             return True
 
         return False
 
-    def del_block(self, bid: BlockID) -> bool:
+    def cut_block(self, bid: BlockID) -> bool | Any:
         """
-        Delete the specified block in the graph.
+        Cut the specified block and its related successors in the graph.
+        :param bid: BlockID.
         :return: bool.
         """
-        # TODO : 实现删除指定区块，更新相关集合，删除相关边。
-        pass
+        if bid not in self._G:
+            self._logger.warning("Block " + str(bid) + " does not exist.")
+            return False
+
+        if bid not in self._leaves:
+            for d in list(self.predecessors(bid)):
+                if self.cut_block(d) is False:
+                    return False
+
+        b = self._G.nodes[bid][self.BLOCK_DATA_KEY]
+
+        self._G.remove_node(bid)
+        self._leaves.remove(bid)
+        self._column[b.height - 1].remove(bid)
+
+        ps = b.get_parents()
+        for p in ps:
+            if len(list(self.predecessors(p))) == 0:
+                self._leaves.add(p)
+        if len(self._column[b.height - 1]) == 0:
+            self._column.pop(b.height - 1)
+
+        self._logger.info("Block " + str(bid) + " has been cut.")
+        return True
 
     def ask_block(self, bid: BlockID) -> Block | None:
         """
-        Get the specified block data in the graph.
+        Ask the specified block data in the graph.
+        :param bid: BlockID.
         :return: Block.
         """
         if bid not in self._G:
             self._logger.warning("Block " + str(bid) + " does not exist.")
             return None
         return self._G.nodes[bid][self.BLOCK_DATA_KEY]
+
+    def predecessors(self, bid: BlockID) -> Iterator[BlockID]:
+        """
+        Wrapper of the predecessors method in networkx.
+        :param bid: BlockID.
+        :return: Iterator[BlockID].
+        """
+        return self._G.predecessors(bid)
+
+    def successors(self, bid: BlockID) -> Iterator[BlockID]:
+        """
+        Wrapper of the successors method in networkx.
+        :param bid: BlockID.
+        :return: Iterator[BlockID].
+        """
+        return self._G.successors(bid)
+
+    def has_path(self, source: BlockID, target: BlockID) -> bool:
+        """
+        Wrapper of the has_path method in networkx.
+        :param source: BlockID.
+        :param target: BlockID.
+        :return: bool.
+        """
+        return nx.has_path(self._G, source, target)
+
+    def graph(self) -> nx.DiGraph:
+        """
+        See the whole graph.
+        :return: nx.DiGraph.
+        """
+        return self._G.copy()
+
+    def subgraph(self, bid: BlockID) -> nx.DiGraph | None:
+        """
+        See the subgraph from the specified block.
+        :param bid: BlockID.
+        :return:
+        """
+        if bid not in self._G:
+            self._logger.warning("Block " + str(bid) + " does not exist.")
+            return None
+        views = set()
+        queue = [bid]
+        while len(queue) > 0:
+            q = queue.pop(0)
+            views.add(q)
+            queue.extend(self.successors(q))
+        return self._G.subgraph(views)
