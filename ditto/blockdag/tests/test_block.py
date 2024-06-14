@@ -6,10 +6,10 @@ class TestBlock:
     def test_init(self):
         b = Block()
         assert b.bid == 0
-        assert type(b.type) == BlockType
+        assert b.type == BlockType.ORPHAN
         assert b.miner is None
         assert b.pref is None
-        assert b.crefs == set("")
+        assert b.crefs == set()
         assert b.height == 0
         assert b.size == 0
         assert b.txs == tuple()

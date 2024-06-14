@@ -113,7 +113,7 @@ class BlockDAG(Collection):
         """
         if height == 0:
             return list(self._column)
-        elif 0 < height < len(self._column):
+        elif 0 < height < len(self._column) + 1:
             return list(self._column[height - 1])
         self._logger.warning("Invalid height.")
         return []
@@ -171,6 +171,11 @@ class BlockDAG(Collection):
             if block.height != 1:
                 self._logger.warning("Genesis block must be at height 1.")
                 return False
+            # Except parallel graph, the divergence or convergence graph has only one genesis block.
+            if self._gtype == DAGType.DIVERGENCE or self._gtype == DAGType.CONVERGENCE:
+                if len(self._column) > 0 and len(self._column[0]) > 0:
+                    self._logger.warning(str(self._gtype.name) + " graph is only allowed to have one genesis block.")
+                    return False
 
             # Add the block into the graph.
             self._G.add_node(block.bid)
@@ -210,7 +215,7 @@ class BlockDAG(Collection):
                     return False
 
             # Check the key data fields of the block in the parallel and convergence graph.
-            elif self._gtype == (DAGType.PARALLEL or DAGType.CONVERGENCE):
+            elif self._gtype == DAGType.PARALLEL or self._gtype == DAGType.CONVERGENCE:
                 if block.pref is None:
                     self._logger.warning("The block in " + str(self._gtype.name) +
                                          " graph must have a pivot parent.")
@@ -230,10 +235,10 @@ class BlockDAG(Collection):
                         return False
                     max_h = max(self._G.nodes[cref][self.BLOCK_DATA_KEY].height, max_h)
                 par_h = self._G.nodes[block.pref][self.BLOCK_DATA_KEY].height
-                if max_h > par_h:
+                if max_h > par_h and self._gtype == DAGType.CONVERGENCE:
                     self._logger.warning("Invalid height of the mined block.")
                     return False
-                if block.height != par_h + 1:
+                if block.height != max(par_h, max_h) + 1:
                     self._logger.warning("Incorrect height of the mined block.")
                     return False
 
