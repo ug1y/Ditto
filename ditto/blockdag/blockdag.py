@@ -97,12 +97,12 @@ class BlockDAG(Collection):
         """
         return self._gtype
 
-    def get_leaves_blocks(self) -> list[BlockID]:
+    def get_leaves_blocks(self) -> set[BlockID]:
         """
         Get the set of blocks located in the leaves of the graph.
         :return: list[BlockID].
         """
-        return list(self._leaves)
+        return self._leaves
 
     def get_column_blocks(self, height: int = 0) -> list[BlockID]:
         """
