@@ -97,7 +97,7 @@ class BlockDAG(Collection):
         """
         return self._gtype
 
-    def get_virtual_parents(self) -> list[BlockID]:
+    def get_leaves_blocks(self) -> list[BlockID]:
         """
         Get the set of blocks located in the leaves of the graph.
         :return: list[BlockID].
