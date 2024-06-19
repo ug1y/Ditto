@@ -50,9 +50,9 @@ class BlockDAG(Collection):
     """
 
     # Dictionary key for the block's data.
-    BLOCK_DATA_KEY = "block_data"
+    _BLOCK_DATA_KEY = "block_data"
     # Dictionary key for the edge's type.
-    EDGE_TYPE_KEY = "edge_type"
+    _EDGE_TYPE_KEY = "edge_type"
 
     # Type aliases, no practical use.
     BlockID = int
@@ -73,7 +73,7 @@ class BlockDAG(Collection):
         return bid in self._G
 
     def __getitem__(self, bid):
-        return self._G[bid][self.BLOCK_DATA_KEY]
+        return self._G[bid][self._BLOCK_DATA_KEY]
 
     def __iter__(self) -> Iterator[Block]:
         return iter(self._G)
@@ -135,7 +135,7 @@ class BlockDAG(Collection):
         chain = []
         while True:
             chain.insert(0, bid)
-            bid = self._G.nodes[bid][self.BLOCK_DATA_KEY].pref
+            bid = self._G.nodes[bid][self._BLOCK_DATA_KEY].pref
             if bid is None:
                 break
         return chain
@@ -179,7 +179,7 @@ class BlockDAG(Collection):
 
             # Add the block into the graph.
             self._G.add_node(block.bid)
-            self._G.nodes[block.bid][self.BLOCK_DATA_KEY] = block
+            self._G.nodes[block.bid][self._BLOCK_DATA_KEY] = block
             self._leaves.add(block.bid)
             if len(self._column) == 0:
                 self._column.append(set())
@@ -209,7 +209,7 @@ class BlockDAG(Collection):
                         self._logger.warning("The referenced block " + str(cref) +
                                              " does not exist.")
                         return False
-                    max_h = max(self._G.nodes[cref][self.BLOCK_DATA_KEY].height, max_h)
+                    max_h = max(self._G.nodes[cref][self._BLOCK_DATA_KEY].height, max_h)
                 if block.height != max_h + 1:
                     self._logger.warning("Incorrect height of the mined block.")
                     return False
@@ -233,8 +233,8 @@ class BlockDAG(Collection):
                         self._logger.warning("The referenced block " + str(cref) +
                                              " does not exist.")
                         return False
-                    max_h = max(self._G.nodes[cref][self.BLOCK_DATA_KEY].height, max_h)
-                par_h = self._G.nodes[block.pref][self.BLOCK_DATA_KEY].height
+                    max_h = max(self._G.nodes[cref][self._BLOCK_DATA_KEY].height, max_h)
+                par_h = self._G.nodes[block.pref][self._BLOCK_DATA_KEY].height
                 if max_h > par_h and self._gtype == DAGType.CONVERGENCE:
                     self._logger.warning("Invalid height of the mined block.")
                     return False
@@ -244,15 +244,15 @@ class BlockDAG(Collection):
 
             # Add the block into the graph.
             self._G.add_node(block.bid)
-            self._G.nodes[block.bid][self.BLOCK_DATA_KEY] = block
+            self._G.nodes[block.bid][self._BLOCK_DATA_KEY] = block
             if block.pref is not None:
                 self._G.add_edge(block.bid, block.pref)
-                self._G.edges[block.bid, block.pref][self.EDGE_TYPE_KEY] = EdgeType.PIVOT
+                self._G.edges[block.bid, block.pref][self._EDGE_TYPE_KEY] = EdgeType.PIVOT
                 if block.pref in self._leaves:
                     self._leaves.remove(block.pref)
             for cref in block.crefs:
                 self._G.add_edge(block.bid, cref)
-                self._G.edges[block.bid, cref][self.EDGE_TYPE_KEY] = EdgeType.COMMON
+                self._G.edges[block.bid, cref][self._EDGE_TYPE_KEY] = EdgeType.COMMON
                 if cref in self._leaves:
                     self._leaves.remove(cref)
             self._leaves.add(block.bid)
@@ -279,7 +279,7 @@ class BlockDAG(Collection):
                 if self.cut_block(d) is False:
                     return False
 
-        b = self._G.nodes[bid][self.BLOCK_DATA_KEY]
+        b = self._G.nodes[bid][self._BLOCK_DATA_KEY]
 
         self._G.remove_node(bid)
         self._leaves.remove(bid)
@@ -304,7 +304,7 @@ class BlockDAG(Collection):
         if bid not in self._G:
             self._logger.warning("Block " + str(bid) + " does not exist.")
             return None
-        return self._G.nodes[bid][self.BLOCK_DATA_KEY]
+        return self._G.nodes[bid][self._BLOCK_DATA_KEY]
 
     def predecessors(self, bid: BlockID) -> Iterator[BlockID]:
         """
