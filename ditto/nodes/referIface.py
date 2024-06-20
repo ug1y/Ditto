@@ -19,7 +19,7 @@ limitations under the License.
 
 from abc import ABC, abstractmethod
 
-from ..blockdag import BlockDAG
+from ..blockdag import BlockDAG, Block
 
 
 class ReferIface(ABC):
@@ -34,7 +34,7 @@ class ReferIface(ABC):
         self.blockdag = blockdag
 
     @abstractmethod
-    def get_virtual_pivot_ref(self) -> BlockDAG.BlockID | None:
+    def get_virtual_pivot_ref(self) -> Block.BlockID | None:
         """
         Get the virtual pivot ref where the divergence blockDAG return None.
         :return: BlockID | None
@@ -42,7 +42,7 @@ class ReferIface(ABC):
         pass
 
     @abstractmethod
-    def get_virtual_common_refs(self) -> set[BlockDAG.BlockID]:
+    def get_virtual_common_refs(self) -> set[Block.BlockID]:
         """
         Get the virtual common refs by different strategies.
         :return: set[BlockID]

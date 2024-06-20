@@ -19,7 +19,7 @@ limitations under the License.
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from ..blockdag import BlockDAG
+from ..blockdag import BlockDAG, Block
 
 
 class StatusType(Enum):
@@ -50,7 +50,7 @@ class ConsusIface(ABC):
         pass
 
     @abstractmethod
-    def get_decided_blocks(self) -> set[BlockDAG.BlockID]:
+    def get_decided_blocks(self) -> set[Block.BlockID]:
         """
         Get the decided blocks that is already on consensus.
         :return: set[BlockID]
@@ -58,7 +58,7 @@ class ConsusIface(ABC):
         pass
 
     @abstractmethod
-    def sort_finished_blocks(self, filter_decided: bool = True) -> list[BlockDAG.BlockID]:
+    def sort_finished_blocks(self, filter_decided: bool = True) -> list[Block.BlockID]:
         """
         Sort the finished blocks filtering decided status or containing excluded status.
         :return: list[BlockID]

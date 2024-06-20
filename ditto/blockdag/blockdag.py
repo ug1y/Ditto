@@ -73,7 +73,7 @@ class BlockDAG(Collection):
         return bid in self._G
 
     def __getitem__(self, bid):
-        return self._G[bid][self._BLOCK_DATA_KEY]
+        return self._G.nodes[bid][self._BLOCK_DATA_KEY]
 
     def __iter__(self) -> Iterator[Block]:
         return iter(self._G)
