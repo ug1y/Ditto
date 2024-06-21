@@ -28,6 +28,9 @@ class Miner:
     An implementation of an honest miner, connecting peers and generating blocks.
     """
 
+    # Dictionary key for the block's data.
+    _BLOCK_DATA_KEY = "queue_block_data"
+
     def __init__(self, name: Block.MinerName, blockdag: BlockDAG, max_peer_num: float):
         self._name = name  # The unique name of the miner, used to identify it.
         self._blockdag = blockdag  # The local view of blockDAG hold by the miner.
@@ -120,6 +123,13 @@ class Miner:
         :return: Block
         """
         # TODO: 有待完善
+        if self._network is None:
+            self._logger.warning("Miner " + str(self._name) + " does not have network handler.")
+            return None
+        if self._genesis_block == 0:
+            self._logger.warning("Miner " + str(self._name) + " should set a genesis block before mining.")
+            return None
+
         block = Block(bid=self._network.get_next_block_id(),
                       type=BlockType.MINED,
                       miner=self._name,
@@ -138,7 +148,46 @@ class Miner:
         if hash(block) in self._blockdag:
             return True
 
+        if self._add_to_block_queue(block):
+            return False
+
         return self._blockdag.add_block(block)
+
+    def _add_to_block_queue(self, block: Block) -> bool:
+        """
+        Add the given block to the block queue if its parents are missing.
+        :param block: Block
+        :return: bool
+        """
+        missing_parents = False
+        for parent_bid in block.get_parents():
+            if parent_bid not in self._blockdag:
+                missing_parents = True
+                if parent_bid not in self._block_queue:
+                    pass  # TODO 向网络请求缺失的父块
+                self._block_queue.add_edge(block.bid, parent_bid)
+
+        if missing_parents:
+            self._block_queue.nodes[hash(block)][Miner._BLOCK_DATA_KEY] = block
+            return True
+
+        return False
+
+    def _basic_block_add(self, block: Block) -> bool:
+        """
+        Add the given block to the dag without checking its parents.
+        :param block: Block
+        :return: bool
+        """
+        pass
+
+    def _cascade_block_add(self, block: Block) -> bool:
+        """
+        Add the supplementary block from the block queue to the dag in a cascade way.
+        :param block: Block
+        :return: bool
+        """
+        pass
 
     def discover_peer(self):
         """
