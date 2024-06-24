@@ -6,7 +6,7 @@ class TestBlock:
     def test_init(self):
         b = Block()
         assert b.bid == 0
-        assert b.type == BlockType.ORPHAN
+        assert b.btype == BlockType.ORPHAN
         assert b.miner is None
         assert b.pref is None
         assert b.crefs == set()

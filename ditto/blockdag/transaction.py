@@ -44,15 +44,15 @@ class Transaction(Hashable):
     BlockID = int
 
     # Basic parameters controlled by interaction module.
-    tid: TransactionID = 0  # The unique ID of the transaction.
-    type: TransactionType = TransactionType.REGULAR  # The type of the transaction, see TransactionType.
+    txid: TransactionID = 0  # The unique ID of the transaction.
+    ttype: TransactionType = TransactionType.REGULAR  # The type of the transaction, see TransactionType.
     blks: Set[BlockID] = frozenset()  # The blocks that contain the transaction in the blockDAG.
     note: Hashable = None  # Optional, additional note recorded in the transaction.
 
     def __hash__(self) -> int:
-        return self.tid
+        return self.txid
 
     def __str__(self):
-        return "{Transaction: " + str(self.tid) + \
-            ", Type: " + str(self.type.name) + \
+        return "{Transaction: " + str(self.txid) + \
+            ", Type: " + str(self.ttype.name) + \
             ", Related Blocks: " + str(list(self.blks)) + "}"

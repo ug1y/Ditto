@@ -22,21 +22,21 @@ class TestBlockDAG:
             2 <- 6, 3 <- 6, 4 <- 6
         """
         g = BlockDAG(gtype=DAGType.DIVERGENCE)
-        b1 = Block(bid=1, type=BlockType.GENESIS, height=1)
+        b1 = Block(bid=1, btype=BlockType.GENESIS, height=1)
         g.add_block(b1)
-        b2 = Block(bid=2, type=BlockType.MINED, miner="ug1y", crefs={hash(b1)}, height=2)
+        b2 = Block(bid=2, btype=BlockType.MINED, miner="ug1y", crefs={hash(b1)}, height=2)
         g.add_block(b2)
-        b3 = Block(bid=3, type=BlockType.MINED, miner="ug1y", crefs={hash(b1)}, height=2)
+        b3 = Block(bid=3, btype=BlockType.MINED, miner="ug1y", crefs={hash(b1)}, height=2)
         g.add_block(b3)
-        b4 = Block(bid=4, type=BlockType.MINED, miner="ug1y", crefs={hash(b1)}, height=2)
+        b4 = Block(bid=4, btype=BlockType.MINED, miner="ug1y", crefs={hash(b1)}, height=2)
         g.add_block(b4)
-        b5 = Block(bid=5, type=BlockType.MINED, miner="ug1y", crefs={hash(b2), hash(b3)}, height=3)
+        b5 = Block(bid=5, btype=BlockType.MINED, miner="ug1y", crefs={hash(b2), hash(b3)}, height=3)
         g.add_block(b5)
-        b6 = Block(bid=6, type=BlockType.MINED, miner="ug1y", crefs={hash(b2), hash(b3), hash(b4)}, height=3)
+        b6 = Block(bid=6, btype=BlockType.MINED, miner="ug1y", crefs={hash(b2), hash(b3), hash(b4)}, height=3)
         g.add_block(b6)
 
         assert g.add_block(b1) is False
-        b11 = Block(bid=11, type=BlockType.GENESIS, height=1)
+        b11 = Block(bid=11, btype=BlockType.GENESIS, height=1)
         assert g.add_block(b11) is False
 
         assert g.get_leaves_blocks() == {5, 6}
@@ -69,23 +69,23 @@ class TestBlockDAG:
             3 <- 5, 5 <- 6
         """
         g = BlockDAG(gtype=DAGType.PARALLEL)
-        b1 = Block(bid=1, type=BlockType.GENESIS, height=1)
+        b1 = Block(bid=1, btype=BlockType.GENESIS, height=1)
         g.add_block(b1)
-        b2 = Block(bid=2, type=BlockType.GENESIS, height=1)
+        b2 = Block(bid=2, btype=BlockType.GENESIS, height=1)
         g.add_block(b2)
-        b3 = Block(bid=3, type=BlockType.GENESIS, height=1)
+        b3 = Block(bid=3, btype=BlockType.GENESIS, height=1)
         g.add_block(b3)
-        b4 = Block(bid=4, type=BlockType.MINED, miner="ug1y", pref=hash(b1), crefs={hash(b2)}, height=2)
+        b4 = Block(bid=4, btype=BlockType.MINED, miner="ug1y", pref=hash(b1), crefs={hash(b2)}, height=2)
         g.add_block(b4)
-        b5 = Block(bid=5, type=BlockType.MINED, miner="ug1y", pref=hash(b2), crefs={hash(b3)}, height=2)
+        b5 = Block(bid=5, btype=BlockType.MINED, miner="ug1y", pref=hash(b2), crefs={hash(b3)}, height=2)
         g.add_block(b5)
-        b6 = Block(bid=6, type=BlockType.MINED, miner="ug1y", pref=hash(b4), crefs={hash(b5)}, height=3)
+        b6 = Block(bid=6, btype=BlockType.MINED, miner="ug1y", pref=hash(b4), crefs={hash(b5)}, height=3)
         g.add_block(b6)
 
         assert g.add_block(b1) is False
-        b11 = Block(bid=11, type=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b6)}, height=2)
+        b11 = Block(bid=11, btype=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b6)}, height=2)
         assert g.add_block(b11) is False
-        b12 = Block(bid=12, type=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b6)}, height=4)
+        b12 = Block(bid=12, btype=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b6)}, height=4)
         assert g.add_block(b12) is True
         g.cut_block(hash(b12))
 
@@ -120,23 +120,23 @@ class TestBlockDAG:
             3 <= 6, 2 <- 6, 4 <- 6
         """
         g = BlockDAG(gtype=DAGType.CONVERGENCE)
-        b1 = Block(bid=1, type=BlockType.GENESIS, height=1)
+        b1 = Block(bid=1, btype=BlockType.GENESIS, height=1)
         g.add_block(b1)
-        b2 = Block(bid=2, type=BlockType.MINED, miner="ug1y", pref=hash(b1), height=2)
+        b2 = Block(bid=2, btype=BlockType.MINED, miner="ug1y", pref=hash(b1), height=2)
         g.add_block(b2)
-        b3 = Block(bid=3, type=BlockType.MINED, miner="ug1y", pref=hash(b1), height=2)
+        b3 = Block(bid=3, btype=BlockType.MINED, miner="ug1y", pref=hash(b1), height=2)
         g.add_block(b3)
-        b4 = Block(bid=4, type=BlockType.MINED, miner="ug1y", pref=hash(b1), height=2)
+        b4 = Block(bid=4, btype=BlockType.MINED, miner="ug1y", pref=hash(b1), height=2)
         g.add_block(b4)
-        b5 = Block(bid=5, type=BlockType.MINED, miner="ug1y", pref=hash(b4), crefs={hash(b3)}, height=3)
+        b5 = Block(bid=5, btype=BlockType.MINED, miner="ug1y", pref=hash(b4), crefs={hash(b3)}, height=3)
         g.add_block(b5)
-        b6 = Block(bid=6, type=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b2), hash(b4)}, height=3)
+        b6 = Block(bid=6, btype=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b2), hash(b4)}, height=3)
         g.add_block(b6)
 
         assert g.add_block(b1) is False
-        b11 = Block(bid=11, type=BlockType.GENESIS, height=1)
+        b11 = Block(bid=11, btype=BlockType.GENESIS, height=1)
         assert g.add_block(b11) is False
-        b12 = Block(bid=12, type=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b6)}, height=3)
+        b12 = Block(bid=12, btype=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b6)}, height=3)
         assert g.add_block(b12) is False
 
         assert g.get_leaves_blocks() == {5, 6}

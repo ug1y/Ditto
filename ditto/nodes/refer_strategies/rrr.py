@@ -1,10 +1,13 @@
-from ditto.blockdag import BlockDAG
-from referIface import ReferIface
+from ditto.blockdag import BlockDAG, Block
+from ..referIface import ReferIface
 
 
 # Test for interface, useless.
 
 class RRR(ReferIface):
+
+    def get_virtual_new_height(self) -> Block.BlockHeight:
+        pass
 
     def get_virtual_pivot_ref(self) -> BlockDAG.BlockID | None:
         pass

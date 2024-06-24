@@ -1,5 +1,5 @@
-from consusIface import ConsusIface, StatusType
 from ditto.blockdag import BlockDAG
+from ..consusIface import ConsusIface, StatusType
 
 
 # Test for interface, useless.

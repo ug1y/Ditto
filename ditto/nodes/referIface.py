@@ -19,7 +19,7 @@ limitations under the License.
 
 from abc import ABC, abstractmethod
 
-from ..blockdag import BlockDAG, Block
+from ditto.blockdag import BlockDAG, Block
 
 
 class ReferIface(ABC):
@@ -46,5 +46,13 @@ class ReferIface(ABC):
         """
         Get the virtual common refs by different strategies.
         :return: set[BlockID]
+        """
+        pass
+
+    @abstractmethod
+    def get_virtual_new_height(self) -> Block.BlockHeight:
+        """
+        Get the virtual new height if adopt this strategy.
+        :return: BlockHeight
         """
         pass

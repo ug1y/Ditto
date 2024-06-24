@@ -49,7 +49,7 @@ class Block(Hashable):
 
     # Basic parameters controlled by simulation module.
     bid: BlockID = 0  # The unique ID of the block.
-    type: BlockType = BlockType.ORPHAN  # The type of the block, see BlockType.
+    btype: BlockType = BlockType.ORPHAN  # The type of the block, see BlockType.
     miner: MinerName = None  # The name of the miner who mined the block.
 
     # Crucial parameters controlled by nodes module.
@@ -78,7 +78,7 @@ class Block(Hashable):
 
     def __str__(self):
         return "{Block: " + str(self.bid) + \
-            ", Type: " + str(self.type.name) + \
+            ", Type: " + str(self.btype.name) + \
             ", Miner: " + str(self.miner) + \
             ", Parents: " + str(self.get_parents()) + \
             ", Height: " + str(self.height) + "}"

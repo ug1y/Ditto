@@ -19,7 +19,7 @@ limitations under the License.
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from ..blockdag import BlockDAG, Block
+from ditto.blockdag import BlockDAG, Block
 
 
 class StatusType(Enum):

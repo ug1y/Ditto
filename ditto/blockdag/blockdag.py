@@ -158,12 +158,12 @@ class BlockDAG(Collection):
             return False
 
         # Skip the orphan block.
-        if block.type == BlockType.ORPHAN:
+        if block.btype == BlockType.ORPHAN:
             self._logger.warning("Orphan block cannot be added.")
             return False
 
         # Handle the genesis block.
-        if block.type == BlockType.GENESIS:
+        if block.btype == BlockType.GENESIS:
             # Check the key data fields of the block.
             if block.miner is not None or block.pref is not None or len(block.crefs) != 0:
                 self._logger.warning("Genesis block must be empty.")
@@ -188,7 +188,7 @@ class BlockDAG(Collection):
             return True
 
         # Handle the mined block.
-        if block.type == BlockType.MINED:
+        if block.btype == BlockType.MINED:
             if block.miner is None:
                 self._logger.warning("Mined block must have a miner.")
                 return False
