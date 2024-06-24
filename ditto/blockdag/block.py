@@ -18,19 +18,10 @@ limitations under the License.
 """
 from collections.abc import Hashable
 from dataclasses import dataclass
-from typing import Set, Tuple
-from enum import Enum
+from typing import Set, Tuple, List
 
 from .transaction import Transaction
-
-
-class BlockType(Enum):
-    """
-    Define different types of blocks.
-    """
-    ORPHAN = 0  # orphan block
-    GENESIS = 1  # genesis block
-    MINED = 2  # mined block
+from .typedef import TypeAlias, BlockType
 
 
 @dataclass
@@ -41,28 +32,22 @@ class Block(Hashable):
     Block ID of a block - the hash of the block.
     """
 
-    # Type aliases, no practical use.
-    BlockID = int
-    MinerName = str
-    BlockHeight = int
-    BlockSize = float
-
     # Basic parameters controlled by simulation module.
-    bid: BlockID = 0  # The unique ID of the block.
+    bid: TypeAlias.BlockID = 0  # The unique ID of the block.
     btype: BlockType = BlockType.ORPHAN  # The type of the block, see BlockType.
-    miner: MinerName = None  # The name of the miner who mined the block.
+    miner: TypeAlias.MinerName = None  # The name of the miner who mined the block.
 
     # Crucial parameters controlled by nodes module.
-    pref: BlockID = None  # The block reference from the pivot chain.
-    crefs: Set[BlockID] = frozenset()  # The blocks reference in the blockDAG.
-    height: BlockHeight = 0  # The height of the block in the blockDAG.
+    pref: TypeAlias.BlockID = None  # The block reference from the pivot chain.
+    crefs: Set[TypeAlias.BlockID] = frozenset()  # The blocks reference in the blockDAG.
+    height: TypeAlias.BlockHeight = 0  # The height of the block in the blockDAG.
 
     # Advanced parameters controlled by interaction module.
-    size: BlockSize = 0  # The size of the block to simulate network latency.
+    size: TypeAlias.BlockSize = 0  # The size of the block to simulate network latency.
     txs: Tuple[Transaction] = tuple()  # The special transaction marks in the block.
     data: Hashable = None  # Optional, additional data included in the block.
 
-    def get_parents(self) -> list[BlockID]:
+    def get_parents(self) -> List[TypeAlias.BlockID]:
         """
         Get the parents of the block.
         The first item is the pivot reference if the blockDAG type is convergence.

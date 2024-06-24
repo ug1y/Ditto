@@ -18,17 +18,9 @@ limitations under the License.
 """
 from collections.abc import Hashable
 from dataclasses import dataclass
-from enum import Enum
 from typing import Set
 
-
-class TransactionType(Enum):
-    """
-    Define different types of transactions.
-    """
-    REGULAR = 0  # regular transaction
-    REPEATED = 1  # repeated transaction
-    CONFLICT = 2  # conflict transaction
+from .typedef import TypeAlias, TransactionType
 
 
 @dataclass
@@ -39,14 +31,10 @@ class Transaction(Hashable):
     Transaction ID of a transaction - the hash of the transaction.
     """
 
-    # Type aliases, no practical use.
-    TransactionID = int
-    BlockID = int
-
     # Basic parameters controlled by interaction module.
-    txid: TransactionID = 0  # The unique ID of the transaction.
+    txid: TypeAlias.TransactionID = 0  # The unique ID of the transaction.
     ttype: TransactionType = TransactionType.REGULAR  # The type of the transaction, see TransactionType.
-    blks: Set[BlockID] = frozenset()  # The blocks that contain the transaction in the blockDAG.
+    blks: Set[TypeAlias.BlockID] = frozenset()  # The blocks that contain the transaction in the blockDAG.
     note: Hashable = None  # Optional, additional note recorded in the transaction.
 
     def __hash__(self) -> int:

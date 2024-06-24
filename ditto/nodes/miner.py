@@ -22,7 +22,7 @@ from collections import deque
 import networkx as nx
 
 from ditto.network import Network
-from ditto.blockdag import BlockDAG, Block, BlockType
+from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
 from .referIface import ReferIface
 from .consusIface import ConsusIface
 
@@ -35,7 +35,7 @@ class Miner:
     # Dictionary key for the block's data.
     _QUEUE_BLOCK_DATA_KEY = "queue_block_data"
 
-    def __init__(self, name: Block.MinerName, blockdag: BlockDAG, max_peer_num: float):
+    def __init__(self, name: TypeAlias.MinerName, blockdag: BlockDAG, max_peer_num: float):
         self._name = name  # The unique name of the miner, used to identify it.
         self._blockdag = blockdag  # The local view of blockDAG hold by the miner.
         self._max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
@@ -55,7 +55,7 @@ class Miner:
         self._refer_handler = None
         self._consus_handler = None
 
-    def __contains__(self, bid: Block.BlockID) -> bool:
+    def __contains__(self, bid: TypeAlias.BlockID) -> bool:
         return bid in self._blockdag
 
     def __str__(self):
@@ -99,28 +99,28 @@ class Miner:
         """
         self._consus_handler = consus_class(self._blockdag)
 
-    def get_name(self) -> Block.MinerName:
+    def get_name(self) -> TypeAlias.MinerName:
         """
         Get the unique miner name.
         :return: MinerName
         """
         return self._name
 
-    def get_genesis_block(self) -> Block.BlockID:
+    def get_genesis_block(self) -> TypeAlias.BlockID:
         """
         Get the genesis block id for the miner.
         :return: BlockID
         """
         return self._genesis_block
 
-    def get_mined_blocks(self) -> set[Block.BlockID]:
+    def get_mined_blocks(self) -> set[TypeAlias.BlockID]:
         """
         Get the set of blocks mined by the miner.
         :return: set[BlockID]
         """
         return self._mined_blocks
 
-    def get_neighbors(self) -> set[Block.MinerName]:
+    def get_neighbors(self) -> set[TypeAlias.MinerName]:
         """
         Get the connected neighbors.
         :return: set[MinerName]
@@ -243,7 +243,7 @@ class Miner:
         # TODO: 有待完善，直接调用网络模块
         pass
 
-    def connect_peer(self, peer_name: Block.MinerName, delay: float) -> bool:
+    def connect_peer(self, peer_name: TypeAlias.MinerName, delay: float) -> bool:
         """
         Set the connection with the specified peer miner symmetrically.
         :param peer_name: MinerName
@@ -253,7 +253,7 @@ class Miner:
         # TODO: 有待完善，直接调用网络模块
         pass
 
-    def remove_peer(self, peer_name: Block.MinerName) -> bool:
+    def remove_peer(self, peer_name: TypeAlias.MinerName) -> bool:
         """
         Cut off the connection with the specified peer miner.
         :param peer_name: MinerName

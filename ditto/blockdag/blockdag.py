@@ -18,28 +18,11 @@ limitations under the License.
 """
 import logging
 from collections.abc import Collection
-from enum import Enum
-from typing import Iterator, Any
+from typing import Iterator, Any, Set, List
 import networkx as nx
 
 from .block import Block, BlockType
-
-
-class DAGType(Enum):
-    """
-    Define different types of blockDAG.
-    """
-    DIVERGENCE = 0  # divergence blockDAG
-    PARALLEL = 1  # parallel blockDAG
-    CONVERGENCE = 2  # convergence blockDAG
-
-
-class EdgeType(Enum):
-    """
-    Define different types of edges in the blockDAG.
-    """
-    PIVOT = 0  # pivot edge by pivot reference.
-    COMMON = 1  # common edge by common reference.
+from .typedef import TypeAlias, DAGType, EdgeType
 
 
 class BlockDAG(Collection):
@@ -54,9 +37,6 @@ class BlockDAG(Collection):
     # Dictionary key for the edge's type.
     _EDGE_TYPE_KEY = "edge_type"
 
-    # Type aliases, no practical use.
-    BlockID = int
-
     def __init__(self, gtype: DAGType = DAGType.DIVERGENCE):
         self._G = nx.DiGraph()  # A networkx directed graph object.
         self._gtype = gtype  # The type of the blockDAG.
@@ -69,7 +49,7 @@ class BlockDAG(Collection):
                             datefmt='%Y-%m-%d %H:%M:%S')
         self._logger = logging.getLogger(__name__)  # Logger for this class.
 
-    def __contains__(self, bid: type(Block.BlockID)) -> bool:
+    def __contains__(self, bid: type(TypeAlias.BlockID)) -> bool:
         return bid in self._G
 
     def __getitem__(self, bid):
@@ -97,19 +77,19 @@ class BlockDAG(Collection):
         """
         return self._gtype
 
-    def get_leaves_blocks(self) -> set[BlockID]:
+    def get_leaves_blocks(self) -> Set[TypeAlias.BlockID]:
         """
         Get the set of blocks located in the leaves of the graph.
-        :return: list[BlockID].
+        :return: list[TypeAlias.BlockID].
         """
         return self._leaves
 
-    def get_column_blocks(self, height: int = 0) -> list[BlockID]:
+    def get_column_blocks(self, height: int = 0) -> List[Set[TypeAlias.BlockID]]:
         """
         Get the set of blocks at specified height of the graph.
         If height is 0, return all the blocks in the graph.
         :param height: int.
-        :return: list[BlockID].
+        :return: list[Set[TypeAlias.BlockID]].
         """
         if height == 0:
             return list(self._column)
@@ -118,11 +98,11 @@ class BlockDAG(Collection):
         self._logger.warning("Invalid height.")
         return []
 
-    def get_pivot_chain(self, bid: BlockID) -> list[BlockID]:
+    def get_pivot_chain(self, bid: TypeAlias.BlockID) -> List[TypeAlias.BlockID]:
         """
         Get the pivot chain if the graph type is convergence or parallel.
         :param bid: BlockID.
-        :return: list[BlockID].
+        :return: list[TypeAlias.BlockID].
         """
         if self._gtype == DAGType.DIVERGENCE:
             self._logger.warning("The divergence graph has no pivot chain.")
@@ -264,7 +244,7 @@ class BlockDAG(Collection):
 
         return False
 
-    def cut_block(self, bid: BlockID) -> bool | Any:
+    def cut_block(self, bid: TypeAlias.BlockID) -> bool | Any:
         """
         Cut the specified block and its related successors in the graph.
         :param bid: BlockID.
@@ -295,7 +275,7 @@ class BlockDAG(Collection):
         self._logger.info("Block " + str(bid) + " has been cut.")
         return True
 
-    def ask_block(self, bid: BlockID) -> Block | None:
+    def ask_block(self, bid: TypeAlias.BlockID) -> Block | None:
         """
         Ask the specified block data in the graph.
         :param bid: BlockID.
@@ -306,7 +286,7 @@ class BlockDAG(Collection):
             return None
         return self._G.nodes[bid][BlockDAG._BLOCK_DATA_KEY]
 
-    def predecessors(self, bid: BlockID) -> Iterator[BlockID]:
+    def predecessors(self, bid: TypeAlias.BlockID) -> Iterator[TypeAlias.BlockID]:
         """
         Wrapper of the predecessors method in networkx.
         :param bid: BlockID.
@@ -314,7 +294,7 @@ class BlockDAG(Collection):
         """
         return self._G.predecessors(bid)
 
-    def successors(self, bid: BlockID) -> Iterator[BlockID]:
+    def successors(self, bid: TypeAlias.BlockID) -> Iterator[TypeAlias.BlockID]:
         """
         Wrapper of the successors method in networkx.
         :param bid: BlockID.
@@ -322,7 +302,7 @@ class BlockDAG(Collection):
         """
         return self._G.successors(bid)
 
-    def has_path(self, source: BlockID, target: BlockID) -> bool:
+    def has_path(self, source: TypeAlias.BlockID, target: TypeAlias.BlockID) -> bool:
         """
         Wrapper of the has_path method in networkx.
         :param source: BlockID.
@@ -338,7 +318,7 @@ class BlockDAG(Collection):
         """
         return self._G.copy()
 
-    def subgraph(self, bid: BlockID) -> nx.DiGraph | None:
+    def subgraph(self, bid: TypeAlias.BlockID) -> nx.DiGraph | None:
         """
         See the subgraph from the specified block.
         :param bid: BlockID.

@@ -16,14 +16,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from ditto.blockdag import Block
+from ditto.blockdag import TypeAlias
+# from ditto.nodes import Miner
 
 
 class Network:
-
     _inc_block_id = 0
 
-    def get_next_block_id(self) -> Block.BlockID:
+    def get_next_block_id(self) -> TypeAlias.BlockID:
         """
         Get the next block id from the global network.
         :return: BlockID
