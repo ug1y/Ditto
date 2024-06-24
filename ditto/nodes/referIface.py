@@ -18,8 +18,9 @@ limitations under the License.
 """
 
 from abc import ABC, abstractmethod
+from typing import Set
 
-from ditto.blockdag import BlockDAG, Block, TypeAlias
+from ditto.blockdag import BlockDAG, TypeAlias
 
 
 class ReferIface(ABC):
@@ -37,15 +38,15 @@ class ReferIface(ABC):
     def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
         """
         Get the virtual pivot ref where the divergence blockDAG return None.
-        :return: BlockID | None
+        :return: TypeAlias.BlockID | None
         """
         pass
 
     @abstractmethod
-    def get_virtual_common_refs(self) -> set[TypeAlias.BlockID]:
+    def get_virtual_common_refs(self) -> Set[TypeAlias.BlockID]:
         """
         Get the virtual common refs by different strategies.
-        :return: set[BlockID]
+        :return: Set[TypeAlias.BlockID]
         """
         pass
 
@@ -53,6 +54,6 @@ class ReferIface(ABC):
     def get_virtual_new_height(self) -> TypeAlias.BlockHeight:
         """
         Get the virtual new height if adopt this strategy.
-        :return: BlockHeight
+        :return: TypeAlias.BlockHeight
         """
         pass

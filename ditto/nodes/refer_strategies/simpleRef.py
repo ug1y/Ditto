@@ -1,4 +1,4 @@
-from ditto.blockdag import Block, BlockDAG, DAGType, TypeAlias
+from ditto.blockdag import BlockDAG, DAGType, TypeAlias
 from ..referIface import ReferIface
 
 

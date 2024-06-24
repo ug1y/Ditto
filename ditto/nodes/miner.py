@@ -18,6 +18,7 @@ limitations under the License.
 """
 import logging
 from collections import deque
+from typing import Set
 
 import networkx as nx
 
@@ -88,14 +89,14 @@ class Miner:
     def set_refer_handler(self, refer_class: type[ReferIface]):
         """
         Set the reference handler.
-        :param refer_class
+        :param refer_class: type[ReferIface]
         """
         self._refer_handler = refer_class(self._blockdag)
 
     def set_consus_handler(self, consus_class: type[ConsusIface]):
         """
         Set the consensus handler.
-        :param consus_class
+        :param consus_class: type[ConsusIface]
         """
         self._consus_handler = consus_class(self._blockdag)
 
@@ -113,14 +114,14 @@ class Miner:
         """
         return self._genesis_block
 
-    def get_mined_blocks(self) -> set[TypeAlias.BlockID]:
+    def get_mined_blocks(self) -> Set[TypeAlias.BlockID]:
         """
         Get the set of blocks mined by the miner.
         :return: set[BlockID]
         """
         return self._mined_blocks
 
-    def get_neighbors(self) -> set[TypeAlias.MinerName]:
+    def get_neighbors(self) -> Set[TypeAlias.MinerName]:
         """
         Get the connected neighbors.
         :return: set[MinerName]

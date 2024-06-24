@@ -18,8 +18,9 @@ limitations under the License.
 """
 from abc import ABC, abstractmethod
 from enum import Enum
+from typing import Set, List
 
-from ditto.blockdag import BlockDAG, Block, TypeAlias
+from ditto.blockdag import BlockDAG, TypeAlias
 
 
 class StatusType(Enum):
@@ -50,17 +51,17 @@ class ConsusIface(ABC):
         pass
 
     @abstractmethod
-    def get_decided_blocks(self) -> set[TypeAlias.BlockID]:
+    def get_decided_blocks(self) -> Set[TypeAlias.BlockID]:
         """
         Get the decided blocks that is already on consensus.
-        :return: set[BlockID]
+        :return: Set[TypeAlias.BlockID]
         """
         pass
 
     @abstractmethod
-    def sort_finished_blocks(self, filter_decided: bool = True) -> list[TypeAlias.BlockID]:
+    def sort_finished_blocks(self, filter_decided: bool = True) -> List[TypeAlias.BlockID]:
         """
         Sort the finished blocks filtering decided status or containing excluded status.
-        :return: list[BlockID]
+        :return: List[TypeAlias.BlockID]
         """
         pass
