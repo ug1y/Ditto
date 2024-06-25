@@ -1,1 +1,2 @@
-from .network import Network
+from .netContainer import NetContainer
+from .netOperator import NetOperator

@@ -1,6 +1,6 @@
 from ditto.blockdag import BlockDAG, BlockType, Block
-from ditto.network import Network
-from ditto.nodes import Miner, SimpleRef
+from ditto.network import NetOperator
+from ditto.nodes import Miner, SimpleRef, CCC, RRR
 
 
 class TestMiner:
@@ -15,12 +15,13 @@ class TestMiner:
         assert len(m._mined_blocks) == 0
         assert len(m._block_queue) == 0
         assert m._refer_handler is None
+        assert m._consus_handler is None
 
     def test_mine_block(self):
         m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
         assert m.mine_block() is None
 
-        net = Network()
+        net = NetOperator(BlockDAG())
         m.set_network(net)
         assert m.mine_block() is None
 
@@ -30,26 +31,26 @@ class TestMiner:
         assert m.get_genesis_block() == 1
         assert m.mine_block() is None
 
+        m.set_refer_handler(RRR)
+        assert m.mine_block() is None
+
+        m.set_consus_handler(CCC)
         m.set_refer_handler(SimpleRef)
 
         b2 = m.mine_block()
-        m.add_block(b2)
         assert len(m._blockdag) == 2
         assert hash(b2) in m
 
         b3 = m.mine_block()
-        m.add_block(b3)
         assert len(m._blockdag) == 3
         assert hash(b3) in m
 
     def test_queue_block(self):
-        net = Network()
+        net = NetOperator(BlockDAG())
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
 
         m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
-        m.set_network(net)
-        m.set_genesis_block(b1)
-        m.set_refer_handler(SimpleRef)
+        m.pre_launch(b1, net, SimpleRef, CCC)
 
         b2 = m.mine_block()
         b3 = m.mine_block()
@@ -65,13 +66,11 @@ class TestMiner:
         assert m.get_mined_blocks() == {hash(b2), hash(b3)}
 
     def test_cascade_queue(self):
-        net = Network()
+        net = NetOperator(BlockDAG())
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
 
         m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
-        m.set_network(net)
-        m.set_genesis_block(b1)
-        m.set_refer_handler(SimpleRef)
+        m.pre_launch(b1, net, SimpleRef, CCC)
 
         b2 = m.mine_block()
         b3 = m.mine_block()
@@ -96,3 +95,43 @@ class TestMiner:
         assert len(m._blockdag) == 4
         assert len(m._block_queue) == 0
 
+    def test_peer_process(self):
+        net = NetOperator(BlockDAG())
+        m1 = Miner(name='testMiner1', blockdag=BlockDAG(), max_peer_num=10)
+        m2 = Miner(name='testMiner2', blockdag=BlockDAG(), max_peer_num=10)
+        m3 = Miner(name='testMiner3', blockdag=BlockDAG(), max_peer_num=10)
+        m4 = Miner(name='testMiner4', blockdag=BlockDAG(), max_peer_num=10)
+        m5 = Miner(name='testMiner5', blockdag=BlockDAG(), max_peer_num=10)
+
+        delay = net.get_delay(m1.get_name(), m2.get_name())
+
+        net.add_miner(m1)
+        m1.set_network(net)
+
+        assert m1.connect_peer(m2.get_name(), delay) is False
+        net.add_miner(m2)
+        assert m1.connect_peer(m2.get_name(), delay) is True
+
+        assert m2.connect_peer(m1.get_name(), delay) is False
+        m2.set_network(net)
+        assert m2.connect_peer(m1.get_name(), delay) is True
+
+        net.add_miner(m3)
+        m3.set_network(net)
+
+        net.add_miner(m4)
+        m4.set_network(net)
+
+        net.add_miner(m5)
+        m5.set_network(net)
+
+        assert m1.discover_peer() == 3
+        assert m2.discover_peer() == 3
+
+        assert m3.discover_peer() == 2
+        assert m4.discover_peer() == 1
+
+        assert m5.remove_peer(m1.get_name()) is True
+        assert len(net.network_graph.edges) == 9
+
+        print(str(net) + "\n" + repr(net))

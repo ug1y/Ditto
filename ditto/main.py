@@ -1,28 +1,17 @@
-from ditto.blockdag import Block, BlockType, BlockDAG, DAGType
-from ditto.network import Network
+from ditto.blockdag import Block, BlockType, BlockDAG
+from ditto.network import NetOperator
 from ditto.nodes import Miner
-from ditto.nodes import SimpleRef
-
+from ditto.nodes import SimpleRef, CCC
 
 if __name__ == '__main__':
-    net = Network()
+    net = NetOperator(BlockDAG())
     b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
 
     m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
-    m.set_network(net)
-    m.set_genesis_block(b1)
-    m.set_refer_handler(SimpleRef)
+    m.pre_launch(b1, net, SimpleRef, CCC)
 
     b2 = m.mine_block()
     b3 = m.mine_block()
     b4 = m.mine_block()
 
-    m._blockdag.cut_block(hash(b2))
-    m.add_block(b3)
-    m.add_block(b4)
-    print(m.get_mined_blocks())
-    print(m._block_queue)
-
-    m.add_block(b2)
-    print(m._blockdag)
-    print(m._block_queue)
+    print(str(m) + "\n" + repr(m))

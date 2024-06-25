@@ -52,14 +52,14 @@ class BlockDAG(Collection):
     def __contains__(self, bid: type(TypeAlias.BlockID)) -> bool:
         return bid in self._G
 
-    def __getitem__(self, bid):
-        return self._G.nodes[bid][BlockDAG._BLOCK_DATA_KEY]
-
     def __iter__(self) -> Iterator[Block]:
         return iter(self._G)
 
     def __len__(self) -> int:
         return len(self._G)
+
+    def __getitem__(self, bid) -> Block:
+        return self._G.nodes[bid][BlockDAG._BLOCK_DATA_KEY]
 
     def __str__(self):
         return str(self._G)
@@ -227,12 +227,12 @@ class BlockDAG(Collection):
             self._G.nodes[block.bid][BlockDAG._BLOCK_DATA_KEY] = block
             if block.pref is not None:
                 self._G.add_edge(block.bid, block.pref)
-                self._G.edges[block.bid, block.pref][BlockDAG._EDGE_TYPE_KEY] = EdgeType.PIVOT
+                self._G.edges[(block.bid, block.pref)][BlockDAG._EDGE_TYPE_KEY] = EdgeType.PIVOT
                 if block.pref in self._leaves:
                     self._leaves.remove(block.pref)
             for cref in block.crefs:
                 self._G.add_edge(block.bid, cref)
-                self._G.edges[block.bid, cref][BlockDAG._EDGE_TYPE_KEY] = EdgeType.COMMON
+                self._G.edges[(block.bid, cref)][BlockDAG._EDGE_TYPE_KEY] = EdgeType.COMMON
                 if cref in self._leaves:
                     self._leaves.remove(cref)
             self._leaves.add(block.bid)

@@ -22,7 +22,7 @@ from typing import Set
 
 import networkx as nx
 
-from ditto.network import Network
+from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
 from .referIface import ReferIface
 from .consusIface import ConsusIface
@@ -42,7 +42,7 @@ class Miner:
         self._max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
 
         self._genesis_block = 0  # The genesis block the miner followed by.
-        self._network = None  # Network object handler, used to connect peers and broadcast blocks.
+        self._network: NetContainer = None  # Network object handler, used to connect peers and broadcast blocks.
 
         self._mined_blocks = set()  # Record the set of blocks mined by the miner.
         self._block_queue = nx.DiGraph()  # A graph for the received blocks that lack parents.
@@ -53,8 +53,8 @@ class Miner:
                             datefmt='%Y-%m-%d %H:%M:%S')
         self._logger = logging.getLogger(__name__)  # Logger for this class.
 
-        self._refer_handler = None
-        self._consus_handler = None
+        self._refer_handler: ReferIface = None
+        self._consus_handler: ConsusIface = None
 
     def __contains__(self, bid: TypeAlias.BlockID) -> bool:
         return bid in self._blockdag
@@ -79,10 +79,10 @@ class Miner:
                 and self._blockdag.add_block(block):
             self._genesis_block = hash(block)
 
-    def set_network(self, network: Network):
+    def set_network(self, network: NetContainer):
         """
         Set the global network handler.
-        :param network: Network
+        :param network: NetContainer
         """
         self._network = network
 
@@ -99,6 +99,20 @@ class Miner:
         :param consus_class: type[ConsusIface]
         """
         self._consus_handler = consus_class(self._blockdag)
+
+    def pre_launch(self, genesis_block: Block, network: NetContainer,
+                   refer_class: type[ReferIface], consus_class: type[ConsusIface]):
+        """
+        Prepare the miner for launch.
+        :param genesis_block: Block
+        :param network: NetContainer
+        :param refer_class: type[ReferIface]
+        :param consus_class: type[ConsusIface]
+        """
+        self.set_genesis_block(genesis_block)
+        self.set_network(network)
+        self.set_refer_handler(refer_class)
+        self.set_consus_handler(consus_class)
 
     def get_name(self) -> TypeAlias.MinerName:
         """
@@ -130,7 +144,7 @@ class Miner:
             self._logger.warning("Miner " + str(self._name) + " does not have network handler.")
             return set()
 
-        return set()  # TODO: 有待网络模块实现
+        return self._network.get_neighbors(self._name)
 
     def mine_block(self) -> Block | None:
         """
@@ -169,6 +183,9 @@ class Miner:
         :param block: Block
         :return: bool
         """
+        if not self._is_valid_block(block):
+            return False
+
         if hash(block) in self._blockdag:
             return True
 
@@ -179,6 +196,18 @@ class Miner:
             return self._cascade_block_add(block)
 
         return self._basic_block_add(block)
+
+    def _is_valid_block(self, block: Block) -> bool:
+        """
+        Check if the given block is valid.
+        :param block: Block
+        :return: bool
+        """
+        if block is None or block.btype != BlockType.MINED or \
+                block.crefs is None or block.height is None:
+            return False
+
+        return True
 
     def _add_to_block_queue(self, block: Block) -> bool:
         """
@@ -191,7 +220,7 @@ class Miner:
             if parent_bid not in self._blockdag:
                 missing_parents = True
                 if parent_bid not in self._block_queue:
-                    # TODO 向网络请求缺失的父块
+                    self._network.fetch_block(self._name, parent_bid)  # Fetch the missing parent from network.
                     self._block_queue.add_node(parent_bid)
                     self._block_queue.nodes[parent_bid][Miner._QUEUE_BLOCK_DATA_KEY] = None
                 self._block_queue.add_edge(block.bid, parent_bid)
@@ -208,8 +237,13 @@ class Miner:
         :param block: Block
         :return: bool
         """
+        if self._consus_handler is None:
+            self._logger.warning("Miner " + str(self._name) + " does not have consensus handler.")
+            return False
+
         if self._blockdag.add_block(block):
-            # TODO: 广播新添加的区块给邻居
+            self._network.broadcast_block(self._name, block)  # broadcast the block to neighbors.
+            # TODO: 此处可以开始执行共识判定了
             return True
         return False
 
@@ -237,28 +271,36 @@ class Miner:
                     return False
         return True
 
-    def discover_peer(self):
+    def discover_peer(self) -> int:
         """
         Connect random peer miners till to the max peer number.
         """
-        # TODO: 有待完善，直接调用网络模块
-        pass
+        count = 0
+        new_peers = self._network.discover_peer(self._name, self._max_peer_num)
+        for new_peer in new_peers:
+            if self._network.connect_peer(self._name, new_peer, self._network.get_delay(self._name, new_peer)):
+                count += 1
+        return count
 
     def connect_peer(self, peer_name: TypeAlias.MinerName, delay: float) -> bool:
         """
         Set the connection with the specified peer miner symmetrically.
-        :param peer_name: MinerName
+        :param peer_name: TypeAlias.MinerName
         :param delay: float
         :return: bool
         """
-        # TODO: 有待完善，直接调用网络模块
-        pass
+        if self._network is None:
+            self._logger.warning("Miner " + str(self._name) + " does not have network handler.")
+            return False
+        return self._network.connect_peer(self._name, peer_name, delay)
 
     def remove_peer(self, peer_name: TypeAlias.MinerName) -> bool:
         """
         Cut off the connection with the specified peer miner.
-        :param peer_name: MinerName
+        :param peer_name: TypeAlias.MinerName
         :return: bool
         """
-        # TODO: 有待完善，直接调用网络模块
-        pass
+        if self._network is None:
+            self._logger.warning("Miner " + str(self._name) + " does not have network handler.")
+            return False
+        return self._network.remove_peer(self._name, peer_name)

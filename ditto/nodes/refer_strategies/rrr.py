@@ -1,4 +1,6 @@
-from ditto.blockdag import BlockDAG, Block
+from typing import Set
+
+from ditto.blockdag import TypeAlias
 from ..referIface import ReferIface
 
 
@@ -6,11 +8,11 @@ from ..referIface import ReferIface
 
 class RRR(ReferIface):
 
-    def get_virtual_new_height(self) -> Block.BlockHeight:
+    def get_virtual_new_height(self) -> TypeAlias.BlockHeight:
         pass
 
-    def get_virtual_pivot_ref(self) -> BlockDAG.BlockID | None:
+    def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
         pass
 
-    def get_virtual_common_refs(self) -> set[BlockDAG.BlockID]:
+    def get_virtual_common_refs(self) -> Set[TypeAlias.BlockID]:
         pass

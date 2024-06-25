@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='ditto',
@@ -12,6 +12,7 @@ setup(
     packages=['ditto'],
     install_requires=[
         'networkx==3.3.0',
+        'numpy==1.26.0',
     ],
     classifiers=[
         'Development Status :: 1 - Planning',

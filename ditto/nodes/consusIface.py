@@ -24,10 +24,11 @@ from ditto.blockdag import BlockDAG, TypeAlias
 
 
 class StatusType(Enum):
-    INVALID = 0
-    UNCLEAR = 1
-    EXCLUDE = 2
-    DECIDED = 3
+    # Define the status of a block.
+    INVALID = 0  # invalid block means the block is not in the blockdag.
+    UNCLEAR = 1  # unclear block means the block is not processed yet.
+    EXCLUDE = 2  # exclude block means the block is excluded by consensus.
+    DECIDED = 3  # decided block means the block is decided by consensus.
 
 
 class ConsusIface(ABC):
