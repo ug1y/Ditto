@@ -44,32 +44,25 @@ class NetOperator(NetContainer):
     def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
         return self.network_graph.nodes[miner][NetOperator._MINER_DATA_KEY]
 
-    def add_miner(self, miner: Miner, hash_rate: float = 1.0) -> bool:
+    def add_miner(self, miner: Miner, hash_rate: float = 1.0):
         """
         Add a miner into the network.
         :param miner: Miner
         :param hash_rate: float
         :return: bool
         """
-        if miner is None:
-            return False
-
         miner_name = miner.get_name()
         self.network_graph.add_node(miner_name)
         self.network_graph.nodes[miner_name][NetOperator._MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY] = hash_rate
-        return True
 
-    def del_miner(self, miner_name: TypeAlias.MinerName) -> bool:
+    def del_miner(self, miner_name: TypeAlias.MinerName):
         """
         Delete the miner from the network.
         :param miner_name: TypeAlias.MinerName
         :return: bool
         """
-        if miner_name not in self.network_graph:
-            return False
         self.network_graph.remove_node(miner_name)
-        return True
 
     def send_block(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName, block: Block):
         pass
