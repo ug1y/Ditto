@@ -134,4 +134,4 @@ class TestMiner:
         m5.remove_peer(m1.get_name())
         assert len(net.network_graph.edges) == 9
 
-        print(str(net) + "\n" + repr(net))
+        # print(str(net) + "\n" + repr(net))

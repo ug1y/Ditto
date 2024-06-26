@@ -62,7 +62,7 @@ class NetOperator(NetContainer):
         self.network_graph.nodes[miner_name][NetOperator._MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY] = hash_rate
         miner.set_network(self)
-        self._logger.info("Add miner " + str(miner_name) + "with hash rate " + str(hash_rate))
+        self._logger.info("Add miner " + str(miner_name) + " with hash rate " + str(hash_rate))
 
     def del_miner(self, miner_name: TypeAlias.MinerName):
         """
@@ -85,9 +85,10 @@ class NetOperator(NetContainer):
         sender = self[source_miner]
         receiver = self[target_miner]
         if hash(block) in sender:
-            self._logger.info("Sending" + str(hash(block)) + "from" + str(source_miner) + "to" + str(target_miner))
+            self._logger.info("Sending block " + str(hash(block)) + " from " + str(source_miner) + " to " + str(target_miner))
             # TODO: 采用模拟器模拟网络延迟
             receiver.add_block(block)
+            receiver.sync_block()
 
     def broadcast_block(self, source_miner: TypeAlias.MinerName, block: Block):
         """
@@ -98,6 +99,7 @@ class NetOperator(NetContainer):
         if hash(block) not in self.total_blockdag:
             self.total_blockdag.add_block(block)  # Every new mined block will be added to the total blockDAG.
 
+        self._logger.info("Miner " + str(source_miner) + " broadcasts block " + str(hash(block)) + " to network")
         peers = self.get_neighbors(source_miner)
         for peer_name in peers:
             self.send_block(source_miner, peer_name, block)
@@ -108,6 +110,7 @@ class NetOperator(NetContainer):
         :param target_miner: TypeAlias.MinerName
         :param bid: TypeAlias.BlockID
         """
+        self._logger.info("Miner " + str(target_miner) + " fetches block " + str(bid) + " from network")
         for peer_name in self.get_neighbors(target_miner):
             self.send_block(peer_name, target_miner, self.total_blockdag[bid])
 

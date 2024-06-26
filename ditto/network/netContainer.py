@@ -23,6 +23,7 @@ from typing import Set, Collection, Iterator
 import networkx as nx
 import numpy as np
 
+from .. import logger
 from ditto.blockdag import TypeAlias, Block
 
 
@@ -40,6 +41,8 @@ class NetContainer(Collection):
         self._inc_block_id: TypeAlias.BlockID = 0  # The global block id in the network.
         self.network_graph = nx.Graph()  # The network graph.
         self.propagation_delay_parameter = propagation_delay_parameter  # The delay parameters for the network
+
+        self._logger = logger.getLogger(__name__)  # Logger for this class.
 
     def __contains__(self, miner_name: type(TypeAlias.MinerName)) -> bool:
         return miner_name in self.network_graph
@@ -76,6 +79,7 @@ class NetContainer(Collection):
         if miner_name not in self.network_graph or peer_name not in self.network_graph:
             return False
 
+        self._logger.info("Connect " + str(miner_name) + " and " + str(peer_name) + " with delay " + str(delay))
         self.network_graph.add_edge(miner_name, peer_name)
         self.network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY] = delay
         return True

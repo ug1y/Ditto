@@ -8,14 +8,25 @@ if __name__ == '__main__':
     b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
     net.total_blockdag.add_block(b1)
 
-    m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
-    net.add_miner(m)
+    m1 = Miner(name='testMiner1', blockdag=BlockDAG(), max_peer_num=10)
+    m1.pre_launch(b1, SimpleRef, CCC)
+    m2 = Miner(name='testMiner2', blockdag=BlockDAG(), max_peer_num=10)
+    m2.pre_launch(b1, SimpleRef, CCC)
 
-    m.pre_launch(b1, SimpleRef, CCC)
-    print(m.get_genesis_block())
+    net.add_miner(m1)
+    net.add_miner(m2)
 
-    b2 = m.mine_block()
-    b3 = m.mine_block()
-    b4 = m.mine_block()
+    # m1.connect_peer(m2.get_name(), 5.0)
+    # print(m2.get_neighbors())
+    m1.mine_block()
+    m1.mine_block()
 
-    print(str(m) + "\n" + repr(m))
+    m1.connect_peer(m2.get_name(), 5.0)
+
+    m2.mine_block()
+    m1.mine_block()
+
+    print(repr(net.total_blockdag))
+    print(repr(m1), m2._block_queue.nodes.keys())
+    print(repr(m2), m2._block_queue.nodes.keys())
+

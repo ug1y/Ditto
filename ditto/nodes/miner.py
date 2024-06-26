@@ -171,12 +171,26 @@ class Miner:
 
         # TODO: 从交易池中拿交易来构建新区块
 
+        self._logger.info("Miner " + str(self._name) + " mined a new block " + str(hash(block)))
+
         if not self.add_block(block):  # The block will be broadcast by _basic_block_add.
             return None
 
         self._mined_blocks.add(hash(block))
-        self._logger.info("Miner " + str(self._name) + " mined a new block " + str(hash(block)))
         return block
+
+    def sync_block(self):
+        """
+        Sync the missing blocks in the queue and fetch them.
+        """
+        missing_blocks = set()
+        for queue_bid in self._block_queue.nodes():
+            if self._block_queue.nodes[queue_bid][Miner._QUEUE_BLOCK_DATA_KEY] is None:
+                missing_blocks.add(queue_bid)
+
+        for missing_block in missing_blocks:
+            if self._block_queue.nodes[missing_block][Miner._QUEUE_BLOCK_DATA_KEY] is None:  # Avoid duplicated fetch.
+                self._network.fetch_block(self._name, missing_block)  # Fetch the missing parent from network.
 
     def add_block(self, block: Block) -> bool:
         """
@@ -221,7 +235,7 @@ class Miner:
             if parent_bid not in self.blockdag:
                 missing_parents = True
                 if parent_bid not in self._block_queue:
-                    self._network.fetch_block(self._name, parent_bid)  # Fetch the missing parent from network.
+                    # self._network.fetch_block(self._name, parent_bid)  # Fetch the missing parent from network.
                     self._block_queue.add_node(parent_bid)
                     self._block_queue.nodes[parent_bid][Miner._QUEUE_BLOCK_DATA_KEY] = None
                 self._block_queue.add_edge(block.bid, parent_bid)
