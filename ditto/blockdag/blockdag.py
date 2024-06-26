@@ -16,11 +16,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import logging
 from collections.abc import Collection
 from typing import Iterator, Any, Set, List
 import networkx as nx
 
+from .. import logger
 from .block import Block, BlockType
 from .typedef import TypeAlias, DAGType, EdgeType
 
@@ -42,12 +42,7 @@ class BlockDAG(Collection):
         self._gtype = gtype  # The type of the blockDAG.
         self._leaves = set()  # Set of all the leaves in the graph.
         self._column = list(set())  # List of the set of blocks in the specified height.
-
-        logging.basicConfig(level=logging.DEBUG,
-                            format='[%(asctime)s] %(levelname)s - [Module] %(name)s - '
-                                   '[Location] %(filename)s:%(lineno)d - [%(funcName)s] %(message)s',
-                            datefmt='%Y-%m-%d %H:%M:%S')
-        self._logger = logging.getLogger(__name__)  # Logger for this class.
+        self._logger = logger.getLogger(__name__)  # Logger for this class.
 
     def __contains__(self, bid: type(TypeAlias.BlockID)) -> bool:
         return bid in self._G
@@ -164,7 +159,7 @@ class BlockDAG(Collection):
             if len(self._column) == 0:
                 self._column.append(set())
             self._column[0].add(block.bid)
-            self._logger.info("Genesis block " + str(block.bid) + " added.")
+            self._logger.debug("Genesis block " + str(block.bid) + " added.")
             return True
 
         # Handle the mined block.
@@ -239,7 +234,7 @@ class BlockDAG(Collection):
             if len(self._column) < block.height:
                 self._column.append(set())
             self._column[block.height - 1].add(block.bid)
-            self._logger.info("Mined block " + str(block.bid) + " added.")
+            self._logger.debug("Mined block " + str(block.bid) + " added.")
             return True
 
         return False
@@ -272,7 +267,7 @@ class BlockDAG(Collection):
         if len(self._column[b.height - 1]) == 0:
             self._column.pop(b.height - 1)
 
-        self._logger.info("Block " + str(bid) + " has been cut.")
+        self._logger.debug("Block " + str(bid) + " has been cut.")
         return True
 
     def ask_block(self, bid: TypeAlias.BlockID) -> Block | None:

@@ -18,6 +18,7 @@ limitations under the License.
 """
 import numpy as np
 
+from .. import logger
 from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType
 from ditto.nodes import Miner
 from .netContainer import NetContainer
@@ -35,16 +36,21 @@ class NetOperator(NetContainer):
     # Dictionary key for the hash rate.
     _MINER_DATA_KEY = "miner_data"
 
-    def __init__(self, total_blockdag: BlockDAG, delay_parameter: float = 1.0):
-        super().__init__(delay_parameter)
+    def __init__(self, total_blockdag: BlockDAG,
+                 propagation_delay_parameter: float = 30.0,
+                 block_creation_rate: float = 60.0):
+        super().__init__(propagation_delay_parameter)
 
-        self._total_blockdag = total_blockdag  # The total blockDAG of the network.
+        self.block_creation_rate = block_creation_rate  # The block creation rate of the network.
+        self.total_blockdag = total_blockdag  # The total blockDAG of the network.
         self._simulator = None  # The simulator to simulate network delay.
+
+        self._logger = logger.getLogger(__name__)  # Logger for this class.
 
     def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
         return self.network_graph.nodes[miner][NetOperator._MINER_DATA_KEY]
 
-    def add_miner(self, miner: Miner, hash_rate: float = 1.0):
+    def add_miner(self, miner: Miner, hash_rate: float = 5.0):
         """
         Add a miner into the network.
         :param miner: Miner
@@ -55,6 +61,8 @@ class NetOperator(NetContainer):
         self.network_graph.add_node(miner_name)
         self.network_graph.nodes[miner_name][NetOperator._MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY] = hash_rate
+        miner.set_network(self)
+        self._logger.info("Add miner " + str(miner_name) + "with hash rate " + str(hash_rate))
 
     def del_miner(self, miner_name: TypeAlias.MinerName):
         """
@@ -65,13 +73,43 @@ class NetOperator(NetContainer):
         self.network_graph.remove_node(miner_name)
 
     def send_block(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName, block: Block):
-        pass
+        """
+        Send the given block to the given miner.
+        :param source_miner: TypeAlias.MinerName
+        :param target_miner: TypeAlias.MinerName
+        :param block: Block
+        """
+        if source_miner not in self.network_graph or target_miner not in self.network_graph:
+            return
+
+        sender = self[source_miner]
+        receiver = self[target_miner]
+        if hash(block) in sender:
+            self._logger.info("Sending" + str(hash(block)) + "from" + str(source_miner) + "to" + str(target_miner))
+            # TODO: 采用模拟器模拟网络延迟
+            receiver.add_block(block)
 
     def broadcast_block(self, source_miner: TypeAlias.MinerName, block: Block):
-        pass
+        """
+        Broadcast the given block from the miner to its peers.
+        :param source_miner: TypeAlias.MinerName
+        :param block: Block
+        """
+        if hash(block) not in self.total_blockdag:
+            self.total_blockdag.add_block(block)  # Every new mined block will be added to the total blockDAG.
+
+        peers = self.get_neighbors(source_miner)
+        for peer_name in peers:
+            self.send_block(source_miner, peer_name, block)
 
     def fetch_block(self, target_miner: TypeAlias.MinerName, bid: TypeAlias.BlockID):
-        pass
+        """
+        Retrieves the block with the given ID from the network for the given miner.
+        :param target_miner: TypeAlias.MinerName
+        :param bid: TypeAlias.BlockID
+        """
+        for peer_name in self.get_neighbors(target_miner):
+            self.send_block(peer_name, target_miner, self.total_blockdag[bid])
 
     def get_random_miner(self, by_hash_rate: bool = False) -> Miner:
         """
@@ -95,7 +133,7 @@ class NetOperator(NetContainer):
         return self[miner_name]
 
     def get_blockdag_type(self) -> DAGType:
-        return self._total_blockdag.get_graph_type()
+        return self.total_blockdag.get_graph_type()
 
     def set_simulator(self, simulator):
         self._simulator = simulator

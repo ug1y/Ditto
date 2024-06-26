@@ -16,13 +16,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import logging
 from collections import deque
 from typing import Set
 
 import networkx as nx
 import numpy as np
 
+from .. import logger
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
 from .referIface import ReferIface
@@ -39,8 +39,8 @@ class Miner:
 
     def __init__(self, name: TypeAlias.MinerName, blockdag: BlockDAG, max_peer_num: float):
         self._name = name  # The unique name of the miner, used to identify it.
-        self._blockdag = blockdag  # The local view of blockDAG hold by the miner.
-        self._max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
+        self.blockdag = blockdag  # The local view of blockDAG hold by the miner.
+        self.max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
 
         self._genesis_block = 0  # The genesis block the miner followed by.
         self._network: NetContainer = None  # Network object handler, used to connect peers and broadcast blocks.
@@ -48,27 +48,23 @@ class Miner:
         self._mined_blocks = set()  # Record the set of blocks mined by the miner.
         self._block_queue = nx.DiGraph()  # A graph for the received blocks that lack parents.
 
-        logging.basicConfig(level=logging.DEBUG,
-                            format='[%(asctime)s] %(levelname)s - [Module] %(name)s - '
-                                   '[Location] %(filename)s:%(lineno)d - [%(funcName)s] %(message)s',
-                            datefmt='%Y-%m-%d %H:%M:%S')
-        self._logger = logging.getLogger(__name__)  # Logger for this class.
+        self._logger = logger.getLogger(__name__)  # Logger for this class.
 
         self._refer_handler: ReferIface = None
         self._consus_handler: ConsusIface = None
 
     def __contains__(self, bid: TypeAlias.BlockID) -> bool:
-        return bid in self._blockdag
+        return bid in self.blockdag
 
     def __str__(self):
         return "Miner " + str(self._name) + \
-            ", holding " + str(self._blockdag) + \
+            ", holding " + str(self.blockdag) + \
             ", connecting to " + str(len(self.get_neighbors())) + " neighbors."
 
     def __repr__(self):
         return "Miner(name=" + repr(self._name) + \
-            ", blockdag=" + repr(self._blockdag) + \
-            ", max_peer_num=" + repr(self._max_peer_num) + ")"
+            ", blockdag=" + repr(self.blockdag) + \
+            ", max_peer_num=" + repr(self.max_peer_num) + ")"
 
     def set_genesis_block(self, block: Block):
         """
@@ -77,7 +73,7 @@ class Miner:
         """
         if self._genesis_block == 0 \
                 and block.btype == BlockType.GENESIS \
-                and self._blockdag.add_block(block):
+                and self.blockdag.add_block(block):
             self._genesis_block = hash(block)
 
     def set_network(self, network: NetContainer):
@@ -92,28 +88,31 @@ class Miner:
         Set the reference handler.
         :param refer_class: type[ReferIface]
         """
-        self._refer_handler = refer_class(self._blockdag)
+        self._refer_handler = refer_class(self.blockdag)
 
     def set_consus_handler(self, consus_class: type[ConsusIface]):
         """
         Set the consensus handler.
         :param consus_class: type[ConsusIface]
         """
-        self._consus_handler = consus_class(self._blockdag)
+        self._consus_handler = consus_class(self.blockdag)
 
-    def pre_launch(self, genesis_block: Block, network: NetContainer,
-                   refer_class: type[ReferIface], consus_class: type[ConsusIface]):
+    def pre_launch(self, genesis_block: Block,
+                   refer_class: type[ReferIface],
+                   consus_class: type[ConsusIface],
+                   network: NetContainer = None):
         """
         Prepare the miner for launch.
         :param genesis_block: Block
-        :param network: NetContainer
         :param refer_class: type[ReferIface]
         :param consus_class: type[ConsusIface]
+        :param network: NetContainer
         """
         self.set_genesis_block(genesis_block)
-        self.set_network(network)
         self.set_refer_handler(refer_class)
         self.set_consus_handler(consus_class)
+        if network is not None:
+            self.set_network(network)
 
     def get_name(self) -> TypeAlias.MinerName:
         """
@@ -176,6 +175,7 @@ class Miner:
             return None
 
         self._mined_blocks.add(hash(block))
+        self._logger.info("Miner " + str(self._name) + " mined a new block " + str(hash(block)))
         return block
 
     def add_block(self, block: Block) -> bool:
@@ -187,7 +187,7 @@ class Miner:
         if not self._is_valid_block(block):
             return False
 
-        if hash(block) in self._blockdag:
+        if hash(block) in self.blockdag:
             return True
 
         if self._add_to_block_queue(block):
@@ -218,7 +218,7 @@ class Miner:
         """
         missing_parents = False
         for parent_bid in block.get_parents():
-            if parent_bid not in self._blockdag:
+            if parent_bid not in self.blockdag:
                 missing_parents = True
                 if parent_bid not in self._block_queue:
                     self._network.fetch_block(self._name, parent_bid)  # Fetch the missing parent from network.
@@ -242,7 +242,7 @@ class Miner:
             self._logger.warning("Miner " + str(self._name) + " does not have consensus handler.")
             return False
 
-        if self._blockdag.add_block(block):
+        if self.blockdag.add_block(block):
             self._network.broadcast_block(self._name, block)  # broadcast the block to neighbors.
             # TODO: 此处可以开始执行共识判定了
             return True
@@ -262,7 +262,7 @@ class Miner:
                 continue
             cur_block = self._block_queue.nodes[cur_block_bid][Miner._QUEUE_BLOCK_DATA_KEY]
             if cur_block is not None and \
-                    np.bitwise_and.reduce([parent_bid in self._blockdag for parent_bid in cur_block.get_parents()]):
+                    np.bitwise_and.reduce([parent_bid in self.blockdag for parent_bid in cur_block.get_parents()]):
                 # # The second condition is the same as following code.
                 # parents = cur_block.get_parents()
                 # for parent_bid in parents:
@@ -279,7 +279,7 @@ class Miner:
         Connect random peer miners till to the max peer number.
         """
         count = 0
-        new_peers = self._network.discover_peer(self._name, self._max_peer_num)
+        new_peers = self._network.discover_peer(self._name, self.max_peer_num)
         for new_peer in new_peers:
             if self._network.connect_peer(self._name, new_peer, self._network.get_delay(self._name, new_peer)):
                 count += 1

@@ -36,10 +36,10 @@ class NetContainer(Collection):
     # Dictionary key for the delay time.
     _DELAY_TIME_KEY = "delay_time"
 
-    def __init__(self, delay_parameter: float = 1.0):
+    def __init__(self, propagation_delay_parameter: float = 1.0):
         self._inc_block_id: TypeAlias.BlockID = 0  # The global block id in the network.
         self.network_graph = nx.Graph()  # The network graph.
-        self._delay_parameter = delay_parameter  # The delay parameters for the network
+        self.propagation_delay_parameter = propagation_delay_parameter  # The delay parameters for the network
 
     def __contains__(self, miner_name: type(TypeAlias.MinerName)) -> bool:
         return miner_name in self.network_graph
@@ -130,7 +130,7 @@ class NetContainer(Collection):
         if self.network_graph.has_edge(miner_name, peer_name):
             return self.network_graph[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY]
 
-        return np.random.poisson(self._delay_parameter)
+        return np.random.poisson(self.propagation_delay_parameter)
 
     @abstractmethod
     def send_block(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName, block: Block):
