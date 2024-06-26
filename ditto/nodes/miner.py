@@ -21,6 +21,7 @@ from collections import deque
 from typing import Set
 
 import networkx as nx
+import numpy as np
 
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
@@ -260,11 +261,13 @@ class Miner:
             if cur_block_bid not in self._block_queue:
                 continue
             cur_block = self._block_queue.nodes[cur_block_bid][Miner._QUEUE_BLOCK_DATA_KEY]
-            if cur_block is not None:
-                parents = cur_block.get_parents()
-                for parent_bid in parents:
-                    if parent_bid not in self._blockdag:
-                        continue
+            if cur_block is not None and \
+                    np.bitwise_and.reduce([parent_bid in self._blockdag for parent_bid in cur_block.get_parents()]):
+                # # The second condition is the same as following code.
+                # parents = cur_block.get_parents()
+                # for parent_bid in parents:
+                #     if parent_bid not in self._blockdag:
+                #         continue
                 add_queue.extend(self._block_queue.predecessors(hash(cur_block)))
                 self._block_queue.remove_node(hash(cur_block))
                 if not self._basic_block_add(cur_block):
