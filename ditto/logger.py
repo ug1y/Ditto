@@ -34,15 +34,16 @@ class MinerFilter(logging.Filter):
         self.miner_name = miner_name
 
     def filter(self, record):
-        if (record.name == 'ditto.nodes.miner' or record.name == 'ditto.blockdag.blockdag') \
-                and (record.args[0] == self.miner_name):
+        if (record.name in {'ditto.nodes.miner', 'ditto.blockdag.blockdag',
+                            'ditto.network.netOperator', 'ditto.network.netContainer'}) \
+                and (self.miner_name in record.args):
             return True
         else:
             return False
 
 
 LOGGER_FILTER = MinerFilter("testMiner1")
-LOGGER_LEVEL = logging.DEBUG
+LOGGER_LEVEL = logging.INFO
 
 logging.basicConfig(level=LOGGER_LEVEL,
                     format='[%(asctime)s] %(levelname)s - '

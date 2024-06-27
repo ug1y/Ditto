@@ -81,8 +81,8 @@ class NetContainer(Collection):
         if miner_name not in self.network_graph or peer_name not in self.network_graph:
             return False
 
-        self._logger.info("%s: Connect " + str(miner_name) + " and " + str(peer_name) +
-                          " with delay " + str(delay), self.FOR_LOG_NAME)
+        self._logger.info("%s: Connect %s and %s with delay " + str(delay),
+                          self.FOR_LOG_NAME, str(miner_name), str(peer_name))
         self.network_graph.add_edge(miner_name, peer_name)
         self.network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY] = delay
         return True
@@ -97,6 +97,7 @@ class NetContainer(Collection):
         if miner_name not in self.network_graph or peer_name not in self.network_graph:
             return False
 
+        self._logger.info("%s: Disconnect %s and %s", self.FOR_LOG_NAME, str(miner_name), str(peer_name))
         self.network_graph.remove_edge(miner_name, peer_name)
         return True
 

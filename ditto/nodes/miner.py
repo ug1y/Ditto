@@ -198,7 +198,7 @@ class Miner:
         :param block: Block
         :return: bool
         """
-        self._logger.info("%s: Received a new block %d and tries to add it.", self._name, hash(block))
+        self._logger.debug("%s: Received a new block %d and tries to add it.", self._name, hash(block))
 
         if not self._is_valid_block(block):
             return False

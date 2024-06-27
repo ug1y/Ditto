@@ -32,4 +32,4 @@ if __name__ == '__main__':
     m1.connect_peer(m3.get_name(), 5.0)
     m2.mine_block()
 
-    print(repr(net.total_blockdag))
+    print(repr(m1))
