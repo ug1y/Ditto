@@ -60,8 +60,8 @@ class NetOperator(NetContainer):
         :return: bool
         """
         if miner.blockdag.get_graph_type() != self.get_blockdag_type():
-            self._logger.warning("%s: Add miner " + str(miner.get_name()) +
-                                 " failed, blockDAG type mismatch.", self.FOR_LOG_NAME)
+            self._logger.warning("%s: Add miner %s failed, blockDAG type mismatch.",
+                                 self.FOR_LOG_NAME, str(miner.get_name()))
             return
 
         miner_name = miner.get_name()
@@ -69,8 +69,7 @@ class NetOperator(NetContainer):
         self.network_graph.nodes[miner_name][NetOperator._MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY] = hash_rate
         miner.set_network(self)
-        self._logger.info("%s: Add miner " + str(miner_name) + " with hash rate " +
-                          str(hash_rate), self.FOR_LOG_NAME)
+        self._logger.info("%s: Add miner %s with hash rate " + str(hash_rate), self.FOR_LOG_NAME, str(miner_name))
 
     def del_miner(self, miner_name: TypeAlias.MinerName):
         """

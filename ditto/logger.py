@@ -19,10 +19,15 @@ limitations under the License.
 import logging
 
 
-class NetFilter(logging.Filter):
+class NothingFilter(logging.Filter):
     def filter(self, record):
-        if (record.name == 'ditto.network.netOperator' or record.name == 'ditto.network.netContainer'
-                or record.name == 'ditto.blockdag.blockdag') and (record.args[0] == 'network'):
+        return True
+
+
+class NetworkFilter(logging.Filter):
+    def filter(self, record):
+        if (record.name in {'ditto.network.netOperator', 'ditto.network.netContainer', 'ditto.blockdag.blockdag'}) \
+                and (record.args[0] == 'network'):
             return True
         else:
             return False
@@ -42,7 +47,7 @@ class MinerFilter(logging.Filter):
             return False
 
 
-LOGGER_FILTER = MinerFilter("testMiner1")
+LOGGER_FILTER = NothingFilter()
 LOGGER_LEVEL = logging.INFO
 
 logging.basicConfig(level=LOGGER_LEVEL,
