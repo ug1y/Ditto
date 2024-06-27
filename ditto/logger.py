@@ -18,13 +18,40 @@ limitations under the License.
 """
 import logging
 
-LOGGER_LEVEL = logging.INFO
+
+class NetFilter(logging.Filter):
+    def filter(self, record):
+        if (record.name == 'ditto.network.netOperator' or record.name == 'ditto.network.netContainer'
+                or record.name == 'ditto.blockdag.blockdag') and (record.args[0] == 'network'):
+            return True
+        else:
+            return False
+
+
+class MinerFilter(logging.Filter):
+    def __init__(self, miner_name: str = ""):
+        super().__init__()
+        self.miner_name = miner_name
+
+    def filter(self, record):
+        if (record.name == 'ditto.nodes.miner' or record.name == 'ditto.blockdag.blockdag') \
+                and (record.args[0] == self.miner_name):
+            return True
+        else:
+            return False
+
+
+LOGGER_FILTER = MinerFilter("testMiner1")
+LOGGER_LEVEL = logging.DEBUG
 
 logging.basicConfig(level=LOGGER_LEVEL,
-                    format='[%(asctime)s] %(levelname)s - [Module] %(name)s - '
-                           '[Location] %(filename)s:%(lineno)d - [%(funcName)s] %(message)s',
+                    format='[%(asctime)s] %(levelname)s - '
+                           '[Location] %(name)s:%(lineno)d - '
+                           '[%(funcName)s] %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def getLogger(name: str) -> logging.Logger:
-    return logging.getLogger(name)
+    logger = logging.getLogger(name)
+    logger.addFilter(LOGGER_FILTER)
+    return logger

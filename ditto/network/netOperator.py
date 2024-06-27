@@ -16,10 +16,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from typing import Set
+
 import numpy as np
 
 from .. import logger
-from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType
+from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType, BlockType
 from ditto.nodes import Miner
 from .netContainer import NetContainer
 
@@ -57,12 +59,18 @@ class NetOperator(NetContainer):
         :param hash_rate: float
         :return: bool
         """
+        if miner.blockdag.get_graph_type() != self.get_blockdag_type():
+            self._logger.warning("%s: Add miner " + str(miner.get_name()) +
+                                 " failed, blockDAG type mismatch.", self.FOR_LOG_NAME)
+            return
+
         miner_name = miner.get_name()
         self.network_graph.add_node(miner_name)
         self.network_graph.nodes[miner_name][NetOperator._MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY] = hash_rate
         miner.set_network(self)
-        self._logger.info("Add miner " + str(miner_name) + " with hash rate " + str(hash_rate))
+        self._logger.info("%s: Add miner " + str(miner_name) + " with hash rate " +
+                          str(hash_rate), self.FOR_LOG_NAME)
 
     def del_miner(self, miner_name: TypeAlias.MinerName):
         """
@@ -85,7 +93,8 @@ class NetOperator(NetContainer):
         sender = self[source_miner]
         receiver = self[target_miner]
         if hash(block) in sender:
-            self._logger.info("Sending block " + str(hash(block)) + " from " + str(source_miner) + " to " + str(target_miner))
+            self._logger.info("%s: Sending block " + str(hash(block)) + " from " + str(source_miner) +
+                              " to " + str(target_miner), self.FOR_LOG_NAME)
             # TODO: 采用模拟器模拟网络延迟
             receiver.add_block(block)
             receiver.sync_block()
@@ -99,7 +108,8 @@ class NetOperator(NetContainer):
         if hash(block) not in self.total_blockdag:
             self.total_blockdag.add_block(block)  # Every new mined block will be added to the total blockDAG.
 
-        self._logger.info("Miner " + str(source_miner) + " broadcasts block " + str(hash(block)) + " to network")
+        self._logger.info("%s: Miner " + str(source_miner) + " broadcasts block " +
+                          str(hash(block)), self.FOR_LOG_NAME)
         peers = self.get_neighbors(source_miner)
         for peer_name in peers:
             self.send_block(source_miner, peer_name, block)
@@ -110,7 +120,7 @@ class NetOperator(NetContainer):
         :param target_miner: TypeAlias.MinerName
         :param bid: TypeAlias.BlockID
         """
-        self._logger.info("Miner " + str(target_miner) + " fetches block " + str(bid) + " from network")
+        self._logger.info("%s: Miner " + str(target_miner) + " fetches block " + str(bid), self.FOR_LOG_NAME)
         for peer_name in self.get_neighbors(target_miner):
             self.send_block(peer_name, target_miner, self.total_blockdag[bid])
 
@@ -140,3 +150,22 @@ class NetOperator(NetContainer):
 
     def set_simulator(self, simulator):
         self._simulator = simulator
+
+    def init_network(self, genesis_block_num: int = 1) -> Set[Block]:
+        """
+        Initialize the network, and return the genesis block.
+        :param genesis_block_num: int
+        :return: Set[Block]
+        """
+        if (self.get_blockdag_type() == DAGType.DIVERGENCE or
+            self.get_blockdag_type() == DAGType.CONVERGENCE) and genesis_block_num != 1:
+            self._logger.warning("%s: " + str(self.get_blockdag_type().name) +
+                                 "blockDAG is allowed to have only one genesis block.", self.FOR_LOG_NAME)
+            return set()
+
+        genesis_blocks = set()
+        for i in range(genesis_block_num):
+            block = Block(bid=self.get_next_block_id(), btype=BlockType.GENESIS, height=1)
+            genesis_blocks.add(block)
+            self.total_blockdag.add_block(block)
+        return genesis_blocks

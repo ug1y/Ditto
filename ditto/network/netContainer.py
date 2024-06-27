@@ -37,6 +37,8 @@ class NetContainer(Collection):
     # Dictionary key for the delay time.
     _DELAY_TIME_KEY = "delay_time"
 
+    FOR_LOG_NAME = "network"
+
     def __init__(self, propagation_delay_parameter: float = 1.0):
         self._inc_block_id: TypeAlias.BlockID = 0  # The global block id in the network.
         self.network_graph = nx.Graph()  # The network graph.
@@ -79,7 +81,8 @@ class NetContainer(Collection):
         if miner_name not in self.network_graph or peer_name not in self.network_graph:
             return False
 
-        self._logger.info("Connect " + str(miner_name) + " and " + str(peer_name) + " with delay " + str(delay))
+        self._logger.info("%s: Connect " + str(miner_name) + " and " + str(peer_name) +
+                          " with delay " + str(delay), self.FOR_LOG_NAME)
         self.network_graph.add_edge(miner_name, peer_name)
         self.network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY] = delay
         return True

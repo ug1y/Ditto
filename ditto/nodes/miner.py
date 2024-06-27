@@ -141,7 +141,7 @@ class Miner:
         :return: set[MinerName]
         """
         if self._network is None:
-            self._logger.warning("Miner " + str(self._name) + " does not have network handler.")
+            self._logger.warning("%s: Network handler is not set.", self._name)
             return set()
 
         return self._network.get_neighbors(self._name)
@@ -152,13 +152,13 @@ class Miner:
         :return: Block
         """
         if self._network is None:
-            self._logger.warning("Miner " + str(self._name) + " does not have network handler.")
+            self._logger.warning("%s: Network handler is not set.", self._name)
             return None
         if self._genesis_block == 0:
-            self._logger.warning("Miner " + str(self._name) + " should set a genesis block before mining.")
+            self._logger.warning("%s: genesis block should be set before mining.", self._name)
             return None
         if self._refer_handler is None:
-            self._logger.warning("Miner " + str(self._name) + " does not have reference handler.")
+            self._logger.warning("%s: Reference handler is not set.", self._name)
             return None
 
         # Use the reference handler to select the pref and crefs.
@@ -171,7 +171,7 @@ class Miner:
 
         # TODO: 从交易池中拿交易来构建新区块
 
-        self._logger.info("Miner " + str(self._name) + " mined a new block " + str(hash(block)))
+        self._logger.info("%s: Mined a new block %d.", self._name, hash(block))
 
         if not self.add_block(block):  # The block will be broadcast by _basic_block_add.
             return None
@@ -198,6 +198,8 @@ class Miner:
         :param block: Block
         :return: bool
         """
+        self._logger.info("%s: Received a new block %d and tries to add it.", self._name, hash(block))
+
         if not self._is_valid_block(block):
             return False
 
@@ -253,10 +255,11 @@ class Miner:
         :return: bool
         """
         if self._consus_handler is None:
-            self._logger.warning("Miner " + str(self._name) + " does not have consensus handler.")
+            self._logger.warning("%s: Consensus handler is not set.", self._name)
             return False
 
         if self.blockdag.add_block(block):
+            self._logger.info("%s: Successfully added the block %d and broadcasts it.", self._name, hash(block))
             self._network.broadcast_block(self._name, block)  # broadcast the block to neighbors.
             # TODO: 此处可以开始执行共识判定了
             return True
@@ -307,8 +310,9 @@ class Miner:
         :return: bool
         """
         if self._network is None:
-            self._logger.warning("Miner " + str(self._name) + " does not have network handler.")
+            self._logger.warning("%s: Network handler is not set.", self._name)
             return False
+        self._logger.info("%s: Connects to %s with delay %.1f.", self._name, peer_name, delay)
         return self._network.connect_peer(self._name, peer_name, delay)
 
     def remove_peer(self, peer_name: TypeAlias.MinerName) -> bool:
@@ -318,6 +322,7 @@ class Miner:
         :return: bool
         """
         if self._network is None:
-            self._logger.warning("Miner " + str(self._name) + " does not have network handler.")
+            self._logger.warning("%s: Network handler is not set.", self._name)
             return False
+        self._logger.info("%s: Disconnects with %s.", self._name, peer_name)
         return self._network.remove_peer(self._name, peer_name)
