@@ -50,8 +50,8 @@ class Miner:
 
         self._logger = logger.getLogger(__name__)  # Logger for this class.
 
-        self._refer_handler: ReferIface = None
-        self._consus_handler: ConsusIface = None
+        self.refer_handler: ReferIface = None
+        self.consus_handler: ConsusIface = None
 
     def __contains__(self, bid: TypeAlias.BlockID) -> bool:
         return bid in self.blockdag
@@ -88,14 +88,14 @@ class Miner:
         Set the reference handler.
         :param refer_class: type[ReferIface]
         """
-        self._refer_handler = refer_class(self.blockdag)
+        self.refer_handler = refer_class(self.blockdag)
 
     def set_consus_handler(self, consus_class: type[ConsusIface]):
         """
         Set the consensus handler.
         :param consus_class: type[ConsusIface]
         """
-        self._consus_handler = consus_class(self.blockdag)
+        self.consus_handler = consus_class(self.blockdag)
 
     def pre_launch(self, genesis_block: Block,
                    refer_class: type[ReferIface],
@@ -157,7 +157,7 @@ class Miner:
         if self._genesis_block == 0:
             self._logger.warning("%s: genesis block should be set before mining.", self._name)
             return None
-        if self._refer_handler is None:
+        if self.refer_handler is None:
             self._logger.warning("%s: Reference handler is not set.", self._name)
             return None
 
@@ -165,9 +165,9 @@ class Miner:
         block = Block(bid=self._network.get_next_block_id(),
                       btype=BlockType.MINED,
                       miner=self._name,
-                      pref=self._refer_handler.get_virtual_pivot_ref(),
-                      crefs=self._refer_handler.get_virtual_common_refs(),
-                      height=self._refer_handler.get_virtual_new_height())
+                      pref=self.refer_handler.get_virtual_pivot_ref(),
+                      crefs=self.refer_handler.get_virtual_common_refs(),
+                      height=self.refer_handler.get_virtual_new_height())
 
         # TODO: 从交易池中拿交易来构建新区块
 
@@ -254,7 +254,7 @@ class Miner:
         :param block: Block
         :return: bool
         """
-        if self._consus_handler is None:
+        if self.consus_handler is None:
             self._logger.warning("%s: Consensus handler is not set.", self._name)
             return False
 

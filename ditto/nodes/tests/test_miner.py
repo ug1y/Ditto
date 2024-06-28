@@ -14,8 +14,8 @@ class TestMiner:
         assert m._network is None
         assert len(m._mined_blocks) == 0
         assert len(m._block_queue) == 0
-        assert m._refer_handler is None
-        assert m._consus_handler is None
+        assert m.refer_handler is None
+        assert m.consus_handler is None
 
     def test_mine_block(self):
         m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
