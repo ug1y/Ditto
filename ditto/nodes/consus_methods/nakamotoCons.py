@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Copyright 2024 Hao Yin
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+from typing import List, Set
+
+from ditto.blockdag import TypeAlias, BlockDAG
+from ..consusIface import ConsusIface, StatusType
+
+
+def _min_hash_value(bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
+    return min(bids)
+
+
+class NakamotoCons(ConsusIface):
+    """
+    In nakamoto consensus, blocks with depth of 6 can be safely decided.
+    """
+    def __init__(self, blockdag: BlockDAG):
+        super().__init__(blockdag)
+        self._blocks_marked = dict()
+        self._sorted_blocks = list()
+        self._height_pointer = 0
+        self._safe_depth = 3
+
+    def get_block_status(self, bid) -> StatusType:
+        if len(self.blockdag.get_column_blocks()) > self._height_pointer:
+            self._execute_consensus()
+
+        if bid not in self.blockdag:
+            return StatusType.INVALID
+        elif bid not in self._blocks_marked:
+            return StatusType.UNCLEAR
+        else:
+            return self._blocks_marked[bid]
+
+    def get_decided_blocks(self) -> Set[TypeAlias.BlockID]:
+        if len(self.blockdag.get_column_blocks()) > self._height_pointer:
+            self._execute_consensus()
+
+        decided_bids = set()
+        for bid, status in self._blocks_marked.items():
+            if status == StatusType.DECIDED:
+                decided_bids.add(bid)
+        return decided_bids
+
+    def sort_finished_blocks(self, filter_decided: bool = False) -> List[TypeAlias.BlockID]:
+        if len(self.blockdag.get_column_blocks()) > self._height_pointer:
+            self._execute_consensus()
+
+        if filter_decided:
+            return [bid for bid in self._sorted_blocks if self._blocks_marked[bid] == StatusType.DECIDED]
+        else:
+            return self._sorted_blocks.copy()
+
+    def _max_hash_power(self, bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
+        max_height = len(self.blockdag.get_column_blocks())
+        sel_bids = set()
+        for bid in bids:
+            if self.blockdag[bid].height == max_height:
+                sel_bids.add(bid)
+        return min(sel_bids)
+
+    def _execute_consensus(self):
+        old_height_pointer = self._height_pointer
+        self._height_pointer = len(self.blockdag.get_column_blocks())  # Update the height pointer.
+
+        cur_height = old_height_pointer - self._safe_depth
+        tar_height = self._height_pointer - self._safe_depth
+        if tar_height < 0:  # Not reach the safe depth.
+            return
+
+        potential_bid = self._max_hash_power(self.blockdag.get_leaves_blocks())
+        pivot_chain = self.blockdag.get_pivot_chain(potential_bid)
+
+        for h in range(max(0, cur_height), tar_height):
+            col_bids = self.blockdag.get_column_blocks(h + 1)
+            sor_bids = sorted(col_bids)  # Sort all blocks by hash value.
+            for bid in sor_bids:  # Mark the decided and excluded blocks.
+                if bid in pivot_chain:
+                    self._blocks_marked[bid] = StatusType.DECIDED
+                else:
+                    self._blocks_marked[bid] = StatusType.EXCLUDE
+            self._sorted_blocks.extend(sor_bids)

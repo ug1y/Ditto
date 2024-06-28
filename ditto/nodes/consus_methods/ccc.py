@@ -32,5 +32,5 @@ class CCC(ConsusIface):
     def get_decided_blocks(self) -> Set[TypeAlias.BlockID]:
         pass
 
-    def sort_finished_blocks(self, filter_decided: bool = True) -> List[TypeAlias.BlockID]:
+    def sort_finished_blocks(self, filter_decided: bool = False) -> List[TypeAlias.BlockID]:
         pass

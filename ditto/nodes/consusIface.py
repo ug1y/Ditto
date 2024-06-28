@@ -60,7 +60,7 @@ class ConsusIface(ABC):
         pass
 
     @abstractmethod
-    def sort_finished_blocks(self, filter_decided: bool = True) -> List[TypeAlias.BlockID]:
+    def sort_finished_blocks(self, filter_decided: bool = False) -> List[TypeAlias.BlockID]:
         """
         Sort the finished blocks filtering decided status or containing excluded status.
         :return: List[TypeAlias.BlockID]

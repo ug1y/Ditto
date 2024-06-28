@@ -30,7 +30,7 @@ class SimpleRef(ReferIface):
     def __init__(self, blockdag: BlockDAG):
         super().__init__(blockdag)
         if self.blockdag.get_graph_type() != DAGType.DIVERGENCE:
-            raise ValueError("Only for divergence blockDAG.")
+            raise ValueError("The simple reference strategy is only for divergence blockDAG.")
 
     def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
         return None

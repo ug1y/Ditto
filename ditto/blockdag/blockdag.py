@@ -79,8 +79,7 @@ class BlockDAG(Collection):
         return str(self._G)
 
     def __repr__(self):
-        return "BlockDAG(G=" + repr(self._G) + \
-            ", type=" + repr(self._gtype) + \
+        return "BlockDAG(type=" + repr(self._gtype) + \
             ", leaves=" + repr(self._leaves) + \
             ", cluster=" + repr(self._column) + ")"
 
