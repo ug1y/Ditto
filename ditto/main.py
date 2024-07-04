@@ -50,6 +50,7 @@ def example1():
 
 
 if __name__ == '__main__':
+    # example1()
     sim = Simulator(net_factory=PeerNet,
                     blockdag_type=DAGType.CONVERGENCE,
                     number_of_miners=5,
