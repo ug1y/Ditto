@@ -13,6 +13,7 @@ setup(
     install_requires=[
         'networkx==3.3.0',
         'numpy==1.26.0',
+        'simpy==4.1.0',
     ],
     classifiers=[
         'Development Status :: 1 - Planning',

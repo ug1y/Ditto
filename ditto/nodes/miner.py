@@ -37,7 +37,7 @@ class Miner:
     # Dictionary key for the block's data.
     _QUEUE_BLOCK_DATA_KEY = "queue_block_data"
 
-    def __init__(self, name: TypeAlias.MinerName, blockdag: BlockDAG, max_peer_num: float):
+    def __init__(self, name: TypeAlias.MinerName, blockdag: BlockDAG, max_peer_num: int):
         self._name = name  # The unique name of the miner, used to identify it.
         self.blockdag = blockdag  # The local view of blockDAG hold by the miner.
         self.max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
