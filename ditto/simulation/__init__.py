@@ -1,2 +1,2 @@
-from .simulator import Simulator
 from .netSimulation import NetSimulation
+from .simulator import Simulator

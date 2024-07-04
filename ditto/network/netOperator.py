@@ -21,8 +21,9 @@ from typing import Set
 import numpy as np
 
 from .. import logger
-from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType, BlockType
+from ditto.simulation import NetSimulation
 from ditto.nodes import Miner
+from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType, BlockType
 
 from .netContainer import NetContainer
 
@@ -46,7 +47,7 @@ class NetOperator(NetContainer):
 
         self.block_creation_rate = block_creation_rate  # The block creation rate of the network.
         self.total_blockdag = total_blockdag  # The total blockDAG of the network.
-        self._simulator = None  # The simulator to simulate network delay.
+        self._simulator: NetSimulation = None  # The simulator to simulate network delay.
 
         self._logger = logger.getLogger(__name__)  # Logger for this class.
 

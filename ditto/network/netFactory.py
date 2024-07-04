@@ -16,9 +16,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from ditto.blockdag import DAGType, BlockDAG
 from ditto.network import NetOperator
 from ditto.nodes import Miner, ReferIface, ConsusIface
+from ditto.blockdag import DAGType, BlockDAG
 
 
 def PeerNet(blockdag_type: DAGType, number_of_miners: int,

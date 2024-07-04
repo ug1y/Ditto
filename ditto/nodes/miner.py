@@ -25,6 +25,7 @@ import numpy as np
 from .. import logger
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
+
 from .referIface import ReferIface
 from .consusIface import ConsusIface
 

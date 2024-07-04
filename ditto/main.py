@@ -1,8 +1,7 @@
-from ditto.blockdag import BlockDAG, DAGType
+from ditto.simulation import Simulator
 from ditto.network import NetOperator, PeerNet
-from ditto.nodes import Miner
-from ditto.nodes import ChainRef, NakamotoCons
-from ditto.simulator import Simulator
+from ditto.nodes import Miner, ChainRef, NakamotoCons
+from ditto.blockdag import BlockDAG, DAGType
 
 
 def example1():

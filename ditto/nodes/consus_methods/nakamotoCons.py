@@ -19,6 +19,7 @@ limitations under the License.
 from typing import List, Set
 
 from ditto.blockdag import TypeAlias, BlockDAG
+
 from ..consusIface import ConsusIface, StatusType
 
 

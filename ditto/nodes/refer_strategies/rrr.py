@@ -19,6 +19,7 @@ limitations under the License.
 from typing import Set
 
 from ditto.blockdag import TypeAlias
+
 from ..referIface import ReferIface
 
 

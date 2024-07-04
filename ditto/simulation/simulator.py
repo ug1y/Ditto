@@ -19,10 +19,11 @@ limitations under the License.
 import simpy as sp
 
 from .. import logger
-from .netSimulation import NetSimulation
 from ditto.network import NetOperator
-from ditto.blockdag import DAGType
 from ditto.nodes import ReferIface, ConsusIface
+from ditto.blockdag import DAGType
+
+from .netSimulation import NetSimulation
 
 
 class Simulator(NetSimulation):
@@ -43,8 +44,9 @@ class Simulator(NetSimulation):
         """
         self._env = sp.RealtimeEnvironment()
 
-        self._network = net_factory(blockdag_type, number_of_miners, reference_class, consensus_class,
-                                    block_creation_rate, propagation_delay_parameter)
+        self._network: NetOperator = net_factory(blockdag_type, number_of_miners,
+                                                 reference_class, consensus_class,
+                                                 block_creation_rate, propagation_delay_parameter)
 
         self._startup: bool = False  # Mark if running a simulation instance.
         self._control: bool = False  # Control the stop and resume of the simulation.
