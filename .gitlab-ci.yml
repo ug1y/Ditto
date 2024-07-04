@@ -1,4 +1,4 @@
-image: python:3.10
+image: code.yzzzz.com.cn:5000/python:3.10
 
 stages:
   - test
