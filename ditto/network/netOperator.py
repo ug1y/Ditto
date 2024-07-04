@@ -23,6 +23,7 @@ import numpy as np
 from .. import logger
 from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType, BlockType
 from ditto.nodes import Miner
+
 from .netContainer import NetContainer
 
 
@@ -51,6 +52,11 @@ class NetOperator(NetContainer):
 
     def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
         return self.network_graph.nodes[miner][NetOperator._MINER_DATA_KEY]
+
+    def __repr__(self):
+        return "NetOperator(inc_block_id=" + repr(self._inc_block_id) + \
+            ", network_graph=" + repr(self.network_graph) + \
+            ", total_blockdag= " + repr(self.total_blockdag) + ")"
 
     def add_miner(self, miner: Miner, hash_rate: float = 5.0):
         """
@@ -156,8 +162,7 @@ class NetOperator(NetContainer):
         :param genesis_block_num: int
         :return: Set[Block]
         """
-        if (self.get_blockdag_type() == DAGType.DIVERGENCE or
-            self.get_blockdag_type() == DAGType.CONVERGENCE) and genesis_block_num != 1:
+        if self.get_blockdag_type() in {DAGType.DIVERGENCE, DAGType.CONVERGENCE} and genesis_block_num != 1:
             self._logger.warning("%s: " + str(self.get_blockdag_type().name) +
                                  "blockDAG is allowed to have only one genesis block.", self.FOR_LOG_NAME)
             return set()

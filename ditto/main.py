@@ -1,9 +1,11 @@
 from ditto.blockdag import BlockDAG, DAGType
-from ditto.network import NetOperator
+from ditto.network import NetOperator, PeerNet
 from ditto.nodes import Miner
 from ditto.nodes import ChainRef, NakamotoCons
+from ditto.simulator import Simulator
 
-if __name__ == '__main__':
+
+def example1():
     net = NetOperator(BlockDAG(DAGType.CONVERGENCE))
     b1 = net.init_network().pop()
 
@@ -47,4 +49,14 @@ if __name__ == '__main__':
     print("sort: " + str(m3.consus_handler.sort_finished_blocks()))
     print("decided: " + str(m3.consus_handler.get_decided_blocks()))
 
+
+if __name__ == '__main__':
+    sim = Simulator(net_factory=PeerNet,
+                    blockdag_type=DAGType.CONVERGENCE,
+                    number_of_miners=5,
+                    reference_class=ChainRef,
+                    consensus_class=NakamotoCons,
+                    block_creation_rate=60.0,
+                    propagation_delay_parameter=30.0)
+    print(sim.get_network().network_graph.nodes)
 
