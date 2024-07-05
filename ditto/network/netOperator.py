@@ -59,7 +59,7 @@ class NetOperator(NetContainer):
             ", network_graph=" + repr(self.network_graph) + \
             ", total_blockdag= " + repr(self.total_blockdag) + ")"
 
-    def add_miner(self, miner: Miner, hash_rate: float = 5.0):
+    def add_miner(self, miner: Miner, hash_rate: float = 10.0):
         """
         Add a miner into the network.
         :param miner: Miner
@@ -101,9 +101,13 @@ class NetOperator(NetContainer):
         if hash(block) in sender:
             self._logger.info("%s: Sending block " + str(hash(block)) + " from %s to %s.",
                               self.FOR_LOG_NAME, str(source_miner), str(target_miner))
-            # TODO: 采用模拟器模拟网络延迟
-            receiver.add_block(block)
-            receiver.sync_block()
+            # Use the simulator to simulate network delay.
+            if self._simulator is not None:
+                self._simulator.send_block_with_delay(source_miner, target_miner, block,
+                                                      self.get_delay(source_miner, target_miner))
+            else:
+                receiver.add_block(block)
+                receiver.sync_block()
 
     def broadcast_block(self, source_miner: TypeAlias.MinerName, block: Block):
         """

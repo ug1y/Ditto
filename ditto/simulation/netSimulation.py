@@ -18,6 +18,8 @@ limitations under the License.
 """
 from abc import ABC, abstractmethod
 
+from ditto.blockdag import Block, TypeAlias
+
 
 class NetSimulation(ABC):
     """
@@ -25,7 +27,8 @@ class NetSimulation(ABC):
     """
 
     @abstractmethod
-    def send_block_with_delay(self):
+    def send_block_with_delay(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName,
+                              block: Block, delay: float):
         """
         Simulate network delay to send a block between miners.
         """

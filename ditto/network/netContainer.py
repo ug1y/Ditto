@@ -136,7 +136,7 @@ class NetContainer(Collection):
         :return: float
         """
         if self.network_graph.has_edge(miner_name, peer_name):
-            return self.network_graph[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY]
+            return self.network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY]
 
         return np.random.poisson(self.propagation_delay_parameter)
 
