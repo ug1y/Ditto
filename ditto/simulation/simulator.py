@@ -46,7 +46,7 @@ class Simulator(NetSimulation):
         """
         self._env = sp.Environment(initial_time=1)
         self._network: NetOperator
-        self._counter: int
+        self._counter: int  # Use for test simpy function.
 
         # Record the initial variables.
         self.__net_factory = net_factory
