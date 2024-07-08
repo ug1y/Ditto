@@ -1,5 +1,3 @@
-from time import sleep
-
 from ditto.simulation import Simulator
 from ditto.network import NetOperator, PeerNet
 from ditto.nodes import Miner, ChainRef, NakamotoCons
@@ -53,17 +51,14 @@ def example1():
 
 if __name__ == '__main__':
     # example1()
-    sim = Simulator(net_factory=PeerNet,
-                    blockdag_type=DAGType.CONVERGENCE,
-                    number_of_miners=5,
-                    reference_class=ChainRef,
-                    consensus_class=NakamotoCons,
-                    block_creation_rate=10.0,
-                    propagation_delay_parameter=30.0)
-    print(sim.get_network().network_graph.nodes)
-    sim.start(100)
+    net = PeerNet(blockdag_type=DAGType.CONVERGENCE,
+                  number_of_miners=5,
+                  reference_class=ChainRef,
+                  consensus_class=NakamotoCons,
+                  block_creation_rate=10.0,
+                  propagation_delay_parameter=30.0)
+    sim = Simulator(net)
+
+    sim.start(50)
+    sim.resume(50)
     sim.stop()
-    print(repr(sim.get_network().total_blockdag))
-
-
-

@@ -33,37 +33,25 @@ class Simulator(NetSimulation):
     Simulate the blockDAG running.
     """
 
-    def __init__(self,
-                 net_factory,
-                 blockdag_type: DAGType,
-                 number_of_miners: int,
-                 reference_class: type[ReferIface],
-                 consensus_class: type[ConsusIface],
-                 block_creation_rate: float,
-                 propagation_delay_parameter: float):
+    def __init__(self, network: NetOperator, factor: float = 0):
         """
         Initialize the simulator and network environment.
         """
-        self._env = sp.Environment(initial_time=1)
-        self._network: NetOperator
-        self._counter: int  # Use for test simpy function.
+        self._env = sp.RealtimeEnvironment(initial_time=1, factor=factor, strict=False) \
+            if factor > 0 else sp.Environment(initial_time=1)
+        self._network = network
+        self._network.set_simulator(self)
 
-        # Record the initial variables.
-        self.__net_factory = net_factory
-        self.__blockdag_type = blockdag_type
-        self.__number_of_miners = number_of_miners
-        self.__reference_class = reference_class
-        self.__consensus_class = consensus_class
-        self.__block_creation_rate = block_creation_rate
-        self.__propagation_delay_parameter = propagation_delay_parameter
+        self._started: bool = False  # Mark if started a simulation instance.
+        self._stopped: sp.Event = self._env.event()  # Mark if stopped the simulation instance.
+        self._paused: sp.Event = self._env.event()  # Control the stop and resume of the simulation.
 
-        self._process_init()
-
-        self._stopped: sp.Event = self._env.event().succeed()  # Mark if running a simulation instance.
-        self._paused: sp.Event = self._env.event().succeed()  # Control the stop and resume of the simulation.
-        self._factor: float = 0  # The factor to adjust the simulation speed.
+        self._correct = -1  # The offset of the simulation steps.
+        self._factor = factor  # The factor to adjust the simulation speed.
 
         self._logger = logger.getLogger(__name__)  # Logger for this class.
+
+        self._counter = 0  # Use for test simulation.
 
     def set_factor(self, factor: float):
         """
@@ -71,22 +59,15 @@ class Simulator(NetSimulation):
         :param factor: float
         """
         print("set the factor to " + str(factor) + " at " + str(self._env.now))
+        self._correct = -1
         self._factor = factor
-        last_time = self._env.now + factor
-        if factor > 0:
-            self._env = sp.RealtimeEnvironment(initial_time=last_time, factor=factor, strict=False)
-        else:
-            self._env = sp.Environment(initial_time=last_time)
-
-        self._process_load()
-        if self._stopped.triggered:
-            self._stopped = self._env.event().succeed()
-        else:
-            self._stopped = self._env.event()
-        if self._paused.triggered:
-            self._paused = self._env.event().succeed()
-        else:
-            self._paused = self._env.event()
+        last_time = self._env.now + factor if self._paused.triggered else self._env.now
+        self._env = sp.RealtimeEnvironment(initial_time=last_time, factor=factor, strict=False) \
+            if factor > 0 else sp.Environment(initial_time=last_time)
+        self._stopped = self._env.event().succeed() if self._stopped.triggered else self._env.event()
+        self._paused = self._env.event().succeed() if self._paused.triggered else self._env.event()
+        if self._started:
+            self._process_load()
 
     def get_network(self) -> NetOperator:
         """
@@ -95,12 +76,6 @@ class Simulator(NetSimulation):
         """
         return self._network
 
-    def _network_running_init(self):
-        self._network = self.__net_factory(self.__blockdag_type, self.__number_of_miners,
-                                           self.__reference_class, self.__consensus_class,
-                                           self.__block_creation_rate, self.__propagation_delay_parameter)
-        self._network.set_simulator(self)
-
     def _network_running_process(self):
         """
         Running the network, generating blocks at a poisson rate.
@@ -108,26 +83,19 @@ class Simulator(NetSimulation):
         while True:
             miner = self._network.get_random_miner()
             block = miner.mine_block()
-            dd = np.random.poisson(self._network.block_creation_rate) * (self._factor if self._factor > 0 else 1.0)
-            print(self._env.now, block, dd)
-            yield self._env.timeout(dd)
-
-    def _counter_init(self):
-        self._counter = 0
+            next_mining_wait = np.random.poisson(self._network.block_creation_rate) * (self._factor if self._factor > 0 else 1)
+            print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
+            yield self._env.timeout(next_mining_wait)
 
     def _counter_process(self):
         while True:
             self._counter += 1
             print(self._env.now, self._counter)
-            # if self._env.now == 10:
-            #     self.pause()
-            # if self._env.now == 20:
-            #     self.stop()
-            yield self._env.timeout(1 * (self._factor if self._factor > 0 else 1.0))
-
-    def _process_init(self):
-        # self._counter_init()
-        self._network_running_init()
+            if self._env.now == 5:
+                self.pause()
+            if self._env.now == 20:
+                self.stop()
+            yield self._env.timeout(1 * (self._factor if self._factor > 0 else 1))
 
     def _process_load(self):
         # self._env.process(self._counter_process())
@@ -135,25 +103,29 @@ class Simulator(NetSimulation):
 
     def _run_simulation(self, steps: int):
         self._env.run(until=sp.events.AnyOf(self._env, [
-            self._env.timeout(steps * (self._factor if self._factor > 0 else 1.0)),
+            self._env.timeout((steps + self._correct) * (self._factor if self._factor > 0 else 1)),
             self._paused, self._stopped
         ]))
+
+        if not self._stopped.triggered:
+            self.pause()
 
     def start(self, steps: int):
         """
         Start the simulation, only execute once until stop.
         """
         if self._stopped.triggered:
-            # Reset the parameters.
-            self._process_init()
+            print("the simulation is stopped")
+            return
+
+        if not self._started:
+            # Load process.
             self._process_load()
 
-            self._stopped = self._env.event()  # A new instance is initiated.
-            self._paused = self._env.event()
-            self._factor = 0
-
             print("start a simulation")
+            self._started = True
             self._run_simulation(steps)
+            self._correct = 0
         else:
             print("the simulation is already running")
 
@@ -161,6 +133,9 @@ class Simulator(NetSimulation):
         """
         Pause the simulation, allow to change some parameters.
         """
+        if not self._started:
+            print("the simulation is not started")
+            return
         if self._stopped.triggered:
             print("the simulation is stopped")
             return
@@ -175,6 +150,9 @@ class Simulator(NetSimulation):
         """
         Resume the simulation, disable any changes when running.
         """
+        if not self._started:
+            print("the simulation is not started")
+            return
         if self._stopped.triggered:
             print("the simulation is stopped")
             return
@@ -183,6 +161,7 @@ class Simulator(NetSimulation):
             print("resume the simulation from " + str(self._env.now))
             self._paused = self._env.event()
             self._run_simulation(steps)
+            self._correct = 0
         else:
             print("the simulation does not need to resume")
 
@@ -191,10 +170,11 @@ class Simulator(NetSimulation):
         Stop the simulation, reset all history data and wait for starting again.
         """
         if not self._stopped.triggered:
-            self._stopped.succeed()
-            self._env = sp.Environment(initial_time=1)
             print("stop the simulation")
-            # TODO: 此处输出模拟结果
+            self._stopped.succeed()
+            # Output the result
+            print("network:", str(self._network.network_graph.nodes))
+            print("blockdag:", repr(self._network.total_blockdag))
 
     def send_block_with_delay(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName,
                               block: Block, delay: float):
