@@ -22,8 +22,7 @@ from simpy.util import start_delayed
 
 from .. import logger
 from ditto.network import NetOperator
-from ditto.nodes import ReferIface, ConsusIface
-from ditto.blockdag import DAGType, TypeAlias, Block
+from ditto.blockdag import TypeAlias, Block
 
 from .netSimulation import NetSimulation
 

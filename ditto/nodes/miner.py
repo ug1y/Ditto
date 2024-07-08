@@ -191,7 +191,9 @@ class Miner:
 
         for missing_block in missing_blocks:
             if self._block_queue.nodes[missing_block][Miner._QUEUE_BLOCK_DATA_KEY] is None:  # Avoid duplicated fetch.
-                self._network.fetch_block(self._name, missing_block)  # Fetch the missing parent from network.
+                # Fetch the missing parent from network.
+                # self._network.fetch_block(self._name, missing_block)
+                self.fetch_block(missing_block)
 
     def add_block(self, block: Block) -> bool:
         """
@@ -238,7 +240,6 @@ class Miner:
             if parent_bid not in self.blockdag:
                 missing_parents = True
                 if parent_bid not in self._block_queue:
-                    # self._network.fetch_block(self._name, parent_bid)  # Fetch the missing parent from network.
                     self._block_queue.add_node(parent_bid)
                     self._block_queue.nodes[parent_bid][Miner._QUEUE_BLOCK_DATA_KEY] = None
                 self._block_queue.add_edge(block.bid, parent_bid)
@@ -261,7 +262,9 @@ class Miner:
 
         if self.blockdag.add_block(block):
             self._logger.info("%s: Successfully added the block %d and broadcasts it.", self._name, hash(block))
-            self._network.broadcast_block(self._name, block)  # broadcast the block to neighbors.
+            # broadcast the block to neighbors.
+            # self._network.broadcast_block(self._name, block)
+            self.broadcast_block(block)
             # TODO: 此处可以开始执行共识判定了
             return True
         return False
@@ -327,3 +330,37 @@ class Miner:
             return False
         self._logger.info("%s: Disconnects with %s.", self._name, peer_name)
         return self._network.remove_peer(self._name, peer_name)
+
+    def send_block(self, target_miner: TypeAlias.MinerName, block: Block):
+        """
+        Wrap the send_block method in the network handler.
+        :param target_miner: TypeAlias.MinerName
+        :param block: Block
+        :return: bool
+        """
+        if self._network is None:
+            self._logger.warning("%s: Network handler is not set.", self._name)
+            return
+        self._network.send_block(self._name, target_miner, block)
+
+    def broadcast_block(self, block: Block):
+        """
+        Wrap the broadcast_block method in the network handler.
+        :param block: Block
+        :return: bool
+        """
+        if self._network is None:
+            self._logger.warning("%s: Network handler is not set.", self._name)
+            return
+        self._network.broadcast_block(self._name, block)
+
+    def fetch_block(self, bid: TypeAlias.BlockID):
+        """
+        Wrap the fetch_block method in the network handler.
+        :param bid: TypeAlias.BlockID
+        :return: bool
+        """
+        if self._network is None:
+            self._logger.warning("%s: Network handler is not set.", self._name)
+            return
+        self._network.fetch_block(self._name, bid)
