@@ -62,3 +62,6 @@ if __name__ == '__main__':
     sim.start(50)
     sim.resume(50)
     sim.stop()
+
+    for leaf in net.total_blockdag.get_leaves_blocks():
+        print(net.total_blockdag.get_pivot_chain(leaf))
