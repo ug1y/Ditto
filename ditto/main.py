@@ -49,8 +49,7 @@ def example1():
     print("decided: " + str(m3.consus_handler.get_decided_blocks()))
 
 
-if __name__ == '__main__':
-    # example1()
+def run_simulation():
     net = PeerNet(blockdag_type=DAGType.CONVERGENCE,
                   number_of_miners=5,
                   reference_class=ChainRef,
@@ -65,3 +64,13 @@ if __name__ == '__main__':
 
     for leaf in net.total_blockdag.get_leaves_blocks():
         print(net.total_blockdag.get_pivot_chain(leaf))
+
+
+if __name__ == '__main__':
+    from bokeh.server.server import Server
+    from interaction.myapp import myapp
+    print('Opening Bokeh application on http://localhost:7006/')
+    server = Server({'/': myapp}, port=7006)
+    server.start()
+    server.io_loop.add_callback(server.show, "/")
+    server.io_loop.start()
