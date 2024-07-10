@@ -1,3 +1,5 @@
+from .interaction import myapp
+
 from .simulation import NetSimulation, Simulator
 
 from .network import NetContainer, NetOperator

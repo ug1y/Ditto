@@ -68,7 +68,7 @@ def run_simulation():
 
 if __name__ == '__main__':
     from bokeh.server.server import Server
-    from interaction.myapp import myapp
+    from ditto.interaction.myapp import myapp
     print('Opening Bokeh application on http://localhost:7006/')
     server = Server({'/': myapp}, port=7006)
     server.start()
