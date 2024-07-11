@@ -3,8 +3,7 @@ from ditto.network import NetOperator, PeerNet
 from ditto.nodes import Miner, ChainRef, NakamotoCons
 from ditto.blockdag import BlockDAG, DAGType
 
-from bokeh.server.server import Server
-from ditto.interaction.myapp import myapp
+from ditto.interaction import RunServer
 
 
 def run_network():
@@ -71,13 +70,10 @@ def run_simulation():
 
 def run_server():
     print('Opening Bokeh application on http://localhost:7006/')
-    server = Server({'/': myapp}, port=7006)
-    server.start()
-    # server.io_loop.add_callback(server.show, "/")
-    # server.io_loop.start()
+    RunServer()
 
 
 if __name__ == '__main__':
     run_network()
     run_simulation()
-    run_server()
+    # run_server()

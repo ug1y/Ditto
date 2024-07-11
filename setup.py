@@ -15,6 +15,8 @@ setup(
         'numpy==1.26.0',
         'simpy==4.1.0',
         'bokeh==3.5.0',
+        'jinja2==3.1.4',
+        'tornado==6.4.0',
     ],
     classifiers=[
         'Development Status :: 1 - Planning',

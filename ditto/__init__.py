@@ -12,4 +12,4 @@ from .nodes import ReferIface, ConsusIface, Miner
 from .nodes import SimpleRef, ChainRef
 from .nodes import NakamotoCons
 
-from .interaction import myapp
+from .interaction import myapp, RunServer
