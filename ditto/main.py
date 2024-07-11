@@ -3,8 +3,11 @@ from ditto.network import NetOperator, PeerNet
 from ditto.nodes import Miner, ChainRef, NakamotoCons
 from ditto.blockdag import BlockDAG, DAGType
 
+from bokeh.server.server import Server
+from ditto.interaction.myapp import myapp
 
-def example1():
+
+def run_network():
     net = NetOperator(BlockDAG(DAGType.CONVERGENCE))
     b1 = net.init_network().pop()
 
@@ -66,11 +69,15 @@ def run_simulation():
         print(net.total_blockdag.get_pivot_chain(leaf))
 
 
-if __name__ == '__main__':
-    from bokeh.server.server import Server
-    from ditto.interaction.myapp import myapp
+def run_server():
     print('Opening Bokeh application on http://localhost:7006/')
     server = Server({'/': myapp}, port=7006)
     server.start()
-    server.io_loop.add_callback(server.show, "/")
-    server.io_loop.start()
+    # server.io_loop.add_callback(server.show, "/")
+    # server.io_loop.start()
+
+
+if __name__ == '__main__':
+    run_network()
+    run_simulation()
+    run_server()
