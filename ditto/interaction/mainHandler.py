@@ -23,45 +23,35 @@ from bokeh.embed import components
 from bokeh.plotting import figure
 from bokeh.resources import CDN
 from jinja2 import Environment, FileSystemLoader
-from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler, Application, StaticFileHandler
 
 
 class MainHandler(RequestHandler):
     def initialize(self) -> None:
         # This method is invoked before every request.
-        self.counter = 0
-        self.callback_func = PeriodicCallback(self.callback, 1000)
+        pass
 
     def get(self):
         # Load template using jinja2.
         env = Environment(loader=FileSystemLoader(join(dirname(__file__), 'templates')))
         template = env.get_template('index.html')
 
+        title = "A BlockDAG Simulation Framework"
         # Get bokeh resources.
         resources = CDN.render()
 
         # Plot a figure using bokeh.
-        plot = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
+        plot = figure(title="Simple line example", x_axis_label='x', y_axis_label='y',
+                      sizing_mode='stretch_width')
         plot.line([1, 2, 3, 4, 5], [6, 7, 2, 4, 5])
         script, div = components(plot)
 
         # Write properties to render template.
-        self.write(template.render(resources=resources, script=script, div=div))
-
-        self.callback_func.start()
+        self.write(template.render(title=title, resources=resources, script=script, div=div))
 
     def on_finish(self) -> None:
         print("finish")
-
-    def on_connection_close(self) -> None:
-        print("connection_close")
-
-    def callback(self):
-        self.counter += 1
-        print("callback ", self.counter)
-        if self.request.connection.stream.closed():
-            self.callback_func.stop()
 
 
 def RunServer():

@@ -3,23 +3,50 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Hello Bulma!</title>
+    <title>{{ title }}</title>
     <link rel="icon" href="/static/ditto.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.1/css/bulma.min.css">
     {{ resources }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.1/css/bulma.min.css">
 </head>
 <body>
-<section class="section">
-    <div class="container">
-        <h1 class="title">
-            Hello World
-        </h1>
-        <p class="subtitle">
-            My first website with <strong>Bulma</strong>!
-        </p>
-        {{ div | safe }}
+
+<section class="hero is-small">
+    <div class="hero-body">
+        <div class="box">
+            <h1 class="title">页面标题</h1>
+        </div>
     </div>
 </section>
+
+<section class="section" style="padding: 24px; padding-top: 0px;">
+    <div class="columns is-2">
+        <div class="column is-8">
+            <div class="box" style="height: 400px">
+                <h1 class="title has-text-centered">区块图展示</h1>
+            </div>
+            <div class="box" style="height: 300px">
+                <h1 class="title has-text-centered">日志输出</h1>
+            </div>
+        </div>
+        <div class="column">
+            <div class="box" style="height: 300px">
+                <h1 class="title has-text-centered">控制台</h1>
+            </div>
+            <div class="box" style="height: 400px">
+                <h1 class="title has-text-centered">节点网络图</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--{{ div | safe }}-->
+
+<footer class="footer" style="padding: 24px">
+    <div class="content has-text-centered">
+        <p><strong>Ditto</strong> project is powered by <a href="https://github.com/ug1y">ug1y</a>.</p>
+    </div>
+</footer>
+
 </body>
 {{ script | safe }}
 </html>
