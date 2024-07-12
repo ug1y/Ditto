@@ -19,36 +19,57 @@ limitations under the License.
 import webbrowser
 from os.path import join, dirname
 
-from bokeh.embed import server_document
-from bokeh.server.server import Server
+from bokeh.embed import components
+from bokeh.plotting import figure
+from bokeh.resources import CDN
 from jinja2 import Environment, FileSystemLoader
-from tornado.ioloop import IOLoop
-from tornado.web import RequestHandler, Application
-
-from .plotApp import PlotApp, CreatePlotApp
+from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado.web import RequestHandler, Application, StaticFileHandler
 
 
 class MainHandler(RequestHandler):
+    def initialize(self) -> None:
+        # This method is invoked before every request.
+        self.counter = 0
+        self.callback_func = PeriodicCallback(self.callback, 1000)
+
     def get(self):
         # Load template using jinja2.
         env = Environment(loader=FileSystemLoader(join(dirname(__file__), 'templates')))
         template = env.get_template('index.html')
 
-        # Set properties for html template.
-        title = "My Bokeh App"
-        script = server_document('http://localhost:5006/myapp')
+        # Get bokeh resources.
+        resources = CDN.render()
 
-        # Write properties to html template.
-        self.write(template.render(title=title, plot_script=script))
+        # Plot a figure using bokeh.
+        plot = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
+        plot.line([1, 2, 3, 4, 5], [6, 7, 2, 4, 5])
+        script, div = components(plot)
+
+        # Write properties to render template.
+        self.write(template.render(resources=resources, script=script, div=div))
+
+        self.callback_func.start()
+
+    def on_finish(self) -> None:
+        print("finish")
+
+    def on_connection_close(self) -> None:
+        print("connection_close")
+
+    def callback(self):
+        self.counter += 1
+        print("callback ", self.counter)
+        if self.request.connection.stream.closed():
+            self.callback_func.stop()
 
 
 def RunServer():
-    # Start a Bokeh server to plot blockdag.
-    bokeh_server = Server({'/myapp': PlotApp()}, allow_websocket_origin=["localhost:5006", "localhost:7006"])
-    bokeh_server.start()
-
     # Start a Tornado server to render page.
-    tornado_app = Application([(r"/", MainHandler)])
+    tornado_app = Application([
+        (r"/", MainHandler),
+        (r"/static/(.*)", StaticFileHandler, {"path": join(dirname(__file__), "static")})
+    ])
     tornado_app.listen(7006)
 
     # Open default web browser to show site.
