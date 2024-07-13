@@ -37,18 +37,24 @@ class MainHandler(RequestHandler):
         env = Environment(loader=FileSystemLoader(join(dirname(__file__), 'templates')))
         template = env.get_template('index.html')
 
-        title = "A BlockDAG Simulation Framework"
+        title = "Ditto: A Hybrid BlockDAG Simulation Framework"
         # Get bokeh resources.
         resources = CDN.render()
 
-        # Plot a figure using bokeh.
-        plot = figure(title="Simple line example", x_axis_label='x', y_axis_label='y',
-                      sizing_mode='stretch_width')
-        plot.line([1, 2, 3, 4, 5], [6, 7, 2, 4, 5])
-        script, div = components(plot)
+        # Plot blockdag figure using bokeh.
+        dag_plot = figure(title="blockdag graph", sizing_mode='stretch_both')
+        dag_plot.line([1, 2, 3, 4, 5], [6, 7, 2, 4, 5])
+        dag_script, dag_div = components(dag_plot)
+
+        # Plot network figure using bokeh.
+        net_plot = figure(title="network graph", sizing_mode='stretch_both')
+        net_plot.line([1, 2, 3, 4, 5], [6, 7, 2, 4, 5])
+        net_script, net_div = components(net_plot)
 
         # Write properties to render template.
-        self.write(template.render(title=title, resources=resources, script=script, div=div))
+        self.write(template.render(title=title, resources=resources,
+                                   dag_script=dag_script, dag_div=dag_div,
+                                   net_script=net_script, net_div=net_div))
 
     def on_finish(self) -> None:
         print("finish")

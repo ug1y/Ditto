@@ -10,36 +10,53 @@
 </head>
 <body>
 
-<section class="hero is-small">
+<section class="hero is-small has-background-danger-80">
     <div class="hero-body">
-        <div class="box">
-            <h1 class="title">页面标题</h1>
-        </div>
+        <p class="title">{{ title }}</p>
+<!--        <p class="subtitle">-->
+<!--            一个图区块链系统的模拟仿真框架，通过交互式可视化界面展示区块图生成过程、共识算法执行结果，模拟多种网络攻击-->
+<!--        </p>-->
     </div>
 </section>
 
-<section class="section" style="padding: 24px; padding-top: 0px;">
+<section class="section" style="padding: 24px; padding-top: 24px;">
     <div class="columns is-2">
         <div class="column is-8">
-            <div class="box" style="height: 400px">
-                <h1 class="title has-text-centered">区块图展示</h1>
-            </div>
-            <div class="box" style="height: 300px">
-                <h1 class="title has-text-centered">日志输出</h1>
-            </div>
+            <article class="message" style="height: 500px">
+                <div class="message-header" style="height: 50px">
+                    <p class="title is-4 has-text-light">区块图展示</p>
+                </div>
+                <div class="message-body" style="height: 450px">
+                    {{ dag_div | safe }}
+                </div>
+            </article>
+            <article class="message" style="height: 300px">
+                <div class="message-header" style="height: 50px">
+                    <p class="title is-4 has-text-light">日志输出</p>
+                </div>
+                <div class="message-body" style="height: 250px">
+                </div>
+            </article>
         </div>
         <div class="column">
-            <div class="box" style="height: 300px">
-                <h1 class="title has-text-centered">控制台</h1>
-            </div>
-            <div class="box" style="height: 400px">
-                <h1 class="title has-text-centered">节点网络图</h1>
-            </div>
+            <article class="message" style="height: 400px">
+                <div class="message-header" style="height: 50px">
+                    <p class="title is-4 has-text-light">控制台</p>
+                </div>
+                <div class="message-body" style="height: 350px">
+                </div>
+            </article>
+            <article class="message" style="height: 400px">
+                <div class="message-header" style="height: 50px">
+                    <p class="title is-4 has-text-light">节点网络图</p>
+                </div>
+                <div class="message-body" style="height: 350px">
+                    {{ net_div | safe }}
+                </div>
+            </article>
         </div>
     </div>
 </section>
-
-<!--{{ div | safe }}-->
 
 <footer class="footer" style="padding: 24px">
     <div class="content has-text-centered">
@@ -48,5 +65,6 @@
 </footer>
 
 </body>
-{{ script | safe }}
+{{ dag_script | safe }}
+{{ net_script | safe }}
 </html>
