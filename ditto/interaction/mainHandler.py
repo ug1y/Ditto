@@ -71,3 +71,8 @@ def RunServer():
     # Open default web browser to show site.
     IOLoop.current().add_callback(webbrowser.open, "http://localhost:7006/")
     IOLoop.current().start()
+
+
+if __name__ == "__main__":
+    print('Opening Bokeh application on http://localhost:7006/')
+    RunServer()
