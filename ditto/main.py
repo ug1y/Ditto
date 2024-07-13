@@ -60,9 +60,8 @@ def run_simulation():
                   propagation_delay_parameter=30.0)
     sim = Simulator(net)
 
-    sim.start(50)
-    sim.resume(50)
-    sim.stop()
+    sim.step()
+    sim.run(100)
 
     for leaf in net.total_blockdag.get_leaves_blocks():
         print(net.total_blockdag.get_pivot_chain(leaf))
@@ -74,6 +73,6 @@ def run_server():
 
 
 if __name__ == '__main__':
-    run_network()
+    # run_network()
     run_simulation()
     # run_server()
