@@ -79,5 +79,5 @@ if __name__ == '__main__':
     # os.environ['PYTHONPATH'] = os.getcwd()
     # print(os.environ.get('PYTHONPATH', 'PYTHONPATH is not set'))
     # run_network()
-    # run_simulation()
-    run_server()
+    run_simulation()
+    # run_server()
