@@ -43,36 +43,14 @@ class Simulator(NetSimulation):
         self._env = sp.RealtimeEnvironment(factor=factor, strict=False) \
             if factor > 0 else sp.Environment()
         self._network = network
-        self._network.set_simulator(self)
-
-        self._process_load()  # Load simulation process.
-
-        # self._started: bool = False  # Mark if started a simulation instance.
-        # self._stopped: sp.Event = self._env.event()  # Mark if stopped the simulation instance.
-        # self._paused: sp.Event = self._env.event()  # Control the stop and resume of the simulation.
-
-        # self._correct = -1  # The offset of the simulation steps.
         self._factor = factor  # The factor to adjust the simulation speed.
 
         self._logger = logger.getLogger(__name__)  # Logger for this class.
 
-        self._counter = 0  # Use for test simulation.
+        self._network.set_simulator(self)  # Enable network transmission delay.
+        self._process_load()  # Load simulation process.
 
-    # def set_factor(self, factor: float):
-    #     """
-    #     Set the simulation factor.
-    #     :param factor: float
-    #     """
-    #     print("set the factor to " + str(factor) + " at " + str(self._env.now))
-    #     self._correct = -1
-    #     self._factor = factor
-    #     last_time = self._env.now + factor if self._paused.triggered else self._env.now
-    #     self._env = sp.RealtimeEnvironment(initial_time=last_time, factor=factor, strict=False) \
-    #         if factor > 0 else sp.Environment(initial_time=last_time)
-    #     self._stopped = self._env.event().succeed() if self._stopped.triggered else self._env.event()
-    #     self._paused = self._env.event().succeed() if self._paused.triggered else self._env.event()
-    #     if self._started:
-    #         self._process_load()
+        self._counter = 0  # Use for test simulation.
 
     @property
     def network(self) -> NetOperator:
@@ -112,15 +90,6 @@ class Simulator(NetSimulation):
         # self._env.process(self._counter_process())
         self._env.process(self._network_process())
 
-    # def _run_simulation(self, steps: int):
-    #     self._env.run(until=sp.events.AnyOf(self._env, [
-    #         self._env.timeout((steps + self._correct) * (self._factor if self._factor > 0 else 1)),
-    #         self._paused, self._stopped
-    #     ]))
-    #
-    #     if not self._stopped.triggered:
-    #         self.pause()
-
     def step(self):
         """
         Execute one step of the simulation.
@@ -132,72 +101,6 @@ class Simulator(NetSimulation):
         Execute until the given time.
         """
         self._env.run(until)
-
-    # def start(self, steps: int):
-    #     """
-    #     Start the simulation, only execute once until stop.
-    #     """
-    #     if self._stopped.triggered:
-    #         print("the simulation is stopped")
-    #         return
-    #
-    #     if not self._started:
-    #         # Load process.
-    #         self._process_load()
-    #
-    #         print("start a simulation")
-    #         self._started = True
-    #         self._run_simulation(steps)
-    #         self._correct = 0
-    #     else:
-    #         print("the simulation is already running")
-
-    # def pause(self):
-    #     """
-    #     Pause the simulation, allow to change some parameters.
-    #     """
-    #     if not self._started:
-    #         print("the simulation is not started")
-    #         return
-    #     if self._stopped.triggered:
-    #         print("the simulation is stopped")
-    #         return
-    #
-    #     if not self._paused.triggered:
-    #         print("pause the simulation")
-    #         self._paused.succeed()
-    #     else:
-    #         print("the simulation is already paused")
-
-    # def resume(self, steps: int):
-    #     """
-    #     Resume the simulation, disable any changes when running.
-    #     """
-    #     if not self._started:
-    #         print("the simulation is not started")
-    #         return
-    #     if self._stopped.triggered:
-    #         print("the simulation is stopped")
-    #         return
-    #
-    #     if self._paused.triggered:
-    #         print("resume the simulation from " + str(self._env.now))
-    #         self._paused = self._env.event()
-    #         self._run_simulation(steps)
-    #         self._correct = 0
-    #     else:
-    #         print("the simulation does not need to resume")
-
-    # def stop(self):
-    #     """
-    #     Stop the simulation, reset all history data and wait for starting again.
-    #     """
-    #     if not self._stopped.triggered:
-    #         print("stop the simulation")
-    #         self._stopped.succeed()
-    #         # Output the result
-    #         print("network:", str(self._network.network_graph.nodes))
-    #         print("blockdag:", repr(self._network.total_blockdag))
 
     def send_block_with_delay(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName,
                               block: Block, delay: float):

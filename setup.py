@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='ditto',
-    version='0.1.0',
+    version=__import__('ditto').__version__,
     author='ug1y',
     author_email='yinhao@icode.pku.edu.cn',
     description='A blockDAG simulation framework',

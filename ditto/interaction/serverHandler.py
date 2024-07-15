@@ -27,7 +27,7 @@ from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler, Application, StaticFileHandler
 
 
-class MainHandler(RequestHandler):
+class ServerHandler(RequestHandler):
     def initialize(self) -> None:
         # This method is invoked before every request.
         pass
@@ -38,6 +38,7 @@ class MainHandler(RequestHandler):
         template = env.get_template('index.html')
 
         title = "Ditto: A Hybrid BlockDAG Simulation Framework"
+        version = __import__('ditto').__version__
         # Get bokeh resources.
         resources = CDN.render()
 
@@ -52,7 +53,7 @@ class MainHandler(RequestHandler):
         net_script, net_div = components(net_plot)
 
         # Write properties to render template.
-        self.write(template.render(title=title, resources=resources,
+        self.write(template.render(title=title, version=version, resources=resources,
                                    dag_script=dag_script, dag_div=dag_div,
                                    net_script=net_script, net_div=net_div))
 
@@ -63,7 +64,7 @@ class MainHandler(RequestHandler):
 def RunServer():
     # Start a Tornado server to render page.
     tornado_app = Application([
-        (r"/", MainHandler),
+        (r"/", ServerHandler),
         (r"/static/(.*)", StaticFileHandler, {"path": join(dirname(__file__), "static")})
     ])
     tornado_app.listen(7006)

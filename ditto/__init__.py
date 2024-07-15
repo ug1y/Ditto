@@ -1,3 +1,5 @@
+__version__ = '0.1.0'
+
 from .blockdag import TypeAlias
 from .blockdag import Transaction, TransactionType
 from .blockdag import Block, BlockType
