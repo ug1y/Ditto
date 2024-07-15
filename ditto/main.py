@@ -1,9 +1,12 @@
+import sys
+
 from ditto.simulation import Simulator
 from ditto.network import NetOperator, PeerNet
 from ditto.nodes import Miner, ChainRef, NakamotoCons
 from ditto.blockdag import BlockDAG, DAGType
 
 import os
+
 
 def run_network():
     net = NetOperator(BlockDAG(DAGType.CONVERGENCE))
@@ -68,10 +71,13 @@ def run_simulation():
 
 def run_server():
     print('Opening Bokeh application on http://localhost:5006/')
-    os.system('bokeh serve --show interaction')
+    os.environ['PYTHONPATH'] = os.getcwd()  # Add the current working directory to the PYTHONPATH
+    os.system('bokeh serve --show ditto\interaction')
 
 
 if __name__ == '__main__':
+    # os.environ['PYTHONPATH'] = os.getcwd()
+    # print(os.environ.get('PYTHONPATH', 'PYTHONPATH is not set'))
     # run_network()
-    run_simulation()
-    # run_server()
+    # run_simulation()
+    run_server()
