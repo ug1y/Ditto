@@ -54,16 +54,11 @@ def run_network():
 
 
 def run_simulation():
-    net = PeerNet(blockdag_type=DAGType.CONVERGENCE,
-                  number_of_miners=5,
-                  reference_class=ChainRef,
-                  consensus_class=NakamotoCons,
-                  block_creation_rate=10.0,
-                  propagation_delay_parameter=30.0)
+    net = PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=5,
+                  reference_class=ChainRef, consensus_class=NakamotoCons,
+                  block_creation_rate=10, propagation_delay_parameter=0)
     sim = Simulator(net)
-
-    sim.step()
-    sim.run(100)
+    sim.run(1000)
 
     for leaf in net.total_blockdag.get_leaves_blocks():
         print(net.total_blockdag.get_pivot_chain(leaf))
@@ -76,8 +71,6 @@ def run_server():
 
 
 if __name__ == '__main__':
-    # os.environ['PYTHONPATH'] = os.getcwd()
-    # print(os.environ.get('PYTHONPATH', 'PYTHONPATH is not set'))
     # run_network()
     run_simulation()
     # run_server()

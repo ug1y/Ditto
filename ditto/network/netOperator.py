@@ -102,9 +102,9 @@ class NetOperator(NetContainer):
             self._logger.info("%s: Sending block " + str(hash(block)) + " from %s to %s.",
                               self.FOR_LOG_NAME, str(source_miner), str(target_miner))
             # Use the simulator to simulate network delay.
-            if self._simulator is not None:
-                self._simulator.send_block_with_delay(source_miner, target_miner, block,
-                                                      self.get_delay(source_miner, target_miner))
+            delay = self.get_delay(source_miner, target_miner)
+            if self._simulator is not None and delay > 0:
+                self._simulator.send_block_with_delay(source_miner, target_miner, block, delay)
             else:
                 receiver.add_block(block)
                 receiver.sync_block()

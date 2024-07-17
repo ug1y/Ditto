@@ -32,7 +32,7 @@ def PeerNet(blockdag_type: DAGType, number_of_miners: int,
 
     for c in range(number_of_miners):
         name = 'Miner' + str(c + 1)
-        miner = Miner(name, BlockDAG(blockdag_type), int(number_of_miners / 2 + 1))
+        miner = Miner(name, BlockDAG(blockdag_type), int(number_of_miners / 3 + 1))
         miner.pre_launch(b1, reference_class, consensus_class)
         net.add_miner(miner)
 

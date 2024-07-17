@@ -74,6 +74,8 @@ class Simulator(NetSimulation):
         while True:
             miner = self._network.get_random_miner()
             block = miner.mine_block()
+            # print("block_creation_rate", self._network.block_creation_rate)
+            # print("propagation_delay_parameter", self._network.propagation_delay_parameter)
             next_mining_wait = np.random.poisson(self._network.block_creation_rate) * \
                                (self._factor if self._factor > 0 else 1)
             print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
