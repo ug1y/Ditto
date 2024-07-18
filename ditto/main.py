@@ -5,7 +5,7 @@ from ditto.network import NetOperator, PeerNet
 from ditto.nodes import Miner, ChainRef, NakamotoCons
 from ditto.blockdag import BlockDAG, DAGType
 
-import os
+import os, sys
 from ditto import logger
 
 
@@ -54,7 +54,7 @@ def run_network():
     print("decided: " + str(m3.consus_handler.get_decided_blocks()))
 
 
-def run_simulation():
+def run_simulation(until: int = 100):
     logger.Logger.LOGGER_FILTER = logger.SimulatorFilter()
     logger.Logger.LOGGER_HANDLE = logging.StreamHandler()
 
@@ -62,19 +62,33 @@ def run_simulation():
                   reference_class=ChainRef, consensus_class=NakamotoCons,
                   block_creation_rate=10, propagation_delay_parameter=0)
     sim = Simulator(net)
-    sim.run(50)
+    sim.run(until)
 
     for leaf in net.total_blockdag.get_leaves_blocks():
         print(net.total_blockdag.get_pivot_chain(leaf))
 
 
-def run_server():
-    print('Opening Bokeh application on http://localhost:5006/')
+def run_server(port: int = 5006):
+    print('Opening Bokeh application on http://localhost:' + str(port) + '/')
     os.environ['PYTHONPATH'] = os.getcwd()  # Add the current working directory to the PYTHONPATH
-    os.system('bokeh serve --show ditto\interaction')
+    os.system('bokeh serve --show ditto\interaction --port ' + str(port))
 
 
 if __name__ == '__main__':
     # run_network()
-    run_simulation()
+    # run_simulation()
     # run_server()
+    if len(sys.argv) < 2:
+        print('Input args like `python -m ditto.main sim [until]` or `python -m ditto.main ser [port]`')
+    elif len(sys.argv) == 2:
+        app = str(sys.argv[1])
+        if app == 'sim':
+            run_simulation()
+        if app == 'ser':
+            run_server()
+    elif len(sys.argv) == 3:
+        app, arg = str(sys.argv[1]), int(sys.argv[2])
+        if app == 'sim':
+            run_simulation(arg)
+        if app == 'ser':
+            run_server(arg)

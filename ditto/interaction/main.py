@@ -90,7 +90,7 @@ class PlottingApp:
             self.delay_input.disabled = True
             self.speed_slider.disabled = True
             self.callfunc = curdoc().add_periodic_callback(self.loop_simulation, self.speed_slider.value)
-            print("running the simulation...")
+            print("Run the simulation...")
         else:
             self.run_toggle.label = "▶ Run"
             self.run_toggle.button_type = "success"
@@ -101,7 +101,7 @@ class PlottingApp:
             self.delay_input.disabled = False
             self.speed_slider.disabled = False
             curdoc().remove_periodic_callback(self.callfunc)
-            print("stop the simulation...")
+            print("Pause the simulation...")
 
     def gen_click_event(self):
         if self.sys_select.value == "" or self.num_input.value is None or \
@@ -121,6 +121,7 @@ class PlottingApp:
 
         self.run_toggle.disabled = False
         self.con_input.value = ""
+        print("Generate a new network...")
 
     def modify_doc(self, doc: Document):
         doc.title = self.title
