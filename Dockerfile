@@ -8,6 +8,6 @@ RUN pip install . -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 EXPOSE 5006
 
-ENV BOKEH_ALLOW_WS_ORIGIN=172.17.120.45:5006
+ENV BOKEH_ALLOW_WS_ORIGIN=*
 
 CMD ["python", "-m", "ditto.main", "ser"]
