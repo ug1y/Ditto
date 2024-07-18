@@ -20,7 +20,7 @@ from collections.abc import Collection
 from typing import Iterator, Any, Set, List
 import networkx as nx
 
-from .. import logger
+from ditto import logger
 from .block import Block, BlockType
 from .typedef import TypeAlias, DAGType, EdgeType
 
@@ -61,7 +61,8 @@ class BlockDAG(Collection):
         self._gtype = gtype  # The type of the blockDAG.
         self._leaves = set()  # Set of all the leaves in the graph.
         self._column = list(set())  # List of the set of blocks in the specified height.
-        self._logger = logger.getLogger(__name__)  # Logger for this class.
+
+        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
 
     def __contains__(self, bid: type(TypeAlias.BlockID)) -> bool:
         return bid in self._G

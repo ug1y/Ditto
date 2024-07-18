@@ -1,11 +1,10 @@
-import sys
-
 from ditto.simulation import Simulator
 from ditto.network import NetOperator, PeerNet
 from ditto.nodes import Miner, ChainRef, NakamotoCons
 from ditto.blockdag import BlockDAG, DAGType
 
 import os
+from ditto import logger
 
 
 def run_network():
@@ -54,11 +53,13 @@ def run_network():
 
 
 def run_simulation():
+    logger.Logger.LOGGER_FILTER = logger.SimulatorFilter()
+
     net = PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=5,
                   reference_class=ChainRef, consensus_class=NakamotoCons,
                   block_creation_rate=10, propagation_delay_parameter=0)
     sim = Simulator(net)
-    sim.run(1000)
+    sim.run(50)
 
     for leaf in net.total_blockdag.get_leaves_blocks():
         print(net.total_blockdag.get_pivot_chain(leaf))

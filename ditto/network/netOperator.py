@@ -20,7 +20,7 @@ from typing import Set
 
 import numpy as np
 
-from .. import logger
+from ditto import logger
 from ditto.simulation import NetSimulation
 from ditto.nodes import Miner
 from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType, BlockType
@@ -49,7 +49,7 @@ class NetOperator(NetContainer):
         self.total_blockdag = total_blockdag  # The total blockDAG of the network.
         self._simulator: NetSimulation = None  # The simulator to simulate network delay.
 
-        self._logger = logger.getLogger(__name__)  # Logger for this class.
+        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
 
     def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
         return self.network_graph.nodes[miner][NetOperator._MINER_DATA_KEY]

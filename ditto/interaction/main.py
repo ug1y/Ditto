@@ -16,8 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from bokeh.application import Application
-from bokeh.application.handlers import FunctionHandler
 from bokeh.document import Document
 from bokeh.plotting import figure, curdoc
 from bokeh.models import (Button, Select, NumericInput, Toggle, Slider)
@@ -27,6 +25,7 @@ from ditto.simulation import Simulator
 from ditto.network import NetOperator, PeerNet
 from ditto.blockdag import DAGType
 from ditto.nodes import ChainRef, NakamotoCons
+import ditto
 
 from .plots import network_plotting, blockdag_plotting
 
@@ -39,7 +38,7 @@ class PlottingApp:
         self.callfunc: PeriodicCallback = None
 
         self.title = "Ditto: A Hybrid BlockDAG Simulation Framework"
-        self.version = "0.1.0"
+        self.version = ditto.__version__
 
         self.dag_figure = figure(name="blockdag", sizing_mode='stretch_both')
 
@@ -54,7 +53,7 @@ class PlottingApp:
                                  button_type="primary", height=40)
         self.gen_button.on_click(self.gen_click_event)
 
-        self.run_toggle = Toggle(name="running", label="Run", sizing_mode='stretch_width',
+        self.run_toggle = Toggle(name="running", label="▶ Run", sizing_mode='stretch_width',
                                  button_type="success", height=40, disabled=True)
         self.run_toggle.on_change("active", self.run_change_event)
 
@@ -79,7 +78,7 @@ class PlottingApp:
 
     def run_change_event(self, attr, old, new):
         if self.run_toggle.active:
-            self.run_toggle.label = "Pause"
+            self.run_toggle.label = "❚❚ Pause"
             self.run_toggle.button_type = "danger"
             self.sys_select.disabled = True
             self.num_input.disabled = True
@@ -90,7 +89,7 @@ class PlottingApp:
             self.callfunc = curdoc().add_periodic_callback(self.loop_simulation, self.speed_slider.value)
             print("running the simulation...")
         else:
-            self.run_toggle.label = "Run"
+            self.run_toggle.label = "▶ Run"
             self.run_toggle.button_type = "success"
             self.sys_select.disabled = False
             self.num_input.disabled = False

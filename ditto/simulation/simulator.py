@@ -24,7 +24,7 @@ from simpy import Event
 from simpy.core import SimTime
 from simpy.util import start_delayed
 
-from .. import logger
+from ditto import logger
 from ditto.network import NetOperator
 from ditto.blockdag import TypeAlias, Block
 
@@ -36,6 +36,8 @@ class Simulator(NetSimulation):
     Simulate the blockDAG running.
     """
 
+    FOR_LOG_NAME = "simulator"
+
     def __init__(self, network: NetOperator, factor: float = 0):
         """
         Initialize the simulator and network environment.
@@ -45,7 +47,7 @@ class Simulator(NetSimulation):
         self._network = network
         self._factor = factor  # The factor to adjust the simulation speed.
 
-        self._logger = logger.getLogger(__name__)  # Logger for this class.
+        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
 
         self._network.set_simulator(self)  # Enable network transmission delay.
         self._process_load()  # Load simulation process.
@@ -74,11 +76,11 @@ class Simulator(NetSimulation):
         while True:
             miner = self._network.get_random_miner()
             block = miner.mine_block()
-            # print("block_creation_rate", self._network.block_creation_rate)
-            # print("propagation_delay_parameter", self._network.propagation_delay_parameter)
             next_mining_wait = np.random.poisson(self._network.block_creation_rate) * \
                                (self._factor if self._factor > 0 else 1)
-            print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
+
+            # print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
+            self._logger.info("%s: At simulation time %3.f, mining %s", self.FOR_LOG_NAME, self._env.now, block)
             yield self._env.timeout(next_mining_wait)
 
     def _counter_process(self):

@@ -24,6 +24,14 @@ class NothingFilter(logging.Filter):
         return True
 
 
+class SimulatorFilter(logging.Filter):
+    def filter(self, record):
+        if record.name in {'ditto.simulation.simulator'}:
+            return True
+        else:
+            return False
+
+
 class NetworkFilter(logging.Filter):
     def filter(self, record):
         if (record.name in {'ditto.network.netOperator', 'ditto.network.netContainer', 'ditto.blockdag.blockdag'}) \
@@ -46,17 +54,25 @@ class MinerFilter(logging.Filter):
             return False
 
 
-LOGGER_FILTER = MinerFilter("testMiner2")
-LOGGER_LEVEL = logging.INFO
+class Logger:
+    LOGGER_FILTER = NothingFilter()
+    LOGGER_LEVEL = logging.INFO
+    LOGGER_FORMAT = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s')
 
-logging.basicConfig(level=LOGGER_LEVEL,
-                    format='[%(asctime)s] %(levelname)s - '
-                           '[Location] %(name)s:%(lineno)d - '
-                           '[%(funcName)s] %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S')
+    # logging.basicConfig(format='[%(asctime)s] %(levelname)s - '
+    #                            '[Location] %(name)s:%(lineno)d - '
+    #                            '[%(funcName)s] %(message)s',
+    #                     datefmt='%Y-%m-%d %H:%M:%S')
 
+    def __init__(self, name: str):
+        self._logger = logging.getLogger(name)
+        self._console = logging.StreamHandler()
 
-def getLogger(name: str) -> logging.Logger:
-    logger = logging.getLogger(name)
-    logger.addFilter(LOGGER_FILTER)
-    return logger
+    def getLogger(self) -> logging.Logger:
+        self._console.setFormatter(Logger.LOGGER_FORMAT)
+        self._logger.addHandler(self._console)
+
+        self._logger.setLevel(Logger.LOGGER_LEVEL)
+        self._logger.addFilter(Logger.LOGGER_FILTER)
+
+        return self._logger

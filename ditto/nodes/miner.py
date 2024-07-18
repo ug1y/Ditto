@@ -22,7 +22,7 @@ from typing import Set
 import networkx as nx
 import numpy as np
 
-from .. import logger
+from ditto import logger
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
 
@@ -49,7 +49,7 @@ class Miner:
         self._mined_blocks = set()  # Record the set of blocks mined by the miner.
         self._block_queue = nx.DiGraph()  # A graph for the received blocks that lack parents.
 
-        self._logger = logger.getLogger(__name__)  # Logger for this class.
+        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
 
         self.refer_handler: ReferIface = None
         self.consus_handler: ConsusIface = None
