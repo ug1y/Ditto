@@ -1,3 +1,5 @@
+import logging
+
 from ditto.simulation import Simulator
 from ditto.network import NetOperator, PeerNet
 from ditto.nodes import Miner, ChainRef, NakamotoCons
@@ -54,6 +56,7 @@ def run_network():
 
 def run_simulation():
     logger.Logger.LOGGER_FILTER = logger.SimulatorFilter()
+    logger.Logger.LOGGER_HANDLE = logging.StreamHandler()
 
     net = PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=5,
                   reference_class=ChainRef, consensus_class=NakamotoCons,

@@ -1,6 +1,6 @@
 __version__ = '0.1.0'
 
-import logger
+from . import logger
 
 from .blockdag import TypeAlias
 from .blockdag import Transaction, TransactionType

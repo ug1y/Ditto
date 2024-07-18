@@ -18,7 +18,7 @@ limitations under the License.
 """
 from bokeh.document import Document
 from bokeh.plotting import figure, curdoc
-from bokeh.models import (Button, Select, NumericInput, Toggle, Slider)
+from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput)
 from bokeh.server.callbacks import PeriodicCallback
 
 from ditto.simulation import Simulator
@@ -28,6 +28,7 @@ from ditto.nodes import ChainRef, NakamotoCons
 import ditto
 
 from .plots import network_plotting, blockdag_plotting
+from .handler import ConsoleHandler
 
 
 class PlottingApp:
@@ -39,8 +40,12 @@ class PlottingApp:
 
         self.title = "Ditto: A Hybrid BlockDAG Simulation Framework"
         self.version = ditto.__version__
+        ditto.logger.Logger.LOGGER_FILTER = ditto.logger.SimulatorFilter()
 
         self.dag_figure = figure(name="blockdag", sizing_mode='stretch_both')
+        self.net_figure = figure(name="network", sizing_mode='stretch_both')
+        self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
+        ditto.logger.Logger.LOGGER_HANDLE = ConsoleHandler(self.con_input)
 
         options = ["Bitcoin"]
         self.sys_select = Select(name="system", options=options, sizing_mode='stretch_width')
@@ -65,8 +70,6 @@ class PlottingApp:
 
         self.speed_slider = Slider(name="speed", start=10, end=100, step=10, value=100,
                                    title="Simulation Gap(ms)", sizing_mode='stretch_width')
-
-        self.net_figure = figure(name="network", sizing_mode='stretch_both')
 
     def loop_simulation(self):
         dag = self.network.total_blockdag
@@ -101,7 +104,8 @@ class PlottingApp:
             print("stop the simulation...")
 
     def gen_click_event(self):
-        if self.sys_select.value == "" or self.num_input.value is None:
+        if self.sys_select.value == "" or self.num_input.value is None or \
+                self.rate_input is None or self.delay_input is None:
             print("system:", self.sys_select.value, "number:", self.num_input.value)
             return
 
@@ -116,6 +120,7 @@ class PlottingApp:
             network_plotting(self.net_figure, self.network.network_graph)
 
         self.run_toggle.disabled = False
+        self.con_input.value = ""
 
     def modify_doc(self, doc: Document):
         doc.title = self.title
@@ -123,13 +128,16 @@ class PlottingApp:
         doc.template_variables['version'] = self.version
 
         doc.add_root(self.dag_figure)
+        doc.add_root(self.net_figure)
+        doc.add_root(self.con_input)
+
         doc.add_root(self.sys_select)
         doc.add_root(self.num_input)
-        doc.add_root(self.gen_button)
-        doc.add_root(self.run_toggle)
-        doc.add_root(self.net_figure)
         doc.add_root(self.rate_input)
         doc.add_root(self.delay_input)
+        doc.add_root(self.gen_button)
+
+        doc.add_root(self.run_toggle)
         doc.add_root(self.speed_slider)
 
 

@@ -57,6 +57,7 @@ class MinerFilter(logging.Filter):
 class Logger:
     LOGGER_FILTER = NothingFilter()
     LOGGER_LEVEL = logging.INFO
+    LOGGER_HANDLE = None
     LOGGER_FORMAT = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s')
 
     # logging.basicConfig(format='[%(asctime)s] %(levelname)s - '
@@ -66,12 +67,12 @@ class Logger:
 
     def __init__(self, name: str):
         self._logger = logging.getLogger(name)
-        self._console = logging.StreamHandler()
+        if Logger.LOGGER_HANDLE is not None:
+            self._console = Logger.LOGGER_HANDLE
+            self._console.setFormatter(Logger.LOGGER_FORMAT)
+            self._logger.addHandler(self._console)
 
     def getLogger(self) -> logging.Logger:
-        self._console.setFormatter(Logger.LOGGER_FORMAT)
-        self._logger.addHandler(self._console)
-
         self._logger.setLevel(Logger.LOGGER_LEVEL)
         self._logger.addFilter(Logger.LOGGER_FILTER)
 
