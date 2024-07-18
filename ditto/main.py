@@ -71,7 +71,7 @@ def run_simulation(until: int = 100):
 def run_server(port: int = 5006):
     print('Opening Bokeh application on http://localhost:' + str(port) + '/')
     os.environ['PYTHONPATH'] = os.getcwd()  # Add the current working directory to the PYTHONPATH
-    os.system('bokeh serve --show ditto\interaction --port ' + str(port))
+    os.system('bokeh serve --show ' + os.path.join('ditto', 'interaction') + ' --port ' + str(port))
 
 
 if __name__ == '__main__':
