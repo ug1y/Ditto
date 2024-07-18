@@ -22,7 +22,7 @@
 - 测试
 
 安装测试所需的依赖包，执行项目批量测试。
-```commandline
+```shell
 cd Ditto
 pip install .[test]
 python -m pytest
@@ -31,7 +31,7 @@ python -m pytest
 - 运行 
 
 安装运行所需的依赖包，执行项目入口方法。
-```commandline
+```shell
 cd Ditto
 pip install .
 python -m ditto.main
