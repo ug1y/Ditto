@@ -11,11 +11,11 @@
 
 ## 项目依赖
 项目采用 python>=3.10 编程语言，依赖如下重要的库。
-- networkx # 复杂网络分析库
+- networkx  # 复杂网络分析库
+- numpy  # 用于计算泊松分布的数学库
 - simpy  # 基于过程的离散事件仿真框架
-- matplotlib  # 可动画的交互可视化库
-- bokeh # 面向浏览器的交互式可视化库
-- pytest # python测试框架
+- bokeh  # 面向浏览器的交互式可视化库
+- pytest  # python测试框架
 - ...
 
 ## 项目使用
