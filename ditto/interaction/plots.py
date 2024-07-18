@@ -18,11 +18,11 @@ limitations under the License.
 """
 import networkx as nx
 from bokeh.models import (GraphRenderer, ColumnDataSource, Circle, MultiLine, StaticLayoutProvider,
-                          LabelSet, Range1d, Rect)
+                          Range1d, Rect, Text)
 from bokeh.plotting import figure
 
 from ditto.network import NetContainer
-from ditto.blockdag import BlockDAG
+from ditto.blockdag import BlockDAG, EdgeType
 
 
 def cal_loc(idx, nds, x_zoom, y_zoom):
@@ -42,6 +42,20 @@ def blockdag_plotting(fig: figure, dag: BlockDAG):
         'index': list(dag)})
     renderer.node_renderer.glyph = Rect(width=5, height=0.5, fill_color="skyblue")
 
+    # Setting edge data and glyph.
+
+    renderer.edge_renderer.data_source = ColumnDataSource({
+        'start': [e[0] for e in dag.graph().edges()],
+        'end': [e[1] for e in dag.graph().edges()],
+        'color': ['black' if dag.graph().edges[e][BlockDAG._EDGE_TYPE_KEY] == EdgeType.PIVOT
+                  else 'lightgray' for e in dag.graph().edges()],
+        'width': [2 if dag.graph().edges[e][BlockDAG._EDGE_TYPE_KEY] == EdgeType.PIVOT
+                  else 1 for e in dag.graph().edges()],
+        'alpha': [1 if dag.graph().edges[e][BlockDAG._EDGE_TYPE_KEY] == EdgeType.PIVOT
+                  else 0.5 for e in dag.graph().edges()],
+    })
+    renderer.edge_renderer.glyph = MultiLine(line_color="color", line_width='width', line_alpha='alpha')
+
     # Update the view of the figure.
     view_n = 10
     view_x = max(len(dag.get_column_blocks()), view_n)
@@ -59,16 +73,11 @@ def blockdag_plotting(fig: figure, dag: BlockDAG):
     fig.renderers.append(renderer)
 
     # Add labels for each block.
-    labels_of_block = LabelSet(x='x', y='y', text='text', level='glyph', x_offset=-6, y_offset=-4,
-                               source=ColumnDataSource({
-                                   'x': [m[0] for m in layout.values()],
-                                   'y': [m[1] for m in layout.values()],
-                                   'text': [m for m in layout.keys()]}))
-    labels_of_block.text_font_size = '8pt'
-
-    # Refresh the labels.
-    fig.center.clear()
-    fig.add_layout(labels_of_block, 'center')
+    text_block_source = ColumnDataSource({'x': [m[0] for m in layout.values()],
+                                          'y': [m[1] for m in layout.values()],
+                                          'text': [m for m in layout.keys()]})
+    text_block_glyph = Text(x='x', y='y', text='text', y_offset=4, text_align='center', text_font_size='8pt')
+    fig.add_glyph(text_block_source, text_block_glyph)
 
 
 def network_plotting(fig: figure, graph: nx.Graph):
@@ -96,22 +105,18 @@ def network_plotting(fig: figure, graph: nx.Graph):
     fig.renderers.clear()
     fig.renderers.append(renderer)
 
-    # Add labels.
-    labels_for_node = LabelSet(x='x', y='y', text='text', level='glyph', x_offset=5, y_offset=5,
-                               source=ColumnDataSource({
-                                   'x': [m[0] for m in layout.values()],
-                                   'y': [m[1] for m in layout.values()],
-                                   'text': [m for m in layout.keys()]}))
-    labels_for_node.text_font_size = '8pt'
-    labels_for_edge = LabelSet(x='x', y='y', text='text', level='glyph',
-                               source=ColumnDataSource({
-                                   'x': [(layout[e[0]][0] + layout[e[1]][0]) / 2 for e in graph.edges()],
-                                   'y': [(layout[e[0]][1] + layout[e[1]][1]) / 2 for e in graph.edges()],
-                                   'text': [graph.edges[e][NetContainer._DELAY_TIME_KEY] for e in graph.edges()]}))
-    labels_for_edge.text_font_size = '10pt'
-    labels_for_edge.background_fill_color = 'white'
+    # Add labels for each node.
+    text_node_source = ColumnDataSource({'x': [m[0] for m in layout.values()],
+                                         'y': [m[1] for m in layout.values()],
+                                         'text': [m for m in layout.keys()]})
+    text_node_glyph = Text(x='x', y='y', text='text', x_offset=15, y_offset=-5,
+                           text_align='center', text_font_size='8pt')
+    fig.add_glyph(text_node_source, text_node_glyph)
 
-    # Refresh the labels.
-    fig.center.clear()
-    fig.add_layout(labels_for_node, 'center')
-    fig.add_layout(labels_for_edge, 'center')
+    # Add labels for each edge.
+    text_edge_source = ColumnDataSource({'x': [(layout[e[0]][0] + layout[e[1]][0]) / 2 for e in graph.edges()],
+                                         'y': [(layout[e[0]][1] + layout[e[1]][1]) / 2 for e in graph.edges()],
+                                         'text': [graph.edges[e][NetContainer._DELAY_TIME_KEY] for e in graph.edges()]})
+    text_edge_glyph = Text(x='x', y='y', text='text', text_align='center',
+                           text_font_size='10pt', background_fill_color='white')
+    fig.add_glyph(text_edge_source, text_edge_glyph)

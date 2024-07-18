@@ -64,8 +64,8 @@ class PlottingApp:
         self.delay_input = NumericInput(name="delay", low=0, mode="float", sizing_mode='stretch_width')
         self.delay_input.value = 5.0
 
-        self.speed_slider = Slider(name="speed", start=0, end=1, step=0.1, value=0.1,
-                                   title="Simulation Factor", sizing_mode='stretch_width')
+        self.speed_slider = Slider(name="speed", start=10, end=100, step=10, value=100,
+                                   title="Simulation Gap(ms)", sizing_mode='stretch_width')
 
         self.net_figure = figure(name="network", sizing_mode='stretch_both')
 
@@ -87,7 +87,7 @@ class PlottingApp:
             self.rate_input.disabled = True
             self.delay_input.disabled = True
             self.speed_slider.disabled = True
-            self.callfunc = curdoc().add_periodic_callback(self.loop_simulation, 1000 * self.speed_slider.value)
+            self.callfunc = curdoc().add_periodic_callback(self.loop_simulation, self.speed_slider.value)
             print("running the simulation...")
         else:
             self.run_toggle.label = "Run"
