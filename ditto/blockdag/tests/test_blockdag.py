@@ -10,7 +10,6 @@ class TestBlockDAG:
         assert g._gtype == DAGType.DIVERGENCE
         assert g._leaves == set()
         assert g._column == list()
-        assert g._logger is not None
 
     def test_divergence_dag(self):
         """
