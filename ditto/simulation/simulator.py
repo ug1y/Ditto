@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
 from typing import Union
 
 import simpy as sp
@@ -24,7 +25,6 @@ from simpy import Event
 from simpy.core import SimTime
 from simpy.util import start_delayed
 
-from ditto import logger
 from ditto.network import NetOperator
 from ditto.blockdag import TypeAlias, Block
 
@@ -47,12 +47,15 @@ class Simulator(NetSimulation):
         self._network = network
         self._factor = factor  # The factor to adjust the simulation speed.
 
-        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
+        self._logger: logging.Logger = None  # Logger for this class.
 
         self._network.set_simulator(self)  # Enable network transmission delay.
         self._process_load()  # Load simulation process.
 
         self._counter = 0  # Use for test simulation.
+
+    def set_logger(self, logger: logging.Logger):
+        self._logger = logger
 
     @property
     def network(self) -> NetOperator:
@@ -80,7 +83,8 @@ class Simulator(NetSimulation):
                                (self._factor if self._factor > 0 else 1)
 
             # print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
-            self._logger.info("%s: At simulation time %3.f, mining %s", self.FOR_LOG_NAME, self._env.now, block)
+            if self._logger is not None:
+                self._logger.info("%s: At simulation time %3.f, mining %s", self.FOR_LOG_NAME, self._env.now, block)
             yield self._env.timeout(next_mining_wait)
 
     def _counter_process(self):

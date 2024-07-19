@@ -16,16 +16,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
+
 from bokeh.document import Document
 from bokeh.plotting import figure, curdoc
 from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput)
 from bokeh.server.callbacks import PeriodicCallback
 
+from ditto import config, __version__
 from ditto.simulation import Simulator
-from ditto.network import NetOperator, PeerNet
+from ditto.network import NetOperator, NetFactory
 from ditto.blockdag import DAGType
 from ditto.nodes import ChainRef, NakamotoCons
-import ditto
 
 from .plots import network_plotting, blockdag_plotting
 from .handler import ConsoleHandler
@@ -39,13 +41,11 @@ class PlottingApp:
         self.callfunc: PeriodicCallback = None
 
         self.title = "Ditto: A Hybrid BlockDAG Simulation Framework"
-        self.version = ditto.__version__
-        ditto.logger.Logger.LOGGER_FILTER = ditto.logger.SimulatorFilter()
+        self.version = __version__
 
         self.dag_figure = figure(name="blockdag", sizing_mode='stretch_both')
         self.net_figure = figure(name="network", sizing_mode='stretch_both')
         self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
-        ditto.logger.Logger.LOGGER_HANDLE = ConsoleHandler(self.con_input)
 
         options = ["Bitcoin"]
         self.sys_select = Select(name="system", options=options, sizing_mode='stretch_width')
@@ -109,18 +109,30 @@ class PlottingApp:
             print("system:", self.sys_select.value, "number:", self.num_input.value)
             return
 
-        if self.sys_select.value == "Bitcoin":
-            self.network = PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=self.num_input.value,
-                                   reference_class=ChainRef, consensus_class=NakamotoCons,
-                                   block_creation_rate=self.rate_input.value,
-                                   propagation_delay_parameter=self.delay_input.value)
-            self.simulator = Simulator(self.network)
-
-            # Draw the network graph.
-            network_plotting(self.net_figure, self.network.network_graph)
-
         self.run_toggle.disabled = False
         self.con_input.value = ""
+
+        log_filter = config.SimulatorFilter()
+        log_handler = ConsoleHandler(self.con_input)
+        log_handler.setFormatter(logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s'))
+        log_level = logging.INFO
+
+        mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
+
+        if self.sys_select.value == "Bitcoin":
+            factory = NetFactory(mylogger)
+            self.network = factory.PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=self.num_input.value,
+                                           reference_class=ChainRef, consensus_class=NakamotoCons,
+                                           block_creation_rate=self.rate_input.value,
+                                           propagation_delay_parameter=self.delay_input.value)
+            self.simulator = Simulator(self.network)
+            self.simulator.set_logger(mylogger)
+
+        # Draw the network graph.
+        network_plotting(self.net_figure, self.network.network_graph)
+        # Draw the blockdag graph
+        blockdag_plotting(self.dag_figure, self.network.total_blockdag)
+
         print("Generate a new network...")
 
     def modify_doc(self, doc: Document):

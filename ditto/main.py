@@ -1,12 +1,12 @@
 import logging
 
 from ditto.simulation import Simulator
-from ditto.network import NetOperator, PeerNet
+from ditto.network import NetOperator, NetFactory
 from ditto.nodes import Miner, ChainRef, NakamotoCons
 from ditto.blockdag import BlockDAG, DAGType
 
 import os, sys
-from ditto import logger
+from ditto import config
 
 
 def run_network():
@@ -55,13 +55,21 @@ def run_network():
 
 
 def run_simulation(until: int = 100):
-    logger.Logger.LOGGER_FILTER = logger.SimulatorFilter()
-    logger.Logger.LOGGER_HANDLE = logging.StreamHandler()
 
-    net = PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=5,
-                  reference_class=ChainRef, consensus_class=NakamotoCons,
-                  block_creation_rate=10, propagation_delay_parameter=0)
+    log_filter = config.SimulatorFilter()
+    log_handler = logging.StreamHandler()
+    log_handler.setFormatter(logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s'))
+    log_level = logging.INFO
+
+    mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
+
+    factory = NetFactory(mylogger)
+    net = factory.PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=5,
+                          reference_class=ChainRef, consensus_class=NakamotoCons,
+                          block_creation_rate=10, propagation_delay_parameter=0)
     sim = Simulator(net)
+    sim.set_logger(mylogger)
+
     sim.run(until)
 
     for leaf in net.total_blockdag.get_leaves_blocks():

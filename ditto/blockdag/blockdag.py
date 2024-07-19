@@ -16,11 +16,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
 from collections.abc import Collection
 from typing import Iterator, Any, Set, List
 import networkx as nx
 
-from ditto import logger
 from .block import Block, BlockType
 from .typedef import TypeAlias, DAGType, EdgeType
 
@@ -62,7 +62,10 @@ class BlockDAG(Collection):
         self._leaves = set()  # Set of all the leaves in the graph.
         self._column = list(set())  # List of the set of blocks in the specified height.
 
-        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
+        self._logger: logging.Logger = None  # Logger for this class.
+
+    def set_logger(self, logger: logging.Logger):
+        self._logger = logger
 
     def __contains__(self, bid: type(TypeAlias.BlockID)) -> bool:
         return bid in self._G
@@ -109,7 +112,8 @@ class BlockDAG(Collection):
             return list(self._column)
         elif 0 < height < len(self._column) + 1:
             return list(self._column[height - 1])
-        self._logger.warning("%s: Invalid height.", caller_info())
+        if self._logger is not None:
+            self._logger.warning("%s: Invalid height.", caller_info())
         return []
 
     def get_pivot_chain(self, bid: TypeAlias.BlockID) -> List[TypeAlias.BlockID]:
@@ -119,10 +123,12 @@ class BlockDAG(Collection):
         :return: list[TypeAlias.BlockID].
         """
         if self._gtype == DAGType.DIVERGENCE:
-            self._logger.warning("%s: The divergence graph has no pivot chain.", caller_info())
+            if self._logger is not None:
+                self._logger.warning("%s: The divergence graph has no pivot chain.", caller_info())
             return []
         if bid not in self._G:
-            self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
+            if self._logger is not None:
+                self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
             return []
 
         # Get the pivot chain.
@@ -143,33 +149,40 @@ class BlockDAG(Collection):
 
         # Check the object type.
         if type(block) is not Block:
-            self._logger.warning("%s: Input is not an instance of Block.", caller_info())
+            if self._logger is not None:
+                self._logger.warning("%s: Input is not an instance of Block.", caller_info())
             return False
 
         # Check if the block already exists.
         if self._G.has_node(block.bid):
-            self._logger.warning("%s: Block " + str(block.bid) + " already exists.", caller_info())
+            if self._logger is not None:
+                self._logger.warning("%s: Block " + str(block.bid) + " already exists.", caller_info())
             return False
 
         # Skip the orphan block.
         if block.btype == BlockType.ORPHAN:
-            self._logger.warning("%s: Orphan block cannot be added.", caller_info())
+            if self._logger is not None:
+                self._logger.warning("%s: Orphan block cannot be added.", caller_info())
             return False
 
         # Handle the genesis block.
         if block.btype == BlockType.GENESIS:
             # Check the key data fields of the block.
             if block.miner is not None or block.pref is not None or len(block.crefs) != 0:
-                self._logger.warning("%s: Genesis block must be empty.", caller_info())
+                if self._logger is not None:
+                    self._logger.warning("%s: Genesis block must be empty.", caller_info())
                 return False
             if block.height != 1:
-                self._logger.warning("%s: Genesis block must be at height 1.", caller_info())
+                if self._logger is not None:
+                    self._logger.warning("%s: Genesis block must be at height 1.", caller_info())
                 return False
             # Except parallel graph, the divergence or convergence graph has only one genesis block.
             if self._gtype == DAGType.DIVERGENCE or self._gtype == DAGType.CONVERGENCE:
                 if len(self._column) > 0 and len(self._column[0]) > 0:
-                    self._logger.warning("%s: " + str(self._gtype.name) + "graph is only allowed to have one genesis "
-                                                                          "block.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: " + str(self._gtype.name) +
+                                             "graph is only allowed to have one genesis block.",
+                                             caller_info())
                     return False
 
             # Add the block into the graph.
@@ -179,62 +192,74 @@ class BlockDAG(Collection):
             if len(self._column) == 0:
                 self._column.append(set())
             self._column[0].add(block.bid)
-            self._logger.debug("%s: Genesis block " + str(block.bid) + " added.", caller_info())
+            if self._logger is not None:
+                self._logger.debug("%s: Genesis block " + str(block.bid) + " added.", caller_info())
             return True
 
         # Handle the mined block.
         if block.btype == BlockType.MINED:
             if block.miner is None:
-                self._logger.warning("%s: Mined block must have a miner.", caller_info())
+                if self._logger is not None:
+                    self._logger.warning("%s: Mined block must have a miner.", caller_info())
                 return False
 
             # Check the key data fields of the block in the divergence graph.
             if self._gtype == DAGType.DIVERGENCE:
                 if block.pref is not None:
-                    self._logger.warning("%s: The block in " + str(self._gtype.name) +
-                                         " graph has no pivot parent.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: The block in " + str(self._gtype.name) +
+                                             " graph has no pivot parent.", caller_info())
                     return False
                 if len(block.crefs) == 0:
-                    self._logger.warning("%s: The block in " + str(self._gtype.name) +
-                                         " graph must have at least one reference.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: The block in " + str(self._gtype.name) +
+                                             " graph must have at least one reference.", caller_info())
                     return False
                 max_h = 0
                 for cref in block.crefs:
                     if cref not in self._G:
-                        self._logger.warning("%s: The referenced block " + str(cref) +
-                                             " does not exist.", caller_info())
+                        if self._logger is not None:
+                            self._logger.warning("%s: The referenced block " + str(cref) +
+                                                 " does not exist.", caller_info())
                         return False
                     max_h = max(self._G.nodes[cref][BlockDAG._BLOCK_DATA_KEY].height, max_h)
                 if block.height != max_h + 1:
-                    self._logger.warning("%s: Incorrect height of the mined block.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: Incorrect height of the mined block.", caller_info())
                     return False
 
             # Check the key data fields of the block in the parallel and convergence graph.
             elif self._gtype == DAGType.PARALLEL or self._gtype == DAGType.CONVERGENCE:
                 if block.pref is None:
-                    self._logger.warning("%s: The block in " + str(self._gtype.name) +
-                                         " graph must have a pivot parent.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: The block in " + str(self._gtype.name) +
+                                             " graph must have a pivot parent.", caller_info())
                     return False
                 if block.pref not in self._G:
-                    self._logger.warning("%s: The pivot parent " + str(block.pref) +
-                                         " does not exist.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: The pivot parent " + str(block.pref) +
+                                             " does not exist.", caller_info())
                     return False
                 if block.pref in block.crefs:
-                    self._logger.warning("%s: The pivot parent is repeated in common references.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: The pivot parent is repeated in common references.", caller_info())
                     return False
                 max_h = 0
                 for cref in block.crefs:
                     if cref not in self._G:
-                        self._logger.warning("%s: The referenced block " + str(cref) +
-                                             " does not exist.", caller_info())
+                        if self._logger is not None:
+                            self._logger.warning("%s: The referenced block " + str(cref) +
+                                                 " does not exist.", caller_info())
                         return False
                     max_h = max(self._G.nodes[cref][BlockDAG._BLOCK_DATA_KEY].height, max_h)
                 par_h = self._G.nodes[block.pref][BlockDAG._BLOCK_DATA_KEY].height
                 if max_h > par_h and self._gtype == DAGType.CONVERGENCE:
-                    self._logger.warning("%s: Invalid height of the mined block.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: Invalid height of the mined block.", caller_info())
                     return False
                 if block.height != max(par_h, max_h) + 1:
-                    self._logger.warning("%s: Incorrect height of the mined block.", caller_info())
+                    if self._logger is not None:
+                        self._logger.warning("%s: Incorrect height of the mined block.", caller_info())
                     return False
 
             # Add the block into the graph.
@@ -254,7 +279,8 @@ class BlockDAG(Collection):
             if len(self._column) < block.height:
                 self._column.append(set())
             self._column[block.height - 1].add(block.bid)
-            self._logger.debug("%s: Mined block " + str(block.bid) + " added.", caller_info())
+            if self._logger is not None:
+                self._logger.debug("%s: Mined block " + str(block.bid) + " added.", caller_info())
             return True
 
         return False
@@ -266,7 +292,8 @@ class BlockDAG(Collection):
         :return: bool.
         """
         if bid not in self._G:
-            self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
+            if self._logger is not None:
+                self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
             return False
 
         if bid not in self._leaves:
@@ -287,7 +314,8 @@ class BlockDAG(Collection):
         if len(self._column[b.height - 1]) == 0:
             self._column.pop(b.height - 1)
 
-        self._logger.debug("%s: Block " + str(bid) + " has been cut.", caller_info())
+        if self._logger is not None:
+            self._logger.debug("%s: Block " + str(bid) + " has been cut.", caller_info())
         return True
 
     def ask_block(self, bid: TypeAlias.BlockID) -> Block | None:
@@ -297,7 +325,8 @@ class BlockDAG(Collection):
         :return: Block.
         """
         if bid not in self._G:
-            self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
+            if self._logger is not None:
+                self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
             return None
         return self._G.nodes[bid][BlockDAG._BLOCK_DATA_KEY]
 
@@ -340,7 +369,8 @@ class BlockDAG(Collection):
         :return:
         """
         if bid not in self._G:
-            self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
+            if self._logger is not None:
+                self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
             return None
         views = set()
         queue = [bid]

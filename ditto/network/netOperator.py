@@ -20,7 +20,6 @@ from typing import Set
 
 import numpy as np
 
-from ditto import logger
 from ditto.simulation import NetSimulation
 from ditto.nodes import Miner
 from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType, BlockType
@@ -49,8 +48,6 @@ class NetOperator(NetContainer):
         self.total_blockdag = total_blockdag  # The total blockDAG of the network.
         self._simulator: NetSimulation = None  # The simulator to simulate network delay.
 
-        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
-
     def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
         return self.network_graph.nodes[miner][NetOperator._MINER_DATA_KEY]
 
@@ -67,8 +64,9 @@ class NetOperator(NetContainer):
         :return: bool
         """
         if miner.blockdag.get_graph_type() != self.get_blockdag_type():
-            self._logger.warning("%s: Add miner %s failed, blockDAG type mismatch.",
-                                 self.FOR_LOG_NAME, str(miner.get_name()))
+            if self._logger is not None:
+                self._logger.warning("%s: Add miner %s failed, blockDAG type mismatch.",
+                                     self.FOR_LOG_NAME, str(miner.get_name()))
             return
 
         miner_name = miner.get_name()
@@ -76,7 +74,9 @@ class NetOperator(NetContainer):
         self.network_graph.nodes[miner_name][NetOperator._MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY] = hash_rate
         miner.set_network(self)
-        self._logger.info("%s: Add miner %s with hash rate " + str(hash_rate), self.FOR_LOG_NAME, str(miner_name))
+        if self._logger is not None:
+            self._logger.info("%s: Add miner %s with hash rate " + str(hash_rate),
+                              self.FOR_LOG_NAME, str(miner_name))
 
     def del_miner(self, miner_name: TypeAlias.MinerName):
         """
@@ -99,8 +99,9 @@ class NetOperator(NetContainer):
         sender = self[source_miner]
         receiver = self[target_miner]
         if hash(block) in sender:
-            self._logger.info("%s: Sending block " + str(hash(block)) + " from %s to %s.",
-                              self.FOR_LOG_NAME, str(source_miner), str(target_miner))
+            if self._logger is not None:
+                self._logger.info("%s: Sending block " + str(hash(block)) + " from %s to %s.",
+                                  self.FOR_LOG_NAME, str(source_miner), str(target_miner))
             # Use the simulator to simulate network delay.
             delay = self.get_delay(source_miner, target_miner)
             if self._simulator is not None and delay > 0:
@@ -118,8 +119,9 @@ class NetOperator(NetContainer):
         if hash(block) not in self.total_blockdag:
             self.total_blockdag.add_block(block)  # Every new mined block will be added to the total blockDAG.
 
-        self._logger.info("%s: Miner %s broadcasts block " + str(hash(block)),
-                          self.FOR_LOG_NAME, str(source_miner))
+        if self._logger is not None:
+            self._logger.info("%s: Miner %s broadcasts block " + str(hash(block)),
+                              self.FOR_LOG_NAME, str(source_miner))
         peers = self.get_neighbors(source_miner)
         for peer_name in peers:
             self.send_block(source_miner, peer_name, block)
@@ -130,7 +132,9 @@ class NetOperator(NetContainer):
         :param target_miner: TypeAlias.MinerName
         :param bid: TypeAlias.BlockID
         """
-        self._logger.info("%s: Miner %s fetches block " + str(bid), self.FOR_LOG_NAME, str(target_miner))
+        if self._logger is not None:
+            self._logger.info("%s: Miner %s fetches block " + str(bid),
+                              self.FOR_LOG_NAME, str(target_miner))
         for peer_name in self.get_neighbors(target_miner):
             self.send_block(peer_name, target_miner, self.total_blockdag[bid])
 
@@ -168,8 +172,9 @@ class NetOperator(NetContainer):
         :return: Set[Block]
         """
         if self.get_blockdag_type() in {DAGType.DIVERGENCE, DAGType.CONVERGENCE} and genesis_block_num != 1:
-            self._logger.warning("%s: " + str(self.get_blockdag_type().name) +
-                                 "blockDAG is allowed to have only one genesis block.", self.FOR_LOG_NAME)
+            if self._logger is not None:
+                self._logger.warning("%s: " + str(self.get_blockdag_type().name) +
+                                     "blockDAG is allowed to have only one genesis block.", self.FOR_LOG_NAME)
             return set()
 
         genesis_blocks = set()

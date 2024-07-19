@@ -16,28 +16,43 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
+
 from ditto.nodes import Miner, ReferIface, ConsusIface
 from ditto.blockdag import DAGType, BlockDAG
 
 from .netOperator import NetOperator
 
 
-def PeerNet(blockdag_type: DAGType, number_of_miners: int,
-            reference_class: type[ReferIface], consensus_class: type[ConsusIface],
-            block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-    """Peer to peer network in which the number of neighbors is half of network scale."""
+class NetFactory:
+    def __init__(self, logger: logging.Logger = None):
+        self._logger = logger
 
-    net = NetOperator(BlockDAG(blockdag_type), propagation_delay_parameter, block_creation_rate)
-    b1 = net.init_network().pop()
+    def PeerNet(self, blockdag_type: DAGType, number_of_miners: int,
+                reference_class: type[ReferIface], consensus_class: type[ConsusIface],
+                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+        """Peer to peer network in which the number of neighbors is half of network scale."""
+        dag_for_net = BlockDAG(blockdag_type)
+        dag_for_net.set_logger(self._logger)
 
-    for c in range(number_of_miners):
-        name = 'Miner' + str(c + 1)
-        miner = Miner(name, BlockDAG(blockdag_type), int(number_of_miners / 3 + 1))
-        miner.pre_launch(b1, reference_class, consensus_class)
-        net.add_miner(miner)
+        net = NetOperator(dag_for_net, propagation_delay_parameter, block_creation_rate)
+        net.set_logger(self._logger)
 
-    for i in net:
-        net[i].discover_peer()
+        b1 = net.init_network().pop()
 
-    return net
+        for c in range(number_of_miners):
+            name = 'Miner' + str(c + 1)
 
+            dag_for_miner = BlockDAG(blockdag_type)
+            dag_for_miner.set_logger(self._logger)
+
+            miner = Miner(name, dag_for_miner, int(number_of_miners / 3 + 1))
+            miner.set_logger(self._logger)
+
+            miner.pre_launch(b1, reference_class, consensus_class)
+            net.add_miner(miner)
+
+        for i in net:
+            net[i].discover_peer()
+
+        return net

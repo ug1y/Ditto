@@ -17,6 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
+import uuid
 
 
 class NothingFilter(logging.Filter):
@@ -26,7 +27,7 @@ class NothingFilter(logging.Filter):
 
 class SimulatorFilter(logging.Filter):
     def filter(self, record):
-        if record.name in {'ditto.simulation.simulator'}:
+        if record.args[0] == 'simulator':
             return True
         else:
             return False
@@ -34,8 +35,7 @@ class SimulatorFilter(logging.Filter):
 
 class NetworkFilter(logging.Filter):
     def filter(self, record):
-        if (record.name in {'ditto.network.netOperator', 'ditto.network.netContainer', 'ditto.blockdag.blockdag'}) \
-                and (record.args[0] == 'network'):
+        if record.args[0] == 'network':
             return True
         else:
             return False
@@ -47,33 +47,23 @@ class MinerFilter(logging.Filter):
         self.miner_name = miner_name
 
     def filter(self, record):
-        if record.name in {'ditto.nodes.miner', 'ditto.blockdag.blockdag'} \
-                and (self.miner_name in record.args):
+        if record.args[0] == self.miner_name:
             return True
         else:
             return False
 
 
-class Logger:
-    LOGGER_FILTER = NothingFilter()
-    LOGGER_LEVEL = logging.INFO
-    LOGGER_HANDLE = None
-    LOGGER_FORMAT = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s')
-
+class MyLogger:
     # logging.basicConfig(format='[%(asctime)s] %(levelname)s - '
     #                            '[Location] %(name)s:%(lineno)d - '
     #                            '[%(funcName)s] %(message)s',
     #                     datefmt='%Y-%m-%d %H:%M:%S')
 
-    def __init__(self, name: str):
-        self._logger = logging.getLogger(name)
-        if Logger.LOGGER_HANDLE is not None:
-            self._console = Logger.LOGGER_HANDLE
-            self._console.setFormatter(Logger.LOGGER_FORMAT)
-            self._logger.addHandler(self._console)
+    def __init__(self, log_handler: logging.Handler, log_filter: logging.Filter, log_level: int):
+        self._logger = logging.getLogger(str(uuid.uuid4()))
+        self._logger.addHandler(log_handler)
+        self._logger.addFilter(log_filter)
+        self._logger.setLevel(log_level)
 
     def getLogger(self) -> logging.Logger:
-        self._logger.setLevel(Logger.LOGGER_LEVEL)
-        self._logger.addFilter(Logger.LOGGER_FILTER)
-
         return self._logger

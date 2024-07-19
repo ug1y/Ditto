@@ -16,13 +16,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
 from collections import deque
 from typing import Set
 
 import networkx as nx
 import numpy as np
 
-from ditto import logger
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
 
@@ -49,10 +49,13 @@ class Miner:
         self._mined_blocks = set()  # Record the set of blocks mined by the miner.
         self._block_queue = nx.DiGraph()  # A graph for the received blocks that lack parents.
 
-        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
+        self._logger: logging.Logger = None  # Logger for this class.
 
         self.refer_handler: ReferIface = None
         self.consus_handler: ConsusIface = None
+
+    def set_logger(self, logger: logging.Logger):
+        self._logger = logger
 
     def __contains__(self, bid: TypeAlias.BlockID) -> bool:
         return bid in self.blockdag
@@ -142,7 +145,8 @@ class Miner:
         :return: set[MinerName]
         """
         if self._network is None:
-            self._logger.warning("%s: Network handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Network handler is not set.", self._name)
             return set()
 
         return self._network.get_neighbors(self._name)
@@ -153,13 +157,16 @@ class Miner:
         :return: Block
         """
         if self._network is None:
-            self._logger.warning("%s: Network handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Network handler is not set.", self._name)
             return None
         if self._genesis_block == 0:
-            self._logger.warning("%s: genesis block should be set before mining.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: genesis block should be set before mining.", self._name)
             return None
         if self.refer_handler is None:
-            self._logger.warning("%s: Reference handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Reference handler is not set.", self._name)
             return None
 
         # Use the reference handler to select the pref and crefs.
@@ -172,7 +179,8 @@ class Miner:
 
         # TODO: 从交易池中拿交易来构建新区块
 
-        self._logger.info("%s: Mined a new block %d.", self._name, hash(block))
+        if self._logger is not None:
+            self._logger.info("%s: Mined a new block %d.", self._name, hash(block))
 
         if not self.add_block(block):  # The block will be broadcast by _basic_block_add.
             return None
@@ -201,7 +209,8 @@ class Miner:
         :param block: Block
         :return: bool
         """
-        self._logger.debug("%s: Received a new block %d and tries to add it.", self._name, hash(block))
+        if self._logger is not None:
+            self._logger.debug("%s: Received a new block %d and tries to add it.", self._name, hash(block))
 
         if not self._is_valid_block(block):
             return False
@@ -257,11 +266,13 @@ class Miner:
         :return: bool
         """
         if self.consus_handler is None:
-            self._logger.warning("%s: Consensus handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Consensus handler is not set.", self._name)
             return False
 
         if self.blockdag.add_block(block):
-            self._logger.info("%s: Successfully added the block %d and broadcasts it.", self._name, hash(block))
+            if self._logger is not None:
+                self._logger.info("%s: Successfully added the block %d and broadcasts it.", self._name, hash(block))
             # broadcast the block to neighbors.
             # self._network.broadcast_block(self._name, block)
             self.broadcast_block(block)
@@ -314,9 +325,11 @@ class Miner:
         :return: bool
         """
         if self._network is None:
-            self._logger.warning("%s: Network handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Network handler is not set.", self._name)
             return False
-        self._logger.info("%s: Connects to %s with delay %.1f.", self._name, peer_name, delay)
+        if self._logger is not None:
+            self._logger.info("%s: Connects to %s with delay %.1f.", self._name, peer_name, delay)
         return self._network.connect_peer(self._name, peer_name, delay)
 
     def remove_peer(self, peer_name: TypeAlias.MinerName) -> bool:
@@ -326,9 +339,11 @@ class Miner:
         :return: bool
         """
         if self._network is None:
-            self._logger.warning("%s: Network handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Network handler is not set.", self._name)
             return False
-        self._logger.info("%s: Disconnects with %s.", self._name, peer_name)
+        if self._logger is not None:
+            self._logger.info("%s: Disconnects with %s.", self._name, peer_name)
         return self._network.remove_peer(self._name, peer_name)
 
     def send_block(self, target_miner: TypeAlias.MinerName, block: Block):
@@ -339,7 +354,8 @@ class Miner:
         :return: bool
         """
         if self._network is None:
-            self._logger.warning("%s: Network handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Network handler is not set.", self._name)
             return
         self._network.send_block(self._name, target_miner, block)
 
@@ -350,7 +366,8 @@ class Miner:
         :return: bool
         """
         if self._network is None:
-            self._logger.warning("%s: Network handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Network handler is not set.", self._name)
             return
         self._network.broadcast_block(self._name, block)
 
@@ -361,6 +378,7 @@ class Miner:
         :return: bool
         """
         if self._network is None:
-            self._logger.warning("%s: Network handler is not set.", self._name)
+            if self._logger is not None:
+                self._logger.warning("%s: Network handler is not set.", self._name)
             return
         self._network.fetch_block(self._name, bid)

@@ -1,6 +1,6 @@
 __version__ = '0.1.0'
 
-from . import logger
+from . import config
 
 from .blockdag import TypeAlias
 from .blockdag import Transaction, TransactionType
@@ -10,7 +10,7 @@ from .blockdag import BlockDAG, DAGType, EdgeType
 from .simulation import NetSimulation, Simulator
 
 from .network import NetContainer, NetOperator
-from .network import PeerNet
+from .network import NetFactory
 
 from .nodes import ReferIface, ConsusIface, Miner
 from .nodes import SimpleRef, ChainRef

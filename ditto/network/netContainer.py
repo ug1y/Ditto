@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
 import random
 from abc import abstractmethod
 from typing import Set, Collection, Iterator
@@ -23,7 +24,6 @@ from typing import Set, Collection, Iterator
 import networkx as nx
 import numpy as np
 
-from ditto import logger
 from ditto.blockdag import TypeAlias, Block
 
 
@@ -44,7 +44,10 @@ class NetContainer(Collection):
         self.network_graph = nx.Graph()  # The network graph.
         self.propagation_delay_parameter = propagation_delay_parameter  # The delay parameters for the network
 
-        self._logger = logger.Logger(__name__).getLogger()  # Logger for this class.
+        self._logger: logging.Logger = None  # Logger for this class.
+
+    def set_logger(self, logger: logging.Logger):
+        self._logger = logger
 
     def __contains__(self, miner_name: type(TypeAlias.MinerName)) -> bool:
         return miner_name in self.network_graph
@@ -81,8 +84,9 @@ class NetContainer(Collection):
         if miner_name not in self.network_graph or peer_name not in self.network_graph:
             return False
 
-        self._logger.info("%s: Connect %s and %s with delay " + str(delay),
-                          self.FOR_LOG_NAME, str(miner_name), str(peer_name))
+        if self._logger is not None:
+            self._logger.info("%s: Connect %s and %s with delay " + str(delay),
+                              self.FOR_LOG_NAME, str(miner_name), str(peer_name))
         self.network_graph.add_edge(miner_name, peer_name)
         self.network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY] = delay
         return True
@@ -97,7 +101,8 @@ class NetContainer(Collection):
         if miner_name not in self.network_graph or peer_name not in self.network_graph:
             return False
 
-        self._logger.info("%s: Disconnect %s and %s", self.FOR_LOG_NAME, str(miner_name), str(peer_name))
+        if self._logger is not None:
+            self._logger.info("%s: Disconnect %s and %s", self.FOR_LOG_NAME, str(miner_name), str(peer_name))
         self.network_graph.remove_edge(miner_name, peer_name)
         return True
 
