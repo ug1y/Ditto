@@ -120,7 +120,8 @@ class NetOperator(NetContainer):
         """
         if hash(block) not in self.total_blockdag:
             self.total_blockdag.add_block(block)  # Every new mined block will be added to the total blockDAG.
-            self.consus_handler.execute_consensus()  # Execute the consensus algorithm.
+            if self.consus_handler is not None:
+                self.consus_handler.execute_consensus()  # Execute the consensus algorithm.
 
         if self._logger is not None:
             self._logger.info("%s: Miner %s broadcasts block " + str(hash(block)),

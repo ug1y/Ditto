@@ -276,7 +276,8 @@ class Miner:
             # broadcast the block to neighbors.
             self.broadcast_block(block)
             # execute the consensus
-            self.consus_handler.execute_consensus()
+            if self.consus_handler is not None:
+                self.consus_handler.execute_consensus()
             return True
         return False
 
