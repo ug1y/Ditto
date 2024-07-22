@@ -89,12 +89,15 @@ class PlottingApp:
                                    title="Simulation Gap(ms)", sizing_mode='stretch_width')
 
     def loop_simulation(self):
+        consus = self.network.consus_handler
         dag = self.network.total_blockdag
+
         old_scale = len(dag)
         self.simulator.run(self.simulator.now + 1)
         new_scale = len(dag)
+
         if new_scale > old_scale:
-            blockdag_plotting(self.dag_figure, dag)
+            blockdag_plotting(self.dag_figure, dag, consus)
 
     def run_change_event(self, attr, old, new):
         if self.run_toggle.active:
@@ -148,7 +151,7 @@ class PlottingApp:
         # Draw the network graph.
         network_plotting(self.net_figure, self.network.network_graph)
         # Draw the blockdag graph
-        blockdag_plotting(self.dag_figure, self.network.total_blockdag)
+        blockdag_plotting(self.dag_figure, self.network.total_blockdag, self.network.consus_handler)
 
         print("Generate a new network...")
 

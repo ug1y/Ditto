@@ -21,6 +21,7 @@ from bokeh.models import (GraphRenderer, ColumnDataSource, Circle, MultiLine, St
                           Range1d, Rect, Text)
 from bokeh.plotting import figure
 
+from ditto.nodes import ConsusIface, StatusType
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, EdgeType
 
@@ -33,14 +34,18 @@ def cal_loc(idx, nds, x_zoom, y_zoom):
     return loc
 
 
-def blockdag_plotting(fig: figure, dag: BlockDAG):
+def blockdag_plotting(fig: figure, dag: BlockDAG, consus: ConsusIface):
     # Use GraphRenderer to draw the network graph.
     renderer = GraphRenderer()
 
     # Setting node data and glyph.
     renderer.node_renderer.data_source = ColumnDataSource({
-        'index': list(dag)})
-    renderer.node_renderer.glyph = Rect(width=0.5, height=0.5, fill_color="skyblue")
+        'index': list(dag),
+        'color': ["hotpink" if consus.block_status(b) == StatusType.DECIDED else "dimgray" for b in dag],
+        'width': [4 if consus.block_status(b) == StatusType.DECIDED else 2 for b in dag],
+    })
+    renderer.node_renderer.glyph = Rect(width=0.5, height=0.5, fill_color="skyblue",
+                                        line_color="color", line_width="width")
 
     # Setting edge data and glyph.
 

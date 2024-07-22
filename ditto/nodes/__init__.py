@@ -1,5 +1,5 @@
 from .referIface import ReferIface
-from .consusIface import ConsusIface
+from .consusIface import ConsusIface, StatusType
 from .miner import Miner
 
 from .refer_strategies.rrr import RRR

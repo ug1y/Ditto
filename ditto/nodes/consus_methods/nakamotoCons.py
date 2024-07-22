@@ -36,7 +36,7 @@ class NakamotoCons(ConsusIface):
         self._blocks_marked = dict()
         self._sorted_blocks = list()
         self._height_pointer = 0
-        self._safe_depth = 3
+        self._safe_depth = 6
 
     def execute_consensus(self) -> TypeAlias.BlockHeight:
         old_height_pointer = self._height_pointer

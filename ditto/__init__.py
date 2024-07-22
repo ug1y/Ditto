@@ -12,6 +12,6 @@ from .simulation import NetSimulation, Simulator
 from .network import NetContainer, NetOperator
 from .network import NetFactory
 
-from .nodes import ReferIface, ConsusIface, Miner
+from .nodes import ReferIface, ConsusIface, Miner, StatusType
 from .nodes import SimpleRef, ChainRef
 from .nodes import NakamotoCons
