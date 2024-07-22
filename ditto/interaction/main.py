@@ -20,7 +20,8 @@ import logging
 
 from bokeh.document import Document
 from bokeh.plotting import figure, curdoc
-from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput)
+from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput, WheelZoomTool, PanTool,
+                          SingleIntervalTicker, LinearAxis, FixedTicker)
 from bokeh.server.callbacks import PeriodicCallback
 
 from ditto import config, __version__
@@ -43,30 +44,46 @@ class PlottingApp:
         self.title = "Ditto: A Hybrid BlockDAG Simulation Framework"
         self.version = __version__
 
-        self.dag_figure = figure(name="blockdag", sizing_mode='stretch_both')
-        self.net_figure = figure(name="network", sizing_mode='stretch_both')
+        self.dag_figure = figure(name="blockdag", sizing_mode='stretch_both',
+                                 tools=['wheel_zoom', 'pan', 'reset'],
+                                 active_drag='pan', active_scroll='wheel_zoom')
+        self.dag_figure.select_one(PanTool).dimensions = "width"
+        self.dag_figure.yaxis.visible = False
+        self.dag_figure.ygrid.visible = False
+        self.dag_figure.xaxis.ticker = SingleIntervalTicker(interval=1)
+        self.dag_figure.xaxis.minor_tick_line_color = None
+
+        self.net_figure = figure(name="network", sizing_mode='stretch_both',
+                                 tools=['wheel_zoom', 'pan', 'reset'],
+                                 active_drag='pan', active_scroll='wheel_zoom')
+        self.net_figure.axis.visible = False
+
         self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
 
         options = ["Bitcoin"]
-        self.sys_select = Select(name="system", options=options, sizing_mode='stretch_width')
+        self.sys_select = Select(name="system", title="Choose System", height=50,
+                                 options=options, sizing_mode='stretch_width')
         self.sys_select.value = options[0]
 
-        self.num_input = NumericInput(name="number", low=1, high=100, sizing_mode='stretch_width')
+        self.num_input = NumericInput(name="number", title="Network Scale", height=50,
+                                      low=1, high=100, sizing_mode='stretch_width')
         self.num_input.value = 6
 
+        self.rate_input = NumericInput(name="rate", title="Block Creation Rate", height=50,
+                                       low=0, mode="float", sizing_mode='stretch_width')
+        self.rate_input.value = 10.0
+
+        self.delay_input = NumericInput(name="delay", title="Propagation Delay", height=50,
+                                        low=0, mode="float", sizing_mode='stretch_width')
+        self.delay_input.value = 5.0
+
         self.gen_button = Button(name="generate", label="Generate Network", sizing_mode='stretch_width',
-                                 button_type="primary", height=40)
+                                 button_type="primary", height=45)
         self.gen_button.on_click(self.gen_click_event)
 
         self.run_toggle = Toggle(name="running", label="▶ Run", sizing_mode='stretch_width',
-                                 button_type="success", height=40, disabled=True)
+                                 button_type="success", height=45, disabled=True)
         self.run_toggle.on_change("active", self.run_change_event)
-
-        self.rate_input = NumericInput(name="rate", low=0, mode="float", sizing_mode='stretch_width')
-        self.rate_input.value = 10.0
-
-        self.delay_input = NumericInput(name="delay", low=0, mode="float", sizing_mode='stretch_width')
-        self.delay_input.value = 5.0
 
         self.speed_slider = Slider(name="speed", start=10, end=100, step=10, value=100,
                                    title="Simulation Gap(ms)", sizing_mode='stretch_width')

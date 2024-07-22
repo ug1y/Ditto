@@ -40,7 +40,7 @@ def blockdag_plotting(fig: figure, dag: BlockDAG):
     # Setting node data and glyph.
     renderer.node_renderer.data_source = ColumnDataSource({
         'index': list(dag)})
-    renderer.node_renderer.glyph = Rect(width=5, height=0.5, fill_color="skyblue")
+    renderer.node_renderer.glyph = Rect(width=0.5, height=0.5, fill_color="skyblue")
 
     # Setting edge data and glyph.
 
@@ -59,13 +59,13 @@ def blockdag_plotting(fig: figure, dag: BlockDAG):
     # Update the view of the figure.
     view_n = 10
     view_x = max(len(dag.get_column_blocks()), view_n)
-    fig.x_range = Range1d((view_x - view_n) * 10 - 5, view_x * 10 - 5)
+    fig.x_range = Range1d((view_x - view_n) + 0.5, view_x + 0.5)
     fig.y_range = Range1d(0, 10)
 
     # Compute the layout of the nodes.
     layout = {}
     for i, v in enumerate(dag.get_column_blocks()):
-        layout.update(cal_loc(i, v, 10, 10))
+        layout.update(cal_loc(i + 1, v, 1, 10))
     renderer.layout_provider = StaticLayoutProvider(graph_layout=layout)
 
     # Refresh the figure.

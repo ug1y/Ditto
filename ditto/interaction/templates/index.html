@@ -23,7 +23,7 @@
 </section>
 
 <section class="section" style="padding: 24px; padding-top: 24px;">
-    <div class="columns">
+    <div class="columns is-vcentered is-desktop">
         <div class="column is-8">
             <article class="message" style="height: 480px">
                 <div class="message-header" style="height: 50px">
@@ -43,71 +43,37 @@
             </article>
         </div>
         <div class="column is-4">
-            <article class="message" style="height: 380px">
+            <article class="message" style="height: 340px">
                 <div class="message-header" style="height: 50px">
                     <p class="title is-4 has-text-light">控制台</p>
                 </div>
-                <div class="message-body" style="height: 330px">
-                    <div class="columns is-vcentered" style="height: 50px">
-                        <div class="column is-1" style="padding: 0px; padding-right: 10px">
-                            <label class="label">[1] </label>
-                        </div>
-                        <div class="column is-5" style="padding: 0px">
-                            <label class="label">Choose System: </label>
-                        </div>
+                <div class="message-body" style="height: 290px">
+                    <div class="columns is-vcentered is-mobile">
                         <div class="column is-6" style="padding: 0px">
                             {{ embed(roots.system) }}
-                        </div>
-                    </div>
-                    <div class="columns is-vcentered" style="height: 50px">
-                        <div class="column is-1" style="padding: 0px; padding-right: 10px">
-                            <label class="label">[2] </label>
-                        </div>
-                        <div class="column is-5" style="padding: 0px">
-                            <label class="label">Network Scale: </label>
                         </div>
                         <div class="column is-6" style="padding: 0px">
                             {{ embed(roots.number) }}
                         </div>
                     </div>
-                    <div class="columns is-vcentered" style="height: 50px">
-                        <div class="column is-1" style="padding: 0px; padding-right: 10px">
-                            <label class="label">[3] </label>
-                        </div>
-                        <div class="column is-5" style="padding: 0px">
-                            <label class="label">Block Creation Rate: </label>
-                        </div>
+                    <div class="columns is-vcentered is-mobile">
                         <div class="column is-6" style="padding: 0px">
                             {{ embed(roots.rate) }}
-                        </div>
-                    </div>
-                    <div class="columns is-vcentered" style="height: 50px">
-                        <div class="column is-1" style="padding: 0px; padding-right: 10px">
-                            <label class="label">[4] </label>
-                        </div>
-                        <div class="column is-5" style="padding: 0px">
-                            <label class="label">Propagation Delay: </label>
                         </div>
                         <div class="column is-6" style="padding: 0px">
                             {{ embed(roots.delay) }}
                         </div>
                     </div>
-                    <div class="columns is-vcentered" style="height: 50px">
-                        <div class="column is-1" style="padding: 0px; padding-right: 10px">
-                            <label class="label">[5] </label>
-                        </div>
-                        <div class="column is-11" style="padding: 0px">
+                    <div class="columns is-vcentered is-mobile">
+                        <div class="column is-12" style="padding: 0px">
                             {{ embed(roots.generate) }}
                         </div>
                     </div>
 
-                    <hr style="background-color: grey; height: 2px; margin-top: 0px; margin-bottom: 18px">
+                    <hr style="background-color: grey; height: 2px; margin-top: 12px; margin-bottom: 24px">
 
-                    <div class="columns is-vcentered" style="height: 50px">
-                        <div class="column is-1" style="padding: 0px; padding-right: 10px">
-                            <label class="label">[6] </label>
-                        </div>
-                        <div class="column is-5" style="padding: 0px">
+                    <div class="columns is-vcentered is-mobile">
+                        <div class="column is-6" style="padding: 0px">
                             {{ embed(roots.running) }}
                         </div>
                         <div class="column is-6" style="padding: 0px">
@@ -116,11 +82,11 @@
                     </div>
                 </div>
             </article>
-            <article class="message" style="height: 380px">
+            <article class="message" style="height: 420px">
                 <div class="message-header" style="height: 50px">
                     <p class="title is-4 has-text-light">节点网络图</p>
                 </div>
-                <div class="message-body" style="height: 330px">
+                <div class="message-body" style="height: 370px">
                     {{ embed(roots.network) }}
                 </div>
             </article>
