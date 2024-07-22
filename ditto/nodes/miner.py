@@ -274,9 +274,9 @@ class Miner:
             if self._logger is not None:
                 self._logger.info("%s: Successfully added the block %d and broadcasts it.", self._name, hash(block))
             # broadcast the block to neighbors.
-            # self._network.broadcast_block(self._name, block)
             self.broadcast_block(block)
-            # TODO: 此处可以开始执行共识判定了
+            # execute the consensus
+            self.consus_handler.execute_consensus()
             return True
         return False
 

@@ -84,7 +84,8 @@ class Simulator(NetSimulation):
 
             # print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
             if self._logger is not None:
-                self._logger.info("%s: At simulation time %3.f, mining %s", self.FOR_LOG_NAME, self._env.now, block)
+                self._logger.info("%s: At simulation time %3.f, mining %s",
+                                  self.FOR_LOG_NAME, self._env.now, block)
             yield self._env.timeout(next_mining_wait)
 
     def _counter_process(self):

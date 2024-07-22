@@ -43,7 +43,15 @@ class ConsusIface(ABC):
         self.blockdag = blockdag
 
     @abstractmethod
-    def get_block_status(self, bid) -> StatusType:
+    def execute_consensus(self) -> TypeAlias.BlockHeight:
+        """
+        Execute consensus and return the max height of processed blocks.
+        :return: BlockHeight
+        """
+        pass
+
+    @abstractmethod
+    def block_status(self, bid) -> StatusType:
         """
         Get the block status including invalid, unclear, exclude, and decided.
         :param bid:
@@ -52,7 +60,7 @@ class ConsusIface(ABC):
         pass
 
     @abstractmethod
-    def get_decided_blocks(self) -> Set[TypeAlias.BlockID]:
+    def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
         """
         Get the decided blocks that is already on consensus.
         :return: Set[TypeAlias.BlockID]
@@ -60,7 +68,7 @@ class ConsusIface(ABC):
         pass
 
     @abstractmethod
-    def sort_finished_blocks(self, filter_decided: bool = False) -> List[TypeAlias.BlockID]:
+    def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
         """
         Sort the finished blocks filtering decided status or containing excluded status.
         :return: List[TypeAlias.BlockID]

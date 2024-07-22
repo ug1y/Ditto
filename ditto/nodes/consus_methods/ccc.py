@@ -27,11 +27,14 @@ from ..consusIface import ConsusIface, StatusType
 
 class CCC(ConsusIface):
 
-    def get_block_status(self, bid) -> StatusType:
+    def execute_consensus(self) -> TypeAlias.BlockHeight:
         pass
 
-    def get_decided_blocks(self) -> Set[TypeAlias.BlockID]:
+    def block_status(self, bid) -> StatusType:
         pass
 
-    def sort_finished_blocks(self, filter_decided: bool = False) -> List[TypeAlias.BlockID]:
+    def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
+        pass
+
+    def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
         pass

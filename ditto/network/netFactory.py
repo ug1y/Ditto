@@ -37,6 +37,7 @@ class NetFactory:
 
         net = NetOperator(dag_for_net, propagation_delay_parameter, block_creation_rate)
         net.set_logger(self._logger)
+        net.set_consus_handler(consensus_class)
 
         b1 = net.init_network().pop()
 

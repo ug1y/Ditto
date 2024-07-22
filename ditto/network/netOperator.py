@@ -21,7 +21,7 @@ from typing import Set
 import numpy as np
 
 from ditto.simulation import NetSimulation
-from ditto.nodes import Miner
+from ditto.nodes import Miner, ConsusIface
 from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType, BlockType
 
 from .netContainer import NetContainer
@@ -47,6 +47,8 @@ class NetOperator(NetContainer):
         self.block_creation_rate = block_creation_rate  # The block creation rate of the network.
         self.total_blockdag = total_blockdag  # The total blockDAG of the network.
         self._simulator: NetSimulation = None  # The simulator to simulate network delay.
+
+        self.consus_handler: ConsusIface = None
 
     def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
         return self.network_graph.nodes[miner][NetOperator._MINER_DATA_KEY]
@@ -118,6 +120,7 @@ class NetOperator(NetContainer):
         """
         if hash(block) not in self.total_blockdag:
             self.total_blockdag.add_block(block)  # Every new mined block will be added to the total blockDAG.
+            self.consus_handler.execute_consensus()  # Execute the consensus algorithm.
 
         if self._logger is not None:
             self._logger.info("%s: Miner %s broadcasts block " + str(hash(block)),
@@ -183,3 +186,10 @@ class NetOperator(NetContainer):
             genesis_blocks.add(block)
             self.total_blockdag.add_block(block)
         return genesis_blocks
+
+    def set_consus_handler(self, consus_class: type[ConsusIface]):
+        """
+        Set the consensus handler.
+        :param consus_class: type[ConsusIface]
+        """
+        self.consus_handler = consus_class(self.total_blockdag)

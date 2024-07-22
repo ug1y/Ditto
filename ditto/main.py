@@ -75,6 +75,12 @@ def run_simulation(until: int = 100):
     for leaf in net.total_blockdag.get_leaves_blocks():
         print(net.total_blockdag.get_pivot_chain(leaf))
 
+    print(net.consus_handler.get_processed_blocks())
+    print(net.consus_handler.sort_finished_blocks())
+    print(net.consus_handler.block_status(5))
+    print(net.consus_handler.block_status(10))
+    print(net.consus_handler.block_status(15))
+
 
 def run_server(port: int = 5006):
     print('Opening Bokeh application on http://localhost:' + str(port) + '/')

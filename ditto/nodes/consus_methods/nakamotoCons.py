@@ -38,10 +38,34 @@ class NakamotoCons(ConsusIface):
         self._height_pointer = 0
         self._safe_depth = 3
 
-    def get_block_status(self, bid) -> StatusType:
-        if len(self.blockdag.get_column_blocks()) > self._height_pointer:
-            self._execute_consensus()
+    def execute_consensus(self) -> TypeAlias.BlockHeight:
+        old_height_pointer = self._height_pointer
+        self._height_pointer = len(self.blockdag.get_column_blocks())  # Update the height pointer.
 
+        cur_height = old_height_pointer - self._safe_depth
+        tar_height = self._height_pointer - self._safe_depth
+        if tar_height < 0:  # Not reach the safe depth.
+            return 0
+
+        if self._height_pointer == old_height_pointer:
+            return tar_height
+
+        potential_bid = self._max_hash_power(self.blockdag.get_leaves_blocks())
+        pivot_chain = self.blockdag.get_pivot_chain(potential_bid)
+
+        for h in range(max(0, cur_height), tar_height):
+            col_bids = self.blockdag.get_column_blocks(h + 1)
+            sor_bids = sorted(col_bids)  # Sort all blocks by hash value.
+            for bid in sor_bids:  # Mark the decided and excluded blocks.
+                if bid in pivot_chain:
+                    self._blocks_marked[bid] = StatusType.DECIDED
+                else:
+                    self._blocks_marked[bid] = StatusType.EXCLUDE
+            self._sorted_blocks.extend(sor_bids)
+
+        return tar_height
+
+    def block_status(self, bid) -> StatusType:
         if bid not in self.blockdag:
             return StatusType.INVALID
         elif bid not in self._blocks_marked:
@@ -49,24 +73,21 @@ class NakamotoCons(ConsusIface):
         else:
             return self._blocks_marked[bid]
 
-    def get_decided_blocks(self) -> Set[TypeAlias.BlockID]:
-        if len(self.blockdag.get_column_blocks()) > self._height_pointer:
-            self._execute_consensus()
+    def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
+        if status is None:
+            return set(self._blocks_marked.keys())
 
-        decided_bids = set()
-        for bid, status in self._blocks_marked.items():
-            if status == StatusType.DECIDED:
-                decided_bids.add(bid)
-        return decided_bids
+        processed_bids = set()
+        for bid, bst in self._blocks_marked.items():
+            if status == bst:
+                processed_bids.add(bid)
+        return processed_bids
 
-    def sort_finished_blocks(self, filter_decided: bool = False) -> List[TypeAlias.BlockID]:
-        if len(self.blockdag.get_column_blocks()) > self._height_pointer:
-            self._execute_consensus()
-
-        if filter_decided:
-            return [bid for bid in self._sorted_blocks if self._blocks_marked[bid] == StatusType.DECIDED]
-        else:
+    def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
+        if status is None:
             return self._sorted_blocks.copy()
+
+        return [bid for bid in self._sorted_blocks if self._blocks_marked[bid] == status]
 
     def _max_hash_power(self, bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
         max_height = len(self.blockdag.get_column_blocks())
