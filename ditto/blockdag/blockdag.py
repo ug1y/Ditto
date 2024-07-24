@@ -52,12 +52,12 @@ class BlockDAG(Collection):
     """
 
     # Dictionary key for the block's data.
-    _BLOCK_DATA_KEY = "block_data"
+    BLOCK_DATA_KEY = "block_data"
     # Dictionary key for the edge's type.
-    _EDGE_TYPE_KEY = "edge_type"
+    EDGE_TYPE_KEY = "edge_type"
 
     def __init__(self, gtype: DAGType = DAGType.DIVERGENCE):
-        self._G = nx.DiGraph()  # A networkx directed graph object.
+        self._dag = nx.DiGraph()  # A networkx directed graph object.
         self._gtype = gtype  # The type of the blockDAG.
         self._leaves = set()  # Set of all the leaves in the graph.
         self._column = list(set())  # List of the set of blocks in the specified height.
@@ -68,53 +68,48 @@ class BlockDAG(Collection):
         self._logger = logger
 
     def __contains__(self, bid: type(TypeAlias.BlockID)) -> bool:
-        return bid in self._G
+        return bid in self._dag
 
     def __iter__(self) -> Iterator[Block]:
-        return iter(self._G)
+        return iter(self._dag)
 
     def __len__(self) -> int:
-        return len(self._G)
+        return len(self._dag)
 
     def __getitem__(self, bid) -> Block:
-        return self._G.nodes[bid][BlockDAG._BLOCK_DATA_KEY]
+        return self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY]
 
     def __str__(self):
-        return str(self._G)
+        return str(self._dag)
 
     def __repr__(self):
         return "BlockDAG(type=" + repr(self._gtype) + \
             ", leaves=" + repr(self._leaves) + \
             ", cluster=" + repr(self._column) + ")"
 
-    def get_graph_type(self) -> DAGType:
+    @property
+    def graph_type(self) -> DAGType:
         """
         Get the type of the blockDAG.
         :return: DIVERGENCE=0 or PARALLEL=1 or CONVERGENCE=2.
         """
         return self._gtype
 
-    def get_leaves_blocks(self) -> Set[TypeAlias.BlockID]:
+    @property
+    def leaves_blocks(self) -> Set[TypeAlias.BlockID]:
         """
         Get the set of blocks located in the leaves of the graph.
         :return: list[TypeAlias.BlockID].
         """
         return self._leaves
 
-    def get_column_blocks(self, height: int = 0) -> List[Set[TypeAlias.BlockID]]:
+    @property
+    def column_blocks(self) -> List[Set[TypeAlias.BlockID]]:
         """
-        Get the set of blocks at specified height of the graph.
-        If height is 0, return all the blocks in the graph.
-        :param height: int.
+        Get the list of the set of blocks in the specified height of the graph.
         :return: list[Set[TypeAlias.BlockID]].
         """
-        if height == 0:
-            return list(self._column)
-        elif 0 < height < len(self._column) + 1:
-            return list(self._column[height - 1])
-        if self._logger is not None:
-            self._logger.warning("%s: Invalid height.", caller_info())
-        return []
+        return self._column
 
     def get_pivot_chain(self, bid: TypeAlias.BlockID) -> List[TypeAlias.BlockID]:
         """
@@ -126,7 +121,7 @@ class BlockDAG(Collection):
             if self._logger is not None:
                 self._logger.warning("%s: The divergence graph has no pivot chain.", caller_info())
             return []
-        if bid not in self._G:
+        if bid not in self._dag:
             if self._logger is not None:
                 self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
             return []
@@ -135,7 +130,7 @@ class BlockDAG(Collection):
         chain = []
         while True:
             chain.insert(0, bid)
-            bid = self._G.nodes[bid][BlockDAG._BLOCK_DATA_KEY].pref
+            bid = self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY].pref
             if bid is None:
                 break
         return chain
@@ -154,7 +149,7 @@ class BlockDAG(Collection):
             return False
 
         # Check if the block already exists.
-        if self._G.has_node(block.bid):
+        if self._dag.has_node(block.bid):
             if self._logger is not None:
                 self._logger.warning("%s: Block " + str(block.bid) + " already exists.", caller_info())
             return False
@@ -186,8 +181,8 @@ class BlockDAG(Collection):
                     return False
 
             # Add the block into the graph.
-            self._G.add_node(block.bid)
-            self._G.nodes[block.bid][BlockDAG._BLOCK_DATA_KEY] = block
+            self._dag.add_node(block.bid)
+            self._dag.nodes[block.bid][BlockDAG.BLOCK_DATA_KEY] = block
             self._leaves.add(block.bid)
             if len(self._column) == 0:
                 self._column.append(set())
@@ -217,12 +212,12 @@ class BlockDAG(Collection):
                     return False
                 max_h = 0
                 for cref in block.crefs:
-                    if cref not in self._G:
+                    if cref not in self._dag:
                         if self._logger is not None:
                             self._logger.warning("%s: The referenced block " + str(cref) +
                                                  " does not exist.", caller_info())
                         return False
-                    max_h = max(self._G.nodes[cref][BlockDAG._BLOCK_DATA_KEY].height, max_h)
+                    max_h = max(self._dag.nodes[cref][BlockDAG.BLOCK_DATA_KEY].height, max_h)
                 if block.height != max_h + 1:
                     if self._logger is not None:
                         self._logger.warning("%s: Incorrect height of the mined block.", caller_info())
@@ -235,7 +230,7 @@ class BlockDAG(Collection):
                         self._logger.warning("%s: The block in " + str(self._gtype.name) +
                                              " graph must have a pivot parent.", caller_info())
                     return False
-                if block.pref not in self._G:
+                if block.pref not in self._dag:
                     if self._logger is not None:
                         self._logger.warning("%s: The pivot parent " + str(block.pref) +
                                              " does not exist.", caller_info())
@@ -246,13 +241,13 @@ class BlockDAG(Collection):
                     return False
                 max_h = 0
                 for cref in block.crefs:
-                    if cref not in self._G:
+                    if cref not in self._dag:
                         if self._logger is not None:
                             self._logger.warning("%s: The referenced block " + str(cref) +
                                                  " does not exist.", caller_info())
                         return False
-                    max_h = max(self._G.nodes[cref][BlockDAG._BLOCK_DATA_KEY].height, max_h)
-                par_h = self._G.nodes[block.pref][BlockDAG._BLOCK_DATA_KEY].height
+                    max_h = max(self._dag.nodes[cref][BlockDAG.BLOCK_DATA_KEY].height, max_h)
+                par_h = self._dag.nodes[block.pref][BlockDAG.BLOCK_DATA_KEY].height
                 if max_h > par_h and self._gtype == DAGType.CONVERGENCE:
                     if self._logger is not None:
                         self._logger.warning("%s: Invalid height of the mined block.", caller_info())
@@ -263,16 +258,16 @@ class BlockDAG(Collection):
                     return False
 
             # Add the block into the graph.
-            self._G.add_node(block.bid)
-            self._G.nodes[block.bid][BlockDAG._BLOCK_DATA_KEY] = block
+            self._dag.add_node(block.bid)
+            self._dag.nodes[block.bid][BlockDAG.BLOCK_DATA_KEY] = block
             if block.pref is not None:
-                self._G.add_edge(block.bid, block.pref)
-                self._G.edges[(block.bid, block.pref)][BlockDAG._EDGE_TYPE_KEY] = EdgeType.PIVOT
+                self._dag.add_edge(block.bid, block.pref)
+                self._dag.edges[(block.bid, block.pref)][BlockDAG.EDGE_TYPE_KEY] = EdgeType.PIVOT
                 if block.pref in self._leaves:
                     self._leaves.remove(block.pref)
             for cref in block.crefs:
-                self._G.add_edge(block.bid, cref)
-                self._G.edges[(block.bid, cref)][BlockDAG._EDGE_TYPE_KEY] = EdgeType.COMMON
+                self._dag.add_edge(block.bid, cref)
+                self._dag.edges[(block.bid, cref)][BlockDAG.EDGE_TYPE_KEY] = EdgeType.COMMON
                 if cref in self._leaves:
                     self._leaves.remove(cref)
             self._leaves.add(block.bid)
@@ -291,7 +286,7 @@ class BlockDAG(Collection):
         :param bid: BlockID.
         :return: bool.
         """
-        if bid not in self._G:
+        if bid not in self._dag:
             if self._logger is not None:
                 self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
             return False
@@ -301,9 +296,9 @@ class BlockDAG(Collection):
                 if self.cut_block(d) is False:
                     return False
 
-        b = self._G.nodes[bid][BlockDAG._BLOCK_DATA_KEY]
+        b = self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY]
 
-        self._G.remove_node(bid)
+        self._dag.remove_node(bid)
         self._leaves.remove(bid)
         self._column[b.height - 1].remove(bid)
 
@@ -324,11 +319,11 @@ class BlockDAG(Collection):
         :param bid: BlockID.
         :return: Block.
         """
-        if bid not in self._G:
+        if bid not in self._dag:
             if self._logger is not None:
                 self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
             return None
-        return self._G.nodes[bid][BlockDAG._BLOCK_DATA_KEY]
+        return self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY]
 
     def predecessors(self, bid: TypeAlias.BlockID) -> Iterator[TypeAlias.BlockID]:
         """
@@ -336,7 +331,7 @@ class BlockDAG(Collection):
         :param bid: BlockID.
         :return: Iterator[BlockID].
         """
-        return self._G.predecessors(bid)
+        return self._dag.predecessors(bid)
 
     def successors(self, bid: TypeAlias.BlockID) -> Iterator[TypeAlias.BlockID]:
         """
@@ -344,7 +339,7 @@ class BlockDAG(Collection):
         :param bid: BlockID.
         :return: Iterator[BlockID].
         """
-        return self._G.successors(bid)
+        return self._dag.successors(bid)
 
     def has_path(self, source: TypeAlias.BlockID, target: TypeAlias.BlockID) -> bool:
         """
@@ -353,14 +348,14 @@ class BlockDAG(Collection):
         :param target: BlockID.
         :return: bool.
         """
-        return nx.has_path(self._G, source, target)
+        return nx.has_path(self._dag, source, target)
 
     def graph(self) -> nx.DiGraph:
         """
         See the whole graph.
         :return: nx.DiGraph.
         """
-        return self._G.copy()
+        return self._dag.copy()
 
     def subgraph(self, bid: TypeAlias.BlockID) -> nx.DiGraph | None:
         """
@@ -368,7 +363,7 @@ class BlockDAG(Collection):
         :param bid: BlockID.
         :return:
         """
-        if bid not in self._G:
+        if bid not in self._dag:
             if self._logger is not None:
                 self._logger.warning("%s: Block " + str(bid) + " does not exist.", caller_info())
             return None
@@ -378,4 +373,4 @@ class BlockDAG(Collection):
             q = queue.pop(0)
             views.add(q)
             queue.extend(self.successors(q))
-        return self._G.subgraph(views)
+        return self._dag.subgraph(views)

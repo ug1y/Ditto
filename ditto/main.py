@@ -26,7 +26,7 @@ def run_simulation(until: int = 100):
 
     sim.run(until)
 
-    for leaf in net.total_blockdag.get_leaves_blocks():
+    for leaf in net.total_blockdag.leaves_blocks:
         print(net.total_blockdag.get_pivot_chain(leaf))
 
     print(net.consus_handler.get_processed_blocks())

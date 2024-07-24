@@ -33,11 +33,11 @@ class ChainRef(ReferIface):
     """
     def __init__(self, blockdag: BlockDAG):
         super().__init__(blockdag)
-        if self.blockdag.get_graph_type() != DAGType.CONVERGENCE:
+        if self.blockdag.graph_type != DAGType.CONVERGENCE:
             raise ValueError("The chain reference strategy is only for convergence blockDAG.")
 
     def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
-        return self._max_hash_power(self.blockdag.get_leaves_blocks())
+        return self._max_hash_power(self.blockdag.leaves_blocks)
 
     def get_virtual_common_refs(self) -> Set[TypeAlias.BlockID]:
         return set()
@@ -47,7 +47,7 @@ class ChainRef(ReferIface):
         return self.blockdag[vp].height + 1
 
     def _max_hash_power(self, bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
-        max_height = len(self.blockdag.get_column_blocks())
+        max_height = len(self.blockdag.column_blocks)
         sel_bids = set()
         for bid in bids:
             if self.blockdag[bid].height == max_height:

@@ -65,7 +65,7 @@ class NetOperator(NetContainer):
         :param hash_rate: float
         :return: bool
         """
-        if miner.blockdag.get_graph_type() != self.get_blockdag_type():
+        if miner.blockdag.graph_type != self.get_blockdag_type():
             if self._logger is not None:
                 self._logger.warning("%s: Add miner %s failed, blockDAG type mismatch.",
                                      self.FOR_LOG_NAME, str(miner.get_name()))
@@ -164,7 +164,7 @@ class NetOperator(NetContainer):
         return self[miner_name]
 
     def get_blockdag_type(self) -> DAGType:
-        return self.total_blockdag.get_graph_type()
+        return self.total_blockdag.graph_type
 
     def set_simulator(self, simulator):
         self._simulator = simulator

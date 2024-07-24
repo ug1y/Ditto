@@ -5,8 +5,8 @@ class TestBlockDAG:
 
     def test_init(self):
         g = BlockDAG()
-        assert len(g._G.nodes()) == 0
-        assert len(g._G.edges()) == 0
+        assert len(g._dag.nodes()) == 0
+        assert len(g._dag.edges()) == 0
         assert g._gtype == DAGType.DIVERGENCE
         assert g._leaves == set()
         assert g._column == list()
@@ -38,11 +38,11 @@ class TestBlockDAG:
         b11 = Block(bid=11, btype=BlockType.GENESIS, height=1)
         assert g.add_block(b11) is False
 
-        assert g.get_leaves_blocks() == {5, 6}
-        assert set(g.get_column_blocks(1)) == {1}
-        assert set(g.get_column_blocks(2)) == {2, 3, 4}
-        assert set(g.get_column_blocks(3)) == {5, 6}
-        assert set(g.get_column_blocks(4)) == set()
+        assert g.leaves_blocks == {5, 6}
+        assert set(g.column_blocks[0]) == {1}
+        assert set(g.column_blocks[1]) == {2, 3, 4}
+        assert set(g.column_blocks[2]) == {5, 6}
+        assert len(g.column_blocks) == 3
         assert set(g.get_pivot_chain(hash(b5))) == set()
 
         assert set(g.ask_block(hash(b6)).get_parents()) == set(g.successors(hash(b6)))
@@ -51,7 +51,7 @@ class TestBlockDAG:
         assert g.has_path(hash(b6), hash(b5)) is False
 
         assert g.cut_block(hash(b6)) is True
-        assert g.get_leaves_blocks() == {4, 5}
+        assert g.leaves_blocks == {4, 5}
         assert len(g.graph().nodes()) == 5
         assert len(g.graph().edges()) == 5
         assert g.subgraph(hash(b6)) is None
@@ -88,11 +88,11 @@ class TestBlockDAG:
         assert g.add_block(b12) is True
         g.cut_block(hash(b12))
 
-        assert g.get_leaves_blocks() == {6}
-        assert set(g.get_column_blocks(1)) == {1, 2, 3}
-        assert set(g.get_column_blocks(2)) == {4, 5}
-        assert set(g.get_column_blocks(3)) == {6}
-        assert set(g.get_column_blocks(4)) == set()
+        assert g.leaves_blocks == {6}
+        assert set(g.column_blocks[0]) == {1, 2, 3}
+        assert set(g.column_blocks[1]) == {4, 5}
+        assert set(g.column_blocks[2]) == {6}
+        assert len(g.column_blocks) == 3
         assert set(g.get_pivot_chain(hash(b6))) == {1, 4, 6}
         assert set(g.get_pivot_chain(hash(b5))) == {2, 5}
 
@@ -102,7 +102,7 @@ class TestBlockDAG:
         assert g.has_path(hash(b4), hash(b5)) is False
 
         assert g.cut_block(hash(b5)) is True
-        assert g.get_leaves_blocks() == {4, 3}
+        assert g.leaves_blocks == {4, 3}
         assert len(g.graph().nodes()) == 4
         assert len(g.graph().edges()) == 2
         assert g.subgraph(hash(b6)) is None
@@ -138,11 +138,11 @@ class TestBlockDAG:
         b12 = Block(bid=12, btype=BlockType.MINED, miner="ug1y", pref=hash(b3), crefs={hash(b6)}, height=3)
         assert g.add_block(b12) is False
 
-        assert g.get_leaves_blocks() == {5, 6}
-        assert set(g.get_column_blocks(1)) == {1}
-        assert set(g.get_column_blocks(2)) == {2, 3, 4}
-        assert set(g.get_column_blocks(3)) == {5, 6}
-        assert set(g.get_column_blocks(4)) == set()
+        assert g.leaves_blocks == {5, 6}
+        assert set(g.column_blocks[0]) == {1}
+        assert set(g.column_blocks[1]) == {2, 3, 4}
+        assert set(g.column_blocks[2]) == {5, 6}
+        assert len(g.column_blocks) == 3
         assert set(g.get_pivot_chain(hash(b6))) == {1, 3, 6}
         assert set(g.get_pivot_chain(hash(b5))) == {1, 4, 5}
 
@@ -152,7 +152,7 @@ class TestBlockDAG:
         assert g.has_path(hash(b4), hash(b3)) is False
 
         assert g.cut_block(hash(b6)) is True
-        assert g.get_leaves_blocks() == {2, 5}
+        assert g.leaves_blocks == {2, 5}
         assert len(g.graph().nodes()) == 5
         assert len(g.graph().edges()) == 5
         assert g.subgraph(hash(b6)) is None

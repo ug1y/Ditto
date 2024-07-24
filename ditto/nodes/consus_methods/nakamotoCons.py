@@ -40,7 +40,7 @@ class NakamotoCons(ConsusIface):
 
     def execute_consensus(self) -> TypeAlias.BlockHeight:
         old_height_pointer = self._height_pointer
-        self._height_pointer = len(self.blockdag.get_column_blocks())  # Update the height pointer.
+        self._height_pointer = len(self.blockdag.column_blocks)  # Update the height pointer.
 
         cur_height = old_height_pointer - self._safe_depth
         tar_height = self._height_pointer - self._safe_depth
@@ -50,11 +50,11 @@ class NakamotoCons(ConsusIface):
         if self._height_pointer == old_height_pointer:
             return tar_height
 
-        potential_bid = self._max_hash_power(self.blockdag.get_leaves_blocks())
+        potential_bid = self._max_hash_power(self.blockdag.leaves_blocks)
         pivot_chain = self.blockdag.get_pivot_chain(potential_bid)
 
         for h in range(max(0, cur_height), tar_height):
-            col_bids = self.blockdag.get_column_blocks(h + 1)
+            col_bids = self.blockdag.column_blocks[h]
             sor_bids = sorted(col_bids)  # Sort all blocks by hash value.
             for bid in sor_bids:  # Mark the decided and excluded blocks.
                 if bid in pivot_chain:
@@ -90,31 +90,9 @@ class NakamotoCons(ConsusIface):
         return [bid for bid in self._sorted_blocks if self._blocks_marked[bid] == status]
 
     def _max_hash_power(self, bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
-        max_height = len(self.blockdag.get_column_blocks())
+        max_height = len(self.blockdag.column_blocks)
         sel_bids = set()
         for bid in bids:
             if self.blockdag[bid].height == max_height:
                 sel_bids.add(bid)
         return min(sel_bids)
-
-    def _execute_consensus(self):
-        old_height_pointer = self._height_pointer
-        self._height_pointer = len(self.blockdag.get_column_blocks())  # Update the height pointer.
-
-        cur_height = old_height_pointer - self._safe_depth
-        tar_height = self._height_pointer - self._safe_depth
-        if tar_height < 0:  # Not reach the safe depth.
-            return
-
-        potential_bid = self._max_hash_power(self.blockdag.get_leaves_blocks())
-        pivot_chain = self.blockdag.get_pivot_chain(potential_bid)
-
-        for h in range(max(0, cur_height), tar_height):
-            col_bids = self.blockdag.get_column_blocks(h + 1)
-            sor_bids = sorted(col_bids)  # Sort all blocks by hash value.
-            for bid in sor_bids:  # Mark the decided and excluded blocks.
-                if bid in pivot_chain:
-                    self._blocks_marked[bid] = StatusType.DECIDED
-                else:
-                    self._blocks_marked[bid] = StatusType.EXCLUDE
-            self._sorted_blocks.extend(sor_bids)

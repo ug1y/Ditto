@@ -52,24 +52,24 @@ def blockdag_plotting(fig: figure, dag: BlockDAG, consus: ConsusIface):
     renderer.edge_renderer.data_source = ColumnDataSource({
         'start': [e[0] for e in dag.graph().edges()],
         'end': [e[1] for e in dag.graph().edges()],
-        'color': ['black' if dag.graph().edges[e][BlockDAG._EDGE_TYPE_KEY] == EdgeType.PIVOT
+        'color': ['black' if dag.graph().edges[e][BlockDAG.EDGE_TYPE_KEY] == EdgeType.PIVOT
                   else 'lightgray' for e in dag.graph().edges()],
-        'width': [2 if dag.graph().edges[e][BlockDAG._EDGE_TYPE_KEY] == EdgeType.PIVOT
+        'width': [2 if dag.graph().edges[e][BlockDAG.EDGE_TYPE_KEY] == EdgeType.PIVOT
                   else 1 for e in dag.graph().edges()],
-        'alpha': [1 if dag.graph().edges[e][BlockDAG._EDGE_TYPE_KEY] == EdgeType.PIVOT
+        'alpha': [1 if dag.graph().edges[e][BlockDAG.EDGE_TYPE_KEY] == EdgeType.PIVOT
                   else 0.5 for e in dag.graph().edges()],
     })
     renderer.edge_renderer.glyph = MultiLine(line_color="color", line_width='width', line_alpha='alpha')
 
     # Update the view of the figure.
     view_n = 10
-    view_x = max(len(dag.get_column_blocks()), view_n)
+    view_x = max(len(dag.column_blocks), view_n)
     fig.x_range = Range1d((view_x - view_n) + 0.5, view_x + 0.5)
     fig.y_range = Range1d(0, 10)
 
     # Compute the layout of the nodes.
     layout = {}
-    for i, v in enumerate(dag.get_column_blocks()):
+    for i, v in enumerate(dag.column_blocks):
         layout.update(cal_loc(i + 1, v, 1, 10))
     renderer.layout_provider = StaticLayoutProvider(graph_layout=layout)
 
