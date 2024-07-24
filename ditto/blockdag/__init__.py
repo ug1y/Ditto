@@ -1,4 +1,4 @@
-from .typedef import TypeAlias
-from .transaction import Transaction, TransactionType
-from .block import Block, BlockType
-from .blockdag import BlockDAG, DAGType, EdgeType
+from .typedef import TypeAlias, TransactionType, BlockType, DAGType, EdgeType
+from .transaction import Transaction
+from .block import Block
+from .blockdag import BlockDAG
