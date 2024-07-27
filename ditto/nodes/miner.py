@@ -36,14 +36,14 @@ class Miner:
     """
 
     # Dictionary key for the block's data.
-    _QUEUE_BLOCK_DATA_KEY = "queue_block_data"
+    QUEUE_BLOCK_DATA_KEY = "queue_block_data"
 
     def __init__(self, name: TypeAlias.MinerName, blockdag: BlockDAG, max_peer_num: int):
         self._name = name  # The unique name of the miner, used to identify it.
-        self.blockdag = blockdag  # The local view of blockDAG hold by the miner.
-        self.max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
+        self._blockdag = blockdag  # The local view of blockDAG hold by the miner.
+        self._max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
 
-        self._genesis_block = 0  # The genesis block the miner followed by.
+        self._genesis_block: Block = None  # The genesis block the miner followed by.
         self._network: NetContainer = None  # Network object handler, used to connect peers and broadcast blocks.
 
         self._mined_blocks = set()  # Record the set of blocks mined by the miner.
@@ -51,23 +51,23 @@ class Miner:
 
         self._logger: logging.Logger = None  # Logger for this class.
 
-        self.refer_handler: ReferIface = None
-        self.consus_handler: ConsusIface = None
+        self._refer_handler: ReferIface = None
+        self._consus_handler: ConsusIface = None
 
     def set_logger(self, logger: logging.Logger):
         self._logger = logger
 
     def __contains__(self, bid: TypeAlias.BlockID) -> bool:
-        return bid in self.blockdag
+        return bid in self._blockdag
 
     def __str__(self):
         return "Miner " + str(self._name) + \
-            ", holding " + str(self.blockdag) + \
+            ", holding " + str(self._blockdag) + \
             ", connecting to " + str(len(self.get_neighbors())) + " neighbors."
 
     def __repr__(self):
         return "Miner(name=" + repr(self._name) + \
-            ", blockdag=" + repr(self.blockdag) + \
+            ", blockdag=" + repr(self._blockdag) + \
             ", max_peer_num=" + repr(self.max_peer_num) + ")"
 
     def set_genesis_block(self, block: Block):
@@ -75,10 +75,10 @@ class Miner:
         Set the genesis block for the miner.
         :param block: Block
         """
-        if self._genesis_block == 0 \
+        if self._genesis_block is None \
                 and block.btype == BlockType.GENESIS \
-                and self.blockdag.add_block(block):
-            self._genesis_block = hash(block)
+                and self._blockdag.add_block(block):
+            self._genesis_block = block
 
     def set_network(self, network: NetContainer):
         """
@@ -92,14 +92,14 @@ class Miner:
         Set the reference handler.
         :param refer_class: type[ReferIface]
         """
-        self.refer_handler = refer_class(self.blockdag)
+        self._refer_handler = refer_class(self._blockdag)
 
     def set_consus_handler(self, consus_class: type[ConsusIface]):
         """
         Set the consensus handler.
         :param consus_class: type[ConsusIface]
         """
-        self.consus_handler = consus_class(self.blockdag)
+        self._consus_handler = consus_class(self._blockdag)
 
     def pre_launch(self, genesis_block: Block,
                    refer_class: type[ReferIface],
@@ -118,26 +118,69 @@ class Miner:
         if network is not None:
             self.set_network(network)
 
-    def get_name(self) -> TypeAlias.MinerName:
+    @property
+    def name(self) -> TypeAlias.MinerName:
         """
         Get the unique miner name.
         :return: MinerName
         """
         return self._name
 
-    def get_genesis_block(self) -> TypeAlias.BlockID:
+    @property
+    def blockdag(self) -> BlockDAG:
+        """
+        Get the local view of blockDAG hold by the miner.
+        :return: BlockDAG
+        """
+        return self._blockdag
+
+    @property
+    def max_peer_num(self) -> int:
+        """
+        Get the maximum number of peers the miner connects.
+        :return: int
+        """
+        return self._max_peer_num
+
+    @property
+    def genesis_block(self) -> Block:
         """
         Get the genesis block id for the miner.
         :return: BlockID
         """
         return self._genesis_block
 
-    def get_mined_blocks(self) -> Set[TypeAlias.BlockID]:
+    @property
+    def network(self) -> NetContainer:
+        """
+        Get the network handler.
+        :return: NetContainer
+        """
+        return self._network
+
+    @property
+    def mined_blocks(self) -> Set[TypeAlias.BlockID]:
         """
         Get the set of blocks mined by the miner.
         :return: set[BlockID]
         """
         return self._mined_blocks
+
+    @property
+    def refer_handler(self) -> ReferIface:
+        """
+        Get the reference handler.
+        :return: ReferIface
+        """
+        return self._refer_handler
+
+    @property
+    def consus_handler(self) -> ConsusIface:
+        """
+        Get the consensus handler.
+        :return: ConsusIface
+        """
+        return self._consus_handler
 
     def get_neighbors(self) -> Set[TypeAlias.MinerName]:
         """
@@ -160,7 +203,7 @@ class Miner:
             if self._logger is not None:
                 self._logger.warning("%s: Network handler is not set.", self._name)
             return None
-        if self._genesis_block == 0:
+        if self._genesis_block is None:
             if self._logger is not None:
                 self._logger.warning("%s: genesis block should be set before mining.", self._name)
             return None
@@ -194,11 +237,11 @@ class Miner:
         """
         missing_blocks = set()
         for queue_bid in self._block_queue.nodes():
-            if self._block_queue.nodes[queue_bid][Miner._QUEUE_BLOCK_DATA_KEY] is None:
+            if self._block_queue.nodes[queue_bid][Miner.QUEUE_BLOCK_DATA_KEY] is None:
                 missing_blocks.add(queue_bid)
 
         for missing_block in missing_blocks:
-            if self._block_queue.nodes[missing_block][Miner._QUEUE_BLOCK_DATA_KEY] is None:  # Avoid duplicated fetch.
+            if self._block_queue.nodes[missing_block][Miner.QUEUE_BLOCK_DATA_KEY] is None:  # Avoid duplicated fetch.
                 # Fetch the missing parent from network.
                 # self._network.fetch_block(self._name, missing_block)
                 self.fetch_block(missing_block)
@@ -215,7 +258,7 @@ class Miner:
         if not self._is_valid_block(block):
             return False
 
-        if hash(block) in self.blockdag:
+        if hash(block) in self._blockdag:
             return True
 
         if self._add_to_block_queue(block):
@@ -246,15 +289,15 @@ class Miner:
         """
         missing_parents = False
         for parent_bid in block.get_parents():
-            if parent_bid not in self.blockdag:
+            if parent_bid not in self._blockdag:
                 missing_parents = True
                 if parent_bid not in self._block_queue:
                     self._block_queue.add_node(parent_bid)
-                    self._block_queue.nodes[parent_bid][Miner._QUEUE_BLOCK_DATA_KEY] = None
+                    self._block_queue.nodes[parent_bid][Miner.QUEUE_BLOCK_DATA_KEY] = None
                 self._block_queue.add_edge(block.bid, parent_bid)
 
         if missing_parents:
-            self._block_queue.nodes[hash(block)][Miner._QUEUE_BLOCK_DATA_KEY] = block
+            self._block_queue.nodes[hash(block)][Miner.QUEUE_BLOCK_DATA_KEY] = block
             return True
 
         return False
@@ -270,7 +313,7 @@ class Miner:
                 self._logger.warning("%s: Consensus handler is not set.", self._name)
             return False
 
-        if self.blockdag.add_block(block):
+        if self._blockdag.add_block(block):
             if self._logger is not None:
                 self._logger.info("%s: Successfully added the block %d and broadcasts it.", self._name, hash(block))
             # broadcast the block to neighbors.
@@ -287,15 +330,15 @@ class Miner:
         :param block: Block
         :return: bool
         """
-        self._block_queue.nodes[hash(block)][Miner._QUEUE_BLOCK_DATA_KEY] = block
+        self._block_queue.nodes[hash(block)][Miner.QUEUE_BLOCK_DATA_KEY] = block
         add_queue = deque([hash(block)])
         while add_queue:
             cur_block_bid = add_queue.popleft()
             if cur_block_bid not in self._block_queue:
                 continue
-            cur_block = self._block_queue.nodes[cur_block_bid][Miner._QUEUE_BLOCK_DATA_KEY]
+            cur_block = self._block_queue.nodes[cur_block_bid][Miner.QUEUE_BLOCK_DATA_KEY]
             if cur_block is not None and \
-                    np.bitwise_and.reduce([parent_bid in self.blockdag for parent_bid in cur_block.get_parents()]):
+                    np.bitwise_and.reduce([parent_bid in self._blockdag for parent_bid in cur_block.get_parents()]):
                 # # The second condition is the same as following code.
                 # parents = cur_block.get_parents()
                 # for parent_bid in parents:

@@ -40,7 +40,7 @@ def caller_info() -> str:
         return "network"
     if caller_module == "ditto.nodes.miner":
         caller_object = caller_frame.frame.f_locals['self']
-        return caller_object.get_name()
+        return caller_object.name
     return ""
 
 

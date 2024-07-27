@@ -65,13 +65,13 @@ class NetOperator(NetContainer):
         :param hash_rate: float
         :return: bool
         """
-        if miner.blockdag.graph_type != self.get_blockdag_type():
+        if miner._blockdag.graph_type != self.get_blockdag_type():
             if self._logger is not None:
                 self._logger.warning("%s: Add miner %s failed, blockDAG type mismatch.",
-                                     self.FOR_LOG_NAME, str(miner.get_name()))
+                                     self.FOR_LOG_NAME, str(miner.name))
             return
 
-        miner_name = miner.get_name()
+        miner_name = miner.name
         self.network_graph.add_node(miner_name)
         self.network_graph.nodes[miner_name][NetOperator._MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY] = hash_rate

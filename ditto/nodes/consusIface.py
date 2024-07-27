@@ -62,7 +62,10 @@ class ConsusIface(ABC):
     @abstractmethod
     def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
         """
-        Get the decided blocks that is already on consensus.
+        Get the processed blocks that is already on consensus.
+        If status is None, return all the processed blocks.
+        Supported status: EXCLUDE, DECIDED
+        :param status: StatusType
         :return: Set[TypeAlias.BlockID]
         """
         pass
@@ -70,7 +73,10 @@ class ConsusIface(ABC):
     @abstractmethod
     def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
         """
-        Sort the finished blocks filtering decided status or containing excluded status.
+        Sort the finished blocks that is already on consensus.
+        If status is None, return all the sorted blocks.
+        Supported status: EXCLUDE, DECIDED
+        :param status: StatusType
         :return: List[TypeAlias.BlockID]
         """
         pass
