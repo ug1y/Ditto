@@ -35,7 +35,7 @@ class NetContainer(Collection):
     """
 
     # Dictionary key for the delay time.
-    _DELAY_TIME_KEY = "delay_time"
+    DELAY_TIME_KEY = "delay_time"
 
     FOR_LOG_NAME = "network"
 
@@ -104,7 +104,7 @@ class NetContainer(Collection):
             self._logger.info("%s: Connect %s and %s with delay " + str(delay),
                               self.FOR_LOG_NAME, str(miner_name), str(peer_name))
         self._network_graph.add_edge(miner_name, peer_name)
-        self._network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY] = delay
+        self._network_graph.edges[(miner_name, peer_name)][NetContainer.DELAY_TIME_KEY] = delay
         return True
 
     def remove_peer(self, miner_name: TypeAlias.MinerName, peer_name: TypeAlias.MinerName) -> bool:
@@ -157,7 +157,7 @@ class NetContainer(Collection):
         :return: float
         """
         if self._network_graph.has_edge(miner_name, peer_name):
-            return self._network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY]
+            return self._network_graph.edges[(miner_name, peer_name)][NetContainer.DELAY_TIME_KEY]
 
         return np.random.poisson(self._propagation_delay_parameter)
 

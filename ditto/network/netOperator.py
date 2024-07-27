@@ -35,9 +35,9 @@ class NetOperator(NetContainer):
     """
 
     # Dictionary key for the hash rate.
-    _HASH_RATE_KEY = "hash_rate"
+    HASH_RATE_KEY = "hash_rate"
     # Dictionary key for the hash rate.
-    _MINER_DATA_KEY = "miner_data"
+    MINER_DATA_KEY = "miner_data"
 
     def __init__(self, total_blockdag: BlockDAG,
                  propagation_delay_parameter: float = 30.0,
@@ -51,7 +51,7 @@ class NetOperator(NetContainer):
         self._consus_handler: ConsusIface = None
 
     def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
-        return self.network_graph.nodes[miner][NetOperator._MINER_DATA_KEY]
+        return self.network_graph.nodes[miner][NetOperator.MINER_DATA_KEY]
 
     def __repr__(self):
         return "NetOperator(inc_block_id=" + repr(self._inc_block_id) + \
@@ -97,8 +97,8 @@ class NetOperator(NetContainer):
 
         miner_name = miner.name
         self.network_graph.add_node(miner_name)
-        self.network_graph.nodes[miner_name][NetOperator._MINER_DATA_KEY] = miner
-        self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY] = hash_rate
+        self.network_graph.nodes[miner_name][NetOperator.MINER_DATA_KEY] = miner
+        self.network_graph.nodes[miner_name][NetOperator.HASH_RATE_KEY] = hash_rate
         miner.set_network(self)
         if self._logger is not None:
             self._logger.info("%s: Add miner %s with hash rate " + str(hash_rate),
@@ -177,7 +177,7 @@ class NetOperator(NetContainer):
         total_hash_rate = 0
         for miner_name in self:
             miners.append(miner_name)
-            miner_hash_rate = self.network_graph.nodes[miner_name][NetOperator._HASH_RATE_KEY]
+            miner_hash_rate = self.network_graph.nodes[miner_name][NetOperator.HASH_RATE_KEY]
             hash_rates.append(miner_hash_rate)
             total_hash_rate += miner_hash_rate
 

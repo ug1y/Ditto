@@ -121,7 +121,7 @@ def network_plotting(fig: figure, graph: nx.Graph):
     # Add labels for each edge.
     text_edge_source = ColumnDataSource({'x': [(layout[e[0]][0] + layout[e[1]][0]) / 2 for e in graph.edges()],
                                          'y': [(layout[e[0]][1] + layout[e[1]][1]) / 2 for e in graph.edges()],
-                                         'text': [graph.edges[e][NetContainer._DELAY_TIME_KEY] for e in graph.edges()]})
+                                         'text': [graph.edges[e][NetContainer.DELAY_TIME_KEY] for e in graph.edges()]})
     text_edge_glyph = Text(x='x', y='y', text='text', text_align='center',
                            text_font_size='10pt', background_fill_color='white')
     fig.add_glyph(text_edge_source, text_edge_glyph)
