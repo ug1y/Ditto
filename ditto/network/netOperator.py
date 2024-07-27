@@ -44,11 +44,11 @@ class NetOperator(NetContainer):
                  block_creation_rate: float = 60.0):
         super().__init__(propagation_delay_parameter)
 
-        self.block_creation_rate = block_creation_rate  # The block creation rate of the network.
-        self.total_blockdag = total_blockdag  # The total blockDAG of the network.
+        self._block_creation_rate = block_creation_rate  # The block creation rate of the network.
+        self._total_blockdag = total_blockdag  # The total blockDAG of the network.
         self._simulator: NetSimulation = None  # The simulator to simulate network delay.
 
-        self.consus_handler: ConsusIface = None
+        self._consus_handler: ConsusIface = None
 
     def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
         return self.network_graph.nodes[miner][NetOperator._MINER_DATA_KEY]
@@ -56,7 +56,31 @@ class NetOperator(NetContainer):
     def __repr__(self):
         return "NetOperator(inc_block_id=" + repr(self._inc_block_id) + \
             ", network_graph=" + repr(self.network_graph) + \
-            ", total_blockdag= " + repr(self.total_blockdag) + ")"
+            ", total_blockdag= " + repr(self._total_blockdag) + ")"
+
+    @property
+    def block_creation_rate(self) -> float:
+        """
+        Get the block creation rate of the network.
+        :return: float
+        """
+        return self._block_creation_rate
+
+    @property
+    def total_blockdag(self) -> BlockDAG:
+        """
+        Get the total blockDAG of the network.
+        :return: BlockDAG
+        """
+        return self._total_blockdag
+
+    @property
+    def consus_handler(self) -> ConsusIface:
+        """
+        Get the consensus handler.
+        :return: ConsusIface
+        """
+        return self._consus_handler
 
     def add_miner(self, miner: Miner, hash_rate: float = 10.0):
         """
@@ -118,10 +142,10 @@ class NetOperator(NetContainer):
         :param source_miner: TypeAlias.MinerName
         :param block: Block
         """
-        if hash(block) not in self.total_blockdag:
-            self.total_blockdag.add_block(block)  # Every new mined block will be added to the total blockDAG.
-            if self.consus_handler is not None:
-                self.consus_handler.execute_consensus()  # Execute the consensus algorithm.
+        if hash(block) not in self._total_blockdag:
+            self._total_blockdag.add_block(block)  # Every new mined block will be added to the total blockDAG.
+            if self._consus_handler is not None:
+                self._consus_handler.execute_consensus()  # Execute the consensus algorithm.
 
         if self._logger is not None:
             self._logger.info("%s: Miner %s broadcasts block " + str(hash(block)),
@@ -140,7 +164,7 @@ class NetOperator(NetContainer):
             self._logger.info("%s: Miner %s fetches block " + str(bid),
                               self.FOR_LOG_NAME, str(target_miner))
         for peer_name in self.get_neighbors(target_miner):
-            self.send_block(peer_name, target_miner, self.total_blockdag[bid])
+            self.send_block(peer_name, target_miner, self._total_blockdag[bid])
 
     def get_random_miner(self, by_hash_rate: bool = False) -> Miner:
         """
@@ -164,7 +188,7 @@ class NetOperator(NetContainer):
         return self[miner_name]
 
     def get_blockdag_type(self) -> DAGType:
-        return self.total_blockdag.graph_type
+        return self._total_blockdag.graph_type
 
     def set_simulator(self, simulator):
         self._simulator = simulator
@@ -185,7 +209,7 @@ class NetOperator(NetContainer):
         for i in range(genesis_block_num):
             block = Block(bid=self.get_next_block_id(), btype=BlockType.GENESIS, height=1)
             genesis_blocks.add(block)
-            self.total_blockdag.add_block(block)
+            self._total_blockdag.add_block(block)
         return genesis_blocks
 
     def set_consus_handler(self, consus_class: type[ConsusIface]):
@@ -193,4 +217,4 @@ class NetOperator(NetContainer):
         Set the consensus handler.
         :param consus_class: type[ConsusIface]
         """
-        self.consus_handler = consus_class(self.total_blockdag)
+        self._consus_handler = consus_class(self._total_blockdag)

@@ -41,8 +41,8 @@ class NetContainer(Collection):
 
     def __init__(self, propagation_delay_parameter: float = 1.0):
         self._inc_block_id: TypeAlias.BlockID = 0  # The global block id in the network.
-        self.network_graph = nx.Graph()  # The network graph.
-        self.propagation_delay_parameter = propagation_delay_parameter  # The delay parameters for the network
+        self._network_graph = nx.Graph()  # The network graph.
+        self._propagation_delay_parameter = propagation_delay_parameter  # The delay parameters for the network
 
         self._logger: logging.Logger = None  # Logger for this class.
 
@@ -50,20 +50,36 @@ class NetContainer(Collection):
         self._logger = logger
 
     def __contains__(self, miner_name: type(TypeAlias.MinerName)) -> bool:
-        return miner_name in self.network_graph
+        return miner_name in self._network_graph
 
     def __iter__(self) -> Iterator[TypeAlias.MinerName]:
-        return iter(self.network_graph)
+        return iter(self._network_graph)
 
     def __len__(self) -> int:
-        return len(self.network_graph)
+        return len(self._network_graph)
 
     def __str__(self):
-        return str(self.network_graph)
+        return str(self._network_graph)
 
     def __repr__(self):
         return "NetContainer(inc_block_id=" + repr(self._inc_block_id) + \
-            ", network_graph=" + repr(self.network_graph) + ")"
+            ", network_graph=" + repr(self._network_graph) + ")"
+
+    @property
+    def network_graph(self) -> nx.Graph:
+        """
+        Get the network graph.
+        :return: nx.DiGraph
+        """
+        return self._network_graph
+
+    @property
+    def propagation_delay_parameter(self) -> float:
+        """
+        Get the propagation delay parameter.
+        :return: float
+        """
+        return self._propagation_delay_parameter
 
     def get_next_block_id(self) -> TypeAlias.BlockID:
         """
@@ -81,14 +97,14 @@ class NetContainer(Collection):
         :param delay: float
         :return: bool
         """
-        if miner_name not in self.network_graph or peer_name not in self.network_graph:
+        if miner_name not in self._network_graph or peer_name not in self._network_graph:
             return False
 
         if self._logger is not None:
             self._logger.info("%s: Connect %s and %s with delay " + str(delay),
                               self.FOR_LOG_NAME, str(miner_name), str(peer_name))
-        self.network_graph.add_edge(miner_name, peer_name)
-        self.network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY] = delay
+        self._network_graph.add_edge(miner_name, peer_name)
+        self._network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY] = delay
         return True
 
     def remove_peer(self, miner_name: TypeAlias.MinerName, peer_name: TypeAlias.MinerName) -> bool:
@@ -98,12 +114,12 @@ class NetContainer(Collection):
         :param peer_name: TypeAlias.MinerName
         :return: bool
         """
-        if miner_name not in self.network_graph or peer_name not in self.network_graph:
+        if miner_name not in self._network_graph or peer_name not in self._network_graph:
             return False
 
         if self._logger is not None:
             self._logger.info("%s: Disconnect %s and %s", self.FOR_LOG_NAME, str(miner_name), str(peer_name))
-        self.network_graph.remove_edge(miner_name, peer_name)
+        self._network_graph.remove_edge(miner_name, peer_name)
         return True
 
     def discover_peer(self, miner_name: TypeAlias.MinerName, max_peer_num: int | float) -> Set[TypeAlias.MinerName]:
@@ -114,9 +130,9 @@ class NetContainer(Collection):
         :return: Set[TypeAlias.MinerName]
         """
         new_peers = set()
-        cur_peers = set(self.network_graph.neighbors(miner_name)) | {miner_name}
-        while len(new_peers) < min(len(self.network_graph) - len(cur_peers), max_peer_num - len(cur_peers) + 1):
-            potential_peer = random.choice(list(self.network_graph.nodes()))
+        cur_peers = set(self._network_graph.neighbors(miner_name)) | {miner_name}
+        while len(new_peers) < min(len(self._network_graph) - len(cur_peers), max_peer_num - len(cur_peers) + 1):
+            potential_peer = random.choice(list(self._network_graph.nodes()))
             if potential_peer not in cur_peers:
                 new_peers.add(potential_peer)
 
@@ -128,9 +144,9 @@ class NetContainer(Collection):
         :param miner_name: TypeAlias.MinerName
         :return: Set[TypeAlias.MinerName]
         """
-        if miner_name not in self.network_graph:
+        if miner_name not in self._network_graph:
             return set()
-        return set(self.network_graph.neighbors(miner_name))
+        return set(self._network_graph.neighbors(miner_name))
 
     def get_delay(self, miner_name: TypeAlias.MinerName, peer_name: TypeAlias.MinerName) -> float:
         """
@@ -140,10 +156,10 @@ class NetContainer(Collection):
         :param peer_name: TypeAlias.MinerName
         :return: float
         """
-        if self.network_graph.has_edge(miner_name, peer_name):
-            return self.network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY]
+        if self._network_graph.has_edge(miner_name, peer_name):
+            return self._network_graph.edges[(miner_name, peer_name)][NetContainer._DELAY_TIME_KEY]
 
-        return np.random.poisson(self.propagation_delay_parameter)
+        return np.random.poisson(self._propagation_delay_parameter)
 
     @abstractmethod
     def send_block(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName, block: Block):

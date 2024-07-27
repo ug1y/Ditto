@@ -8,7 +8,7 @@ class TestNetwork:
     def test_send(self):
         net = NetOperator(BlockDAG())
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
-        assert net.total_blockdag.add_block(b1) is True
+        assert net._total_blockdag.add_block(b1) is True
 
         m1 = Miner(name='testMiner1', blockdag=BlockDAG(), max_peer_num=10)
         m1.pre_launch(b1, SimpleRef, CCC)
@@ -27,7 +27,7 @@ class TestNetwork:
     def test_mine(self):
         net = NetOperator(BlockDAG())
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
-        assert net.total_blockdag.add_block(b1) is True
+        assert net._total_blockdag.add_block(b1) is True
 
         m1 = Miner(name='testMiner1', blockdag=BlockDAG(), max_peer_num=10)
         m1.pre_launch(b1, SimpleRef, CCC)
@@ -39,7 +39,7 @@ class TestNetwork:
 
         assert hash(m1.mine_block()) == 2
         assert hash(m2.mine_block()) == 3
-        assert len(net.total_blockdag) == 3
+        assert len(net._total_blockdag) == 3
         assert len(m1._blockdag) == 2
         assert len(m2._blockdag) == 2
 
@@ -58,7 +58,7 @@ class TestNetwork:
     def test_three_miners(self):
         net = NetOperator(BlockDAG())
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
-        assert net.total_blockdag.add_block(b1) is True
+        assert net._total_blockdag.add_block(b1) is True
 
         m1 = Miner(name='testMiner1', blockdag=BlockDAG(), max_peer_num=10)
         m1.pre_launch(b1, SimpleRef, CCC)
@@ -90,5 +90,5 @@ class TestNetwork:
         assert len(m3._blockdag) == 6
         assert m3._blockdag.graph().nodes().keys() == {1, 2, 3, 4, 5, 6}
 
-        print("\n" + repr(net.total_blockdag))
+        print("\n" + repr(net._total_blockdag))
 
