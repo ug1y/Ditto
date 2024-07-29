@@ -75,7 +75,7 @@ class PlottingApp:
                                         low=0, mode="float", sizing_mode='stretch_width')
         self.delay_input.value = 5.0
 
-        net_options = ["PeerNet", "FullNet", "RingNet"]
+        net_options = ["PeerNet", "FullNet", "RingNet", "RandomNet", "StarNet", "LineNet"]
         self.net_select = Select(name="net_name", title="Select Network", height=50,
                                  options=net_options, sizing_mode='stretch_width')
         self.net_select.value = net_options[0]

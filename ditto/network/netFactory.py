@@ -18,6 +18,8 @@ limitations under the License.
 """
 import logging
 
+import numpy as np
+
 from ditto.nodes import Miner, SystemParams
 from ditto.blockdag import BlockDAG, DAGType
 
@@ -87,18 +89,43 @@ class NetFactory:
         miners = list(net)
         net[miners[0]].connect_peer(miners[-1])
         for i in range(1, len(miners)):
+            # net[miners[i]].max_peer_num = 2
             net[miners[i]].connect_peer(miners[i - 1])
 
         return net
 
-    def RandomNet(self):
-        pass
+    def RandomNet(self, system_params: SystemParams, number_of_miners: int,
+                  block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+        """Random network in which the miners are connected to random numbers of miners."""
+        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
 
-    def StarNet(self):
-        pass
+        for miner in net:
+            net[miner].max_peer_num = np.random.randint(low=1, high=number_of_miners)
+            net[miner].discover_peer()
 
-    def LineNet(self):
-        pass
+        return net
+
+    def StarNet(self, system_params: SystemParams, number_of_miners: int,
+                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+        """Star network in which the miners are all connected to the first miner."""
+        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
+
+        miners = list(net)
+        for i in range(1, len(miners)):
+            net[miners[i]].connect_peer(miners[0])
+
+        return net
+
+    def LineNet(self, system_params: SystemParams, number_of_miners: int,
+                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+        """ Line network in which the miners are connected to the previous miner in a line."""
+        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
+
+        miners = list(net)
+        for i in range(1, len(miners)):
+            net[miners[i]].connect_peer(miners[i - 1])
+
+        return net
 
     def TreeNet(self):
         pass
