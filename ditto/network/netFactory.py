@@ -79,6 +79,30 @@ class NetFactory:
 
         return net
 
+    def RingNet(self, system_params: SystemParams, number_of_miners: int,
+                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+        """Ring network in which the miners connecting from start to end."""
+        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
+
+        miners = list(net)
+        net[miners[0]].connect_peer(miners[-1])
+        for i in range(1, len(miners)):
+            net[miners[i]].connect_peer(miners[i - 1])
+
+        return net
+
+    def RandomNet(self):
+        pass
+
+    def StarNet(self):
+        pass
+
+    def LineNet(self):
+        pass
+
+    def TreeNet(self):
+        pass
+
 
 def SelectNetTemplate(factory: NetFactory, net_name, *args, **kwargs):
     net_to_use = getattr(factory, net_name)

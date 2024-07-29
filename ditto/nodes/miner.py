@@ -369,7 +369,7 @@ class Miner:
                 count += 1
         return count
 
-    def connect_peer(self, peer_name: TypeAlias.MinerName, delay: float) -> bool:
+    def connect_peer(self, peer_name: TypeAlias.MinerName, delay: float = -1) -> bool:
         """
         Set the connection with the specified peer miner symmetrically.
         :param peer_name: TypeAlias.MinerName
@@ -380,6 +380,8 @@ class Miner:
             if self._logger is not None:
                 self._logger.warning("%s: Network handler is not set.", self._name)
             return False
+        if delay < 0:
+            delay = self._network.get_delay(self._name, peer_name)
         if self._logger is not None:
             self._logger.info("%s: Connects to %s with delay %.1f.", self._name, peer_name, delay)
         return self._network.connect_peer(self._name, peer_name, delay)
