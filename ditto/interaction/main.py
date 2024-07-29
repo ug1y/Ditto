@@ -20,8 +20,7 @@ import logging
 
 from bokeh.document import Document
 from bokeh.plotting import figure, curdoc
-from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput, WheelZoomTool, PanTool,
-                          SingleIntervalTicker, LinearAxis, FixedTicker)
+from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput, PanTool, SingleIntervalTicker)
 from bokeh.server.callbacks import PeriodicCallback
 
 from ditto import config, __version__

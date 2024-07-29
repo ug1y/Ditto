@@ -18,7 +18,7 @@ limitations under the License.
 """
 from ditto.blockdag import BlockDAG, DAGType, TypeAlias
 
-from ..referIface import ReferIface
+from .referIface import ReferIface
 
 
 class SimpleRef(ReferIface):

@@ -20,7 +20,7 @@ from typing import Set
 
 from ditto.blockdag import TypeAlias
 
-from ..referIface import ReferIface
+from .referIface import ReferIface
 
 
 # Test for interface, useless.

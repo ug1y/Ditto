@@ -20,7 +20,7 @@ from typing import Set
 
 from ditto.blockdag import TypeAlias, BlockDAG, DAGType
 
-from ..referIface import ReferIface
+from .referIface import ReferIface
 
 
 def _min_hash_value(bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:

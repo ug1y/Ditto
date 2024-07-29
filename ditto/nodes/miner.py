@@ -26,8 +26,8 @@ import numpy as np
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
 
-from .referIface import ReferIface
-from .consusIface import ConsusIface
+from .reference import ReferIface
+from .consensus import ConsusIface
 
 
 class Miner:
