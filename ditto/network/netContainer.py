@@ -129,6 +129,9 @@ class NetContainer(Collection):
         :param max_peer_num: int | float
         :return: Set[TypeAlias.MinerName]
         """
+        if max_peer_num <= 0:
+            return set(self._network_graph.nodes) - {miner_name}  # Return all the nodes except the miner.
+
         new_peers = set()
         cur_peers = set(self._network_graph.neighbors(miner_name)) | {miner_name}
         while len(new_peers) < min(len(self._network_graph) - len(cur_peers), max_peer_num - len(cur_peers) + 1):

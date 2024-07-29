@@ -38,7 +38,7 @@ class Miner:
     # Dictionary key for the block's data.
     QUEUE_BLOCK_DATA_KEY = "queue_block_data"
 
-    def __init__(self, name: TypeAlias.MinerName, blockdag: BlockDAG, max_peer_num: int):
+    def __init__(self, name: TypeAlias.MinerName, blockdag: BlockDAG, max_peer_num: int = 0):
         self._name = name  # The unique name of the miner, used to identify it.
         self._blockdag = blockdag  # The local view of blockDAG hold by the miner.
         self._max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
@@ -141,6 +141,14 @@ class Miner:
         :return: int
         """
         return self._max_peer_num
+
+    @max_peer_num.setter
+    def max_peer_num(self, max_peer_num: int):
+        """
+        Set the maximum number of peers the miner connects.
+        :param max_peer_num: int
+        """
+        self._max_peer_num = max_peer_num
 
     @property
     def genesis_block(self) -> Block:
