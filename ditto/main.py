@@ -3,13 +3,12 @@ import os
 import sys
 
 from ditto import config
-from ditto.network import NetFactory
+from ditto.network import NetFactory, SelectNetTemplate
 from ditto.nodes import Systems
 from ditto.simulation import Simulator
 
 
 def run_simulation(until: int = 100):
-
     log_filter = config.SimulatorFilter()
     log_handler = logging.StreamHandler()
     log_handler.setFormatter(logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s'))
@@ -19,11 +18,11 @@ def run_simulation(until: int = 100):
 
     factory = NetFactory(mylogger)
     system_params = Systems['Bitcoin']
-    net = factory.PeerNet(system_params=system_params, number_of_miners=5,
-                          block_creation_rate=10, propagation_delay_parameter=0)
+    net = SelectNetTemplate(factory, 'PeerNet', system_params=system_params, number_of_miners=5,
+                            block_creation_rate=10, propagation_delay_parameter=0)
+
     sim = Simulator(net)
     sim.set_logger(mylogger)
-
     sim.run(until)
 
     for leaf in net.total_blockdag.leaves_blocks:

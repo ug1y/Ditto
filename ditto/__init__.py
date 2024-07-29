@@ -8,7 +8,7 @@ from .blockdag import Transaction, Block, BlockDAG
 from .simulation import NetSimulation, Simulator
 
 from .network import NetContainer, NetOperator
-from .network import NetFactory
+from .network import NetFactory, SelectNetTemplate
 
 from .nodes import Miner, Systems, SystemParams
 from .nodes import ReferIface, ConsusIface, StatusType

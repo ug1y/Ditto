@@ -19,7 +19,7 @@ limitations under the License.
 import logging
 
 from ditto.nodes import Miner, SystemParams
-from ditto.blockdag import BlockDAG
+from ditto.blockdag import BlockDAG, DAGType
 
 from .netOperator import NetOperator
 
@@ -37,7 +37,11 @@ class NetFactory:
         net = NetOperator(dag_for_net, propagation_delay_parameter, block_creation_rate)
         net.set_logger(self._logger)
         net.set_consus_handler(system_params.consus_algo)
-        genesis_block = net.init_network().pop()
+
+        if system_params.dag_type == DAGType.PARALLEL:
+            genesis_blocks = list(net.init_network(number_of_miners))
+        else:
+            genesis_blocks = list(net.init_network(1)) * number_of_miners
 
         for c in range(number_of_miners):
             name = 'Miner' + str(c + 1)
@@ -48,7 +52,7 @@ class NetFactory:
             miner = Miner(name, dag_for_miner)
             miner.set_logger(self._logger)
 
-            miner.pre_launch(genesis_block, system_params.refer_rule, system_params.consus_algo)
+            miner.pre_launch(genesis_blocks[c], system_params.refer_rule, system_params.consus_algo)
             net.add_miner(miner)
 
         return net
@@ -69,4 +73,16 @@ class NetFactory:
         """Full connected network in which the miners are all connected to each other."""
         net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
 
+        for miner in net:
+            net[miner].max_peer_num = 0
+            net[miner].discover_peer()
+
         return net
+
+
+def SelectNetTemplate(factory: NetFactory, net_name, *args, **kwargs):
+    net_to_use = getattr(factory, net_name)
+    if callable(net_to_use):
+        return net_to_use(*args, **kwargs)
+    else:
+        raise AttributeError('NetFactory attribute %s not found' % net_name)
