@@ -2,9 +2,9 @@ import logging
 import os
 import sys
 
-from ditto import config, DAGType
+from ditto import config
 from ditto.network import NetFactory
-from ditto.nodes import ChainRef, NakamotoCons
+from ditto.nodes import Systems
 from ditto.simulation import Simulator
 
 
@@ -18,8 +18,8 @@ def run_simulation(until: int = 100):
     mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
 
     factory = NetFactory(mylogger)
-    net = factory.PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=5,
-                          reference_class=ChainRef, consensus_class=NakamotoCons,
+    system_params = Systems['Bitcoin']
+    net = factory.PeerNet(system_params=system_params, number_of_miners=5,
                           block_creation_rate=10, propagation_delay_parameter=0)
     sim = Simulator(net)
     sim.set_logger(mylogger)

@@ -26,8 +26,7 @@ from bokeh.server.callbacks import PeriodicCallback
 from ditto import config, __version__
 from ditto.simulation import Simulator
 from ditto.network import NetOperator, NetFactory
-from ditto.blockdag import DAGType
-from ditto.nodes import ChainRef, NakamotoCons
+from ditto.nodes import Systems
 
 from .plots import network_plotting, blockdag_plotting
 from .handler import ConsoleHandler
@@ -138,14 +137,13 @@ class PlottingApp:
 
         mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
 
-        if self.sys_select.value == "Bitcoin":
-            factory = NetFactory(mylogger)
-            self.network = factory.PeerNet(blockdag_type=DAGType.CONVERGENCE, number_of_miners=self.num_input.value,
-                                           reference_class=ChainRef, consensus_class=NakamotoCons,
-                                           block_creation_rate=self.rate_input.value,
-                                           propagation_delay_parameter=self.delay_input.value)
-            self.simulator = Simulator(self.network)
-            self.simulator.set_logger(mylogger)
+        factory = NetFactory(mylogger)
+        system_params = Systems[self.sys_select.value]
+        self.network = factory.PeerNet(system_params=system_params, number_of_miners=self.num_input.value,
+                                       block_creation_rate=self.rate_input.value,
+                                       propagation_delay_parameter=self.delay_input.value)
+        self.simulator = Simulator(self.network)
+        self.simulator.set_logger(mylogger)
 
         # Draw the network graph.
         network_plotting(self.net_figure, self.network.network_graph)
