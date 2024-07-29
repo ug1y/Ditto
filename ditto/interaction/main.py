@@ -25,7 +25,7 @@ from bokeh.server.callbacks import PeriodicCallback
 
 from ditto import config, __version__
 from ditto.simulation import Simulator
-from ditto.network import NetOperator, NetFactory
+from ditto.network import NetOperator, NetFactory, SelectNetTemplate
 from ditto.nodes import Systems
 
 from .plots import network_plotting, blockdag_plotting
@@ -58,10 +58,10 @@ class PlottingApp:
 
         self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
 
-        options = ["Bitcoin"]
+        sys_options = ["Bitcoin"]
         self.sys_select = Select(name="system", title="Choose System", height=50,
-                                 options=options, sizing_mode='stretch_width')
-        self.sys_select.value = options[0]
+                                 options=sys_options, sizing_mode='stretch_width')
+        self.sys_select.value = sys_options[0]
 
         self.num_input = NumericInput(name="number", title="Network Scale", height=50,
                                       low=1, high=100, sizing_mode='stretch_width')
@@ -75,12 +75,17 @@ class PlottingApp:
                                         low=0, mode="float", sizing_mode='stretch_width')
         self.delay_input.value = 5.0
 
+        net_options = ["PeerNet", "FullNet"]
+        self.net_select = Select(name="net_name", title="Select Network", height=50,
+                                 options=net_options, sizing_mode='stretch_width')
+        self.net_select.value = net_options[0]
+
         self.gen_button = Button(name="generate", label="Generate Network", sizing_mode='stretch_width',
-                                 button_type="primary", height=45)
+                                 button_type="primary", height=50)
         self.gen_button.on_click(self.gen_click_event)
 
         self.run_toggle = Toggle(name="running", label="▶ Run", sizing_mode='stretch_width',
-                                 button_type="success", height=45, disabled=True)
+                                 button_type="success", height=50, disabled=True)
         self.run_toggle.on_change("active", self.run_change_event)
 
         self.speed_slider = Slider(name="speed", start=10, end=100, step=10, value=100,
@@ -103,9 +108,10 @@ class PlottingApp:
             self.run_toggle.button_type = "danger"
             self.sys_select.disabled = True
             self.num_input.disabled = True
-            self.gen_button.disabled = True
             self.rate_input.disabled = True
             self.delay_input.disabled = True
+            self.net_select.disabled = True
+            self.gen_button.disabled = True
             self.speed_slider.disabled = True
             self.callfunc = curdoc().add_periodic_callback(self.loop_simulation, self.speed_slider.value)
             print("Run the simulation...")
@@ -114,9 +120,10 @@ class PlottingApp:
             self.run_toggle.button_type = "success"
             self.sys_select.disabled = False
             self.num_input.disabled = False
-            self.gen_button.disabled = False
             self.rate_input.disabled = False
             self.delay_input.disabled = False
+            self.net_select.disabled = False
+            self.gen_button.disabled = False
             self.speed_slider.disabled = False
             curdoc().remove_periodic_callback(self.callfunc)
             print("Pause the simulation...")
@@ -139,9 +146,14 @@ class PlottingApp:
 
         factory = NetFactory(mylogger)
         system_params = Systems[self.sys_select.value]
-        self.network = factory.PeerNet(system_params=system_params, number_of_miners=self.num_input.value,
-                                       block_creation_rate=self.rate_input.value,
-                                       propagation_delay_parameter=self.delay_input.value)
+        self.network = SelectNetTemplate(factory, net_name=self.net_select.value,
+                                         system_params=system_params,
+                                         number_of_miners=self.num_input.value,
+                                         block_creation_rate=self.rate_input.value,
+                                         propagation_delay_parameter=self.delay_input.value)
+        # self.network = factory.PeerNet(system_params=system_params, number_of_miners=self.num_input.value,
+        #                                block_creation_rate=self.rate_input.value,
+        #                                propagation_delay_parameter=self.delay_input.value)
         self.simulator = Simulator(self.network)
         self.simulator.set_logger(mylogger)
 
@@ -165,6 +177,7 @@ class PlottingApp:
         doc.add_root(self.num_input)
         doc.add_root(self.rate_input)
         doc.add_root(self.delay_input)
+        doc.add_root(self.net_select)
         doc.add_root(self.gen_button)
 
         doc.add_root(self.run_toggle)
