@@ -127,8 +127,25 @@ class NetFactory:
 
         return net
 
-    def TreeNet(self):
-        pass
+    def TreeNet(self, system_params: SystemParams, number_of_miners: int,
+                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+        """Tree network in which the miners are connected to form a binary tree."""
+        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
+
+        miners = list(net)
+        q = [miners[0]]
+        b = 2
+
+        for i in range(1, len(miners)):
+            miner = q[0]
+            net[miner].connect_peer(miners[i])
+            q.append(miners[i])
+            b -= 1
+            if b == 0:
+                q.pop(0)
+                b = 2
+
+        return net
 
 
 def SelectNetTemplate(factory: NetFactory, net_name, *args, **kwargs):
