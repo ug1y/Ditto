@@ -21,7 +21,6 @@ from collections import deque
 from typing import Set
 
 import networkx as nx
-import numpy as np
 
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias

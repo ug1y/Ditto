@@ -23,15 +23,44 @@ from bokeh.plotting import figure
 
 from ditto.nodes import ConsusIface, StatusType
 from ditto.network import NetContainer
-from ditto.blockdag import BlockDAG, EdgeType
+from ditto.blockdag import BlockDAG, EdgeType, DAGType
 
 
-def cal_loc(idx, nds, x_zoom, y_zoom):
-    loc = {}
-    nds = sorted(nds)
-    for pos, nd in enumerate(nds):
-        loc[nd] = (x_zoom * idx, y_zoom * (pos + 1) * (1 / (len(nds) + 1)))
-    return loc
+class CalcLocation:
+
+    def __init__(self, dag, x_zoom, y_zoom):
+        self.dag = dag
+        self.x_zoom = x_zoom
+        self.y_zoom = y_zoom
+
+    def calc_location(self):
+        if self.dag.graph_type == DAGType.PARALLEL:
+            return self.fixed_location()
+        else:
+            return self.relative_location()
+
+    def relative_location(self):
+        loc = {}
+        for height, blocks in enumerate(self.dag.column_blocks):
+            blocks = sorted(blocks)
+            for pos, block in enumerate(blocks):
+                loc[block] = (self.x_zoom * (height + 1), self.y_zoom * (pos + 1) * (1 / (len(blocks) + 1)))
+        return loc
+
+    def fixed_location(self):
+        blocks = self.dag.column_blocks[0]
+        blocks = sorted(blocks)
+
+        y_pos = {}
+        for pos, block in enumerate(blocks):
+            y_pos[self.dag[block].miner] = self.y_zoom * (pos + 1) * (1 / (len(blocks) + 1))
+
+        loc = {}
+        for height, blocks in enumerate(self.dag.column_blocks):
+            blocks = sorted(blocks)
+            for pos, block in enumerate(blocks):
+                loc[block] = (self.x_zoom * (height + 1), y_pos[self.dag[block].miner])
+        return loc
 
 
 def blockdag_plotting(fig: figure, dag: BlockDAG, consus: ConsusIface):
@@ -69,9 +98,7 @@ def blockdag_plotting(fig: figure, dag: BlockDAG, consus: ConsusIface):
     fig.y_range = Range1d(0, 10)
 
     # Compute the layout of the nodes.
-    layout = {}
-    for i, v in enumerate(dag.column_blocks):
-        layout.update(cal_loc(i + 1, v, 1, 10))
+    layout = CalcLocation(dag, 1, 10).calc_location()
     renderer.layout_provider = StaticLayoutProvider(graph_layout=layout)
 
     # Refresh the figure.

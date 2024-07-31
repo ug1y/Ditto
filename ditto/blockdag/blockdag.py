@@ -175,7 +175,7 @@ class BlockDAG(Collection):
         # Handle the genesis block.
         if block.btype == BlockType.GENESIS:
             # Check the key data fields of the block.
-            if block.miner is not None or block.pref is not None or len(block.crefs) != 0:
+            if block.pref is not None or len(block.crefs) != 0:
                 if self._logger is not None:
                     self._logger.warning("%s: Genesis block must be empty.", caller_info())
                 return False
