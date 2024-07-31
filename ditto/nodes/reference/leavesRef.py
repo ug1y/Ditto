@@ -33,6 +33,9 @@ class LeavesRef(ReferIface):
         if self.blockdag.graph_type != DAGType.DIVERGENCE:
             raise ValueError("The simple reference strategy is only for divergence blockDAG.")
 
+    def can_referred(self) -> bool:
+        return True
+
     def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
         return None
 

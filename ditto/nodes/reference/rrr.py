@@ -27,6 +27,9 @@ from .referIface import ReferIface
 
 class RRR(ReferIface):
 
+    def can_referred(self) -> bool:
+        pass
+
     def get_virtual_new_height(self) -> TypeAlias.BlockHeight:
         pass
 

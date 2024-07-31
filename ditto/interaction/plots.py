@@ -41,8 +41,9 @@ def blockdag_plotting(fig: figure, dag: BlockDAG, consus: ConsusIface):
     # Setting node data and glyph.
     renderer.node_renderer.data_source = ColumnDataSource({
         'index': list(dag),
-        'color': ["hotpink" if consus.block_status(b) == StatusType.DECIDED else "dimgray" for b in dag],
-        'width': [4 if consus.block_status(b) == StatusType.DECIDED else 2 for b in dag],
+        'color': ["hotpink" if consus is not None and consus.block_status(b) == StatusType.DECIDED
+                  else "dimgray" for b in dag],
+        'width': [4 if consus is not None and consus.block_status(b) == StatusType.DECIDED else 2 for b in dag],
     })
     renderer.node_renderer.glyph = Rect(width=0.5, height=0.5, fill_color="skyblue",
                                         line_color="color", line_width="width")
@@ -53,11 +54,11 @@ def blockdag_plotting(fig: figure, dag: BlockDAG, consus: ConsusIface):
         'start': [e[0] for e in dag.graph().edges()],
         'end': [e[1] for e in dag.graph().edges()],
         'color': ['black' if dag.graph().edges[e][BlockDAG.EDGE_TYPE_KEY] == EdgeType.PIVOT
-                  else 'lightgray' for e in dag.graph().edges()],
+                  else 'gray' for e in dag.graph().edges()],
         'width': [2 if dag.graph().edges[e][BlockDAG.EDGE_TYPE_KEY] == EdgeType.PIVOT
-                  else 1 for e in dag.graph().edges()],
+                  else 1.5 for e in dag.graph().edges()],
         'alpha': [1 if dag.graph().edges[e][BlockDAG.EDGE_TYPE_KEY] == EdgeType.PIVOT
-                  else 0.5 for e in dag.graph().edges()],
+                  else 0.75 for e in dag.graph().edges()],
     })
     renderer.edge_renderer.glyph = MultiLine(line_color="color", line_width='width', line_alpha='alpha')
 

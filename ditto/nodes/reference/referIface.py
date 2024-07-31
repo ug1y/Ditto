@@ -35,6 +35,13 @@ class ReferIface(ABC):
         self.blockdag = blockdag
 
     @abstractmethod
+    def can_referred(self) -> bool:
+        """
+        Check if the current blockDAG can be referred to generate a new block.
+        :return: bool
+        """
+
+    @abstractmethod
     def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
         """
         Get the virtual pivot ref where the divergence blockDAG return None.

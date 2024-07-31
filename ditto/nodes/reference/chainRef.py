@@ -31,10 +31,14 @@ class ChainRef(ReferIface):
     """
     For convergence blockDAG to simulate the Bitcoin blockchain.
     """
+
     def __init__(self, blockdag: BlockDAG):
         super().__init__(blockdag)
         if self.blockdag.graph_type != DAGType.CONVERGENCE:
             raise ValueError("The chain reference strategy is only for convergence blockDAG.")
+
+    def can_referred(self) -> bool:
+        return True
 
     def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
         return self._max_hash_power(self.blockdag.leaves_blocks)

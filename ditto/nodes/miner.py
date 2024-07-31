@@ -44,6 +44,7 @@ class Miner:
         self._max_peer_num = max_peer_num  # The maximum number of peers the miner connects.
 
         self._genesis_block: Block = None  # The genesis block the miner followed by.
+        self._latest_block: Block = None  # The latest block the miner received.
         self._network: NetContainer = None  # Network object handler, used to connect peers and broadcast blocks.
 
         self._mined_blocks = set()  # Record the set of blocks mined by the miner.
@@ -79,6 +80,7 @@ class Miner:
                 and block.btype == BlockType.GENESIS \
                 and self._blockdag.add_block(block):
             self._genesis_block = block
+            self._latest_block = block
 
     def set_network(self, network: NetContainer):
         """
@@ -150,10 +152,18 @@ class Miner:
     @property
     def genesis_block(self) -> Block:
         """
-        Get the genesis block id for the miner.
+        Get the genesis block of the miner.
         :return: BlockID
         """
         return self._genesis_block
+
+    @property
+    def latest_block(self) -> Block:
+        """
+        Get the latest block of the miner.
+        :return: BlockID
+        """
+        return self._latest_block
 
     @property
     def network(self) -> NetContainer:
@@ -215,6 +225,12 @@ class Miner:
         if self.refer_handler is None:
             if self._logger is not None:
                 self._logger.warning("%s: Reference handler is not set.", self._name)
+            return None
+
+        # Check the references before generate a new block.
+        if not self.refer_handler.can_referred():
+            # Broadcast the latest block to try to sync network.
+            self.broadcast_block(self._latest_block)
             return None
 
         # Use the reference handler to select the pref and crefs.
@@ -321,6 +337,8 @@ class Miner:
         if self._blockdag.add_block(block):
             if self._logger is not None:
                 self._logger.info("%s: Successfully added the block %d and broadcasts it.", self._name, hash(block))
+            # record the latest block.
+            self._latest_block = block
             # broadcast the block to neighbors.
             self.broadcast_block(block)
             # execute the consensus
