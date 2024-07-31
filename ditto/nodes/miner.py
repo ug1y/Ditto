@@ -103,20 +103,16 @@ class Miner:
 
     def pre_launch(self, genesis_block: Block,
                    refer_class: type[ReferIface],
-                   consus_class: type[ConsusIface],
-                   network: NetContainer = None):
+                   consus_class: type[ConsusIface] = None):
         """
         Prepare the miner for launch.
         :param genesis_block: Block
         :param refer_class: type[ReferIface]
         :param consus_class: type[ConsusIface]
-        :param network: NetContainer
         """
         self.set_genesis_block(genesis_block)
         self.set_refer_handler(refer_class)
         self.set_consus_handler(consus_class)
-        if network is not None:
-            self.set_network(network)
 
     @property
     def name(self) -> TypeAlias.MinerName:
@@ -316,10 +312,10 @@ class Miner:
         :param block: Block
         :return: bool
         """
-        if self.consus_handler is None:
-            if self._logger is not None:
-                self._logger.warning("%s: Consensus handler is not set.", self._name)
-            return False
+        # if self._consus_handler is None:
+        #     if self._logger is not None:
+        #         self._logger.warning("%s: Consensus handler is not set.", self._name)
+        #     return False
 
         if self._blockdag.add_block(block):
             if self._logger is not None:
@@ -327,8 +323,8 @@ class Miner:
             # broadcast the block to neighbors.
             self.broadcast_block(block)
             # execute the consensus
-            if self.consus_handler is not None:
-                self.consus_handler.execute_consensus()
+            if self._consus_handler is not None:
+                self._consus_handler.execute_consensus()
             return True
         return False
 

@@ -89,7 +89,7 @@ class NetOperator(NetContainer):
         :param hash_rate: float
         :return: bool
         """
-        if miner._blockdag.graph_type != self.get_blockdag_type():
+        if miner.blockdag.graph_type != self.get_blockdag_type():
             if self._logger is not None:
                 self._logger.warning("%s: Add miner %s failed, blockDAG type mismatch.",
                                      self.FOR_LOG_NAME, str(miner.name))
@@ -99,7 +99,7 @@ class NetOperator(NetContainer):
         self.network_graph.add_node(miner_name)
         self.network_graph.nodes[miner_name][NetOperator.MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator.HASH_RATE_KEY] = hash_rate
-        miner.set_network(self)
+        miner.set_network(self)  # The miner must set network handler before mining new blocks.
         if self._logger is not None:
             self._logger.info("%s: Add miner %s with hash rate " + str(hash_rate),
                               self.FOR_LOG_NAME, str(miner_name))
