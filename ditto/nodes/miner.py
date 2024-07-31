@@ -94,7 +94,7 @@ class Miner:
         Set the reference handler.
         :param refer_class: type[ReferIface]
         """
-        self._refer_handler = refer_class(self._blockdag)
+        self._refer_handler = refer_class(self._name, self._genesis_block, self._blockdag)
 
     def set_consus_handler(self, consus_class: type[ConsusIface]):
         """

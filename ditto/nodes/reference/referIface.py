@@ -20,7 +20,7 @@ limitations under the License.
 from abc import ABC, abstractmethod
 from typing import Set
 
-from ditto.blockdag import BlockDAG, TypeAlias
+from ditto.blockdag import BlockDAG, TypeAlias, Block
 
 
 class ReferIface(ABC):
@@ -28,10 +28,12 @@ class ReferIface(ABC):
     Reference strategies interface.
     """
 
-    def __init__(self, blockdag: BlockDAG):
+    def __init__(self, miner_name: TypeAlias.MinerName, genesis_block: Block, blockdag: BlockDAG):
         """
         Rely on the blockdag object with only read operation.
         """
+        self.miner_name = miner_name
+        self.genesis_block = genesis_block
         self.blockdag = blockdag
 
     @abstractmethod

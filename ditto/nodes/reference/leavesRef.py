@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from ditto.blockdag import BlockDAG, DAGType, TypeAlias
+from ditto.blockdag import BlockDAG, DAGType, TypeAlias, Block
 
 from .referIface import ReferIface
 
@@ -28,10 +28,10 @@ class LeavesRef(ReferIface):
     Only for divergence blockDAG.
     """
 
-    def __init__(self, blockdag: BlockDAG):
-        super().__init__(blockdag)
+    def __init__(self, miner_name: TypeAlias.MinerName, genesis_block: Block, blockdag: BlockDAG):
+        super().__init__(miner_name, genesis_block, blockdag)
         if self.blockdag.graph_type != DAGType.DIVERGENCE:
-            raise ValueError("The simple reference strategy is only for divergence blockDAG.")
+            raise ValueError("The leaves reference strategy is only for divergence blockDAG.")
 
     def can_referred(self) -> bool:
         return True

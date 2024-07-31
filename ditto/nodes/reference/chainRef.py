@@ -18,7 +18,7 @@ limitations under the License.
 """
 from typing import Set
 
-from ditto.blockdag import TypeAlias, BlockDAG, DAGType
+from ditto.blockdag import TypeAlias, BlockDAG, DAGType, Block
 
 from .referIface import ReferIface
 
@@ -32,8 +32,8 @@ class ChainRef(ReferIface):
     For convergence blockDAG to simulate the Bitcoin blockchain.
     """
 
-    def __init__(self, blockdag: BlockDAG):
-        super().__init__(blockdag)
+    def __init__(self, miner_name: TypeAlias.MinerName, genesis_block: Block, blockdag: BlockDAG):
+        super().__init__(miner_name, genesis_block, blockdag)
         if self.blockdag.graph_type != DAGType.CONVERGENCE:
             raise ValueError("The chain reference strategy is only for convergence blockDAG.")
 

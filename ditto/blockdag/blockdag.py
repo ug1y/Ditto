@@ -111,6 +111,18 @@ class BlockDAG(Collection):
         """
         return self._column
 
+    def get_mined_blocks(self, miner: TypeAlias.MinerName = None) -> Set[TypeAlias.BlockID]:
+        """
+        Get the set of blocks mined by the specified miner.
+        :return: list[TypeAlias.BlockID].
+        """
+        bids = set()
+        for bid in self._dag:
+            if (self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY].btype == BlockType.MINED and
+                    (miner == None or self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY].miner == miner)):
+                bids.add(bid)
+        return bids
+
     def get_pivot_chain(self, bid: TypeAlias.BlockID) -> List[TypeAlias.BlockID]:
         """
         Get the pivot chain if the graph type is convergence or parallel.

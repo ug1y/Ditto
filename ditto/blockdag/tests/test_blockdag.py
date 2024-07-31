@@ -44,6 +44,7 @@ class TestBlockDAG:
         assert set(g.column_blocks[2]) == {5, 6}
         assert len(g.column_blocks) == 3
         assert set(g.get_pivot_chain(hash(b5))) == set()
+        assert g.get_mined_blocks() == {2, 3, 4, 5, 6}
 
         assert set(g.ask_block(hash(b6)).get_parents()) == set(g.successors(hash(b6)))
         assert set(g.predecessors(hash(b3))) == {5, 6}
@@ -95,6 +96,7 @@ class TestBlockDAG:
         assert len(g.column_blocks) == 3
         assert set(g.get_pivot_chain(hash(b6))) == {1, 4, 6}
         assert set(g.get_pivot_chain(hash(b5))) == {2, 5}
+        assert g.get_mined_blocks() == {4, 5, 6}
 
         assert set(g.ask_block(hash(b5)).get_parents()) == set(g.successors(hash(b5)))
         assert set(g.predecessors(hash(b2))) == {4, 5}
@@ -145,6 +147,7 @@ class TestBlockDAG:
         assert len(g.column_blocks) == 3
         assert set(g.get_pivot_chain(hash(b6))) == {1, 3, 6}
         assert set(g.get_pivot_chain(hash(b5))) == {1, 4, 5}
+        assert g.get_mined_blocks() == {2, 3, 4, 5, 6}
 
         assert set(g.ask_block(hash(b5)).get_parents()) == set(g.successors(hash(b5)))
         assert set(g.predecessors(hash(b3))) == {5, 6}
