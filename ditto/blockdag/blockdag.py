@@ -119,7 +119,7 @@ class BlockDAG(Collection):
         bids = set()
         for bid in self._dag:
             if (self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY].btype == BlockType.MINED and
-                    (miner == None or self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY].miner == miner)):
+                    (miner is None or self._dag.nodes[bid][BlockDAG.BLOCK_DATA_KEY].miner == miner)):
                 bids.add(bid)
         return bids
 

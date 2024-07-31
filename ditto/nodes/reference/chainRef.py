@@ -18,7 +18,7 @@ limitations under the License.
 """
 from typing import Set
 
-from ditto.blockdag import TypeAlias, BlockDAG, DAGType, Block
+from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType
 
 from .referIface import ReferIface
 

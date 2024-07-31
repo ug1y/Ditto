@@ -296,8 +296,8 @@ class Miner:
         :param block: Block
         :return: bool
         """
-        if block is None or block.btype != BlockType.MINED or \
-                block.crefs is None or block.height is None:
+        if block is None or block.btype == BlockType.ORPHAN or \
+                block.crefs is None or block.height == 0:
             return False
 
         return True
@@ -360,17 +360,16 @@ class Miner:
             if cur_block_bid not in self._block_queue:
                 continue
             cur_block = self._block_queue.nodes[cur_block_bid][Miner.QUEUE_BLOCK_DATA_KEY]
-            if cur_block is not None and \
-                    np.bitwise_and.reduce([parent_bid in self._blockdag for parent_bid in cur_block.get_parents()]):
-                # # The second condition is the same as following code.
-                # parents = cur_block.get_parents()
-                # for parent_bid in parents:
-                #     if parent_bid not in self._blockdag:
-                #         continue
-                add_queue.extend(self._block_queue.predecessors(hash(cur_block)))
-                self._block_queue.remove_node(hash(cur_block))
-                if not self._basic_block_add(cur_block):
-                    return False
+            if cur_block is not None:
+                parents = cur_block.get_parents()
+                for parent_bid in parents:
+                    if parent_bid not in self._blockdag:
+                        break
+                else:  # Require that all parents are already in blockdag.
+                    add_queue.extend(self._block_queue.predecessors(hash(cur_block)))
+                    self._block_queue.remove_node(hash(cur_block))
+                    if not self._basic_block_add(cur_block):
+                        return False
         return True
 
     def discover_peer(self) -> int:

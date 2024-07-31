@@ -17,7 +17,7 @@ def run_simulation(until: int = 100):
     mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
 
     factory = NetFactory(mylogger)
-    system_params = Systems['Phantom']
+    system_params = Systems['Hashgraph']
     net = SelectNetTemplate(factory, net_name='PeerNet', system_params=system_params, number_of_miners=5,
                             block_creation_rate=10, propagation_delay_parameter=0)
 
@@ -25,8 +25,8 @@ def run_simulation(until: int = 100):
     sim.set_logger(mylogger)
     sim.run(until)
 
-    for leaf in net.total_blockdag.leaves_blocks:
-        print(net.total_blockdag.get_pivot_chain(leaf))
+    for miner in net:
+        print(net[miner].blockdag.column_blocks)
 
     if net.consus_handler is not None:
         print(net.consus_handler.get_processed_blocks())

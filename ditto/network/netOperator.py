@@ -148,7 +148,7 @@ class NetOperator(NetContainer):
                 self._consus_handler.execute_consensus()  # Execute the consensus algorithm.
 
         if self._logger is not None:
-            self._logger.info("%s: Miner %s broadcasts block " + str(hash(block)),
+            self._logger.info("%s: %s broadcasts block " + str(hash(block)),
                               self.FOR_LOG_NAME, str(source_miner))
         peers = self.get_neighbors(source_miner)
         for peer_name in peers:
@@ -161,7 +161,7 @@ class NetOperator(NetContainer):
         :param bid: TypeAlias.BlockID
         """
         if self._logger is not None:
-            self._logger.info("%s: Miner %s fetches block " + str(bid),
+            self._logger.info("%s: %s fetches block " + str(bid),
                               self.FOR_LOG_NAME, str(target_miner))
         for peer_name in self.get_neighbors(target_miner):
             self.send_block(peer_name, target_miner, self._total_blockdag[bid])
