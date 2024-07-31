@@ -217,4 +217,5 @@ class NetOperator(NetContainer):
         Set the consensus handler.
         :param consus_class: type[ConsusIface]
         """
-        self._consus_handler = consus_class(self._total_blockdag)
+        if consus_class is not None:
+            self._consus_handler = consus_class(self._total_blockdag)

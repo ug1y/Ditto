@@ -1,6 +1,6 @@
 from ditto.blockdag import BlockDAG, BlockType, Block
 from ditto.network import NetOperator
-from ditto.nodes import Miner, SimpleRef, CCC, RRR
+from ditto.nodes import Miner, LeavesRef, CCC, RRR
 
 
 class TestMiner:
@@ -35,7 +35,7 @@ class TestMiner:
         assert m.mine_block() is None
 
         m.set_consus_handler(CCC)
-        m.set_refer_handler(SimpleRef)
+        m.set_refer_handler(LeavesRef)
 
         b2 = m.mine_block()
         assert len(m._blockdag) == 2
@@ -50,7 +50,7 @@ class TestMiner:
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
 
         m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
-        m.pre_launch(b1, SimpleRef, CCC)
+        m.pre_launch(b1, LeavesRef, CCC)
         net.add_miner(m)
 
         b2 = m.mine_block()
@@ -71,7 +71,7 @@ class TestMiner:
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
 
         m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
-        m.pre_launch(b1, SimpleRef, CCC)
+        m.pre_launch(b1, LeavesRef, CCC)
         net.add_miner(m)
 
         b2 = m.mine_block()

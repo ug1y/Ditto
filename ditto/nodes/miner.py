@@ -99,7 +99,8 @@ class Miner:
         Set the consensus handler.
         :param consus_class: type[ConsusIface]
         """
-        self._consus_handler = consus_class(self._blockdag)
+        if consus_class is not None:
+            self._consus_handler = consus_class(self._blockdag)
 
     def pre_launch(self, genesis_block: Block,
                    refer_class: type[ReferIface],

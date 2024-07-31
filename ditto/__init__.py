@@ -12,5 +12,5 @@ from .network import NetFactory, SelectNetTemplate
 
 from .nodes import Miner, Systems, SystemParams
 from .nodes import ReferIface, ConsusIface, StatusType
-from .nodes import SimpleRef, ChainRef
+from .nodes import LeavesRef, ChainRef
 from .nodes import NakamotoCons

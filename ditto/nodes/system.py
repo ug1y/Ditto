@@ -20,7 +20,7 @@ from dataclasses import dataclass
 
 from ditto.blockdag import DAGType
 
-from .reference import ReferIface, ChainRef
+from .reference import ReferIface, ChainRef, LeavesRef
 from .consensus import ConsusIface, NakamotoCons
 
 
@@ -36,4 +36,5 @@ class SystemParams:
 
 Systems = {
     'Bitcoin': SystemParams(DAGType.CONVERGENCE, ChainRef, NakamotoCons),
+    'Phantom': SystemParams(DAGType.DIVERGENCE, LeavesRef, None),
 }

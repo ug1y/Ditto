@@ -21,7 +21,7 @@ from ditto.blockdag import BlockDAG, DAGType, TypeAlias
 from .referIface import ReferIface
 
 
-class SimpleRef(ReferIface):
+class LeavesRef(ReferIface):
     """
     Reference all leaves of the blockDAG.
 

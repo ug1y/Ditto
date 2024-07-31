@@ -17,7 +17,7 @@ def run_simulation(until: int = 100):
     mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
 
     factory = NetFactory(mylogger)
-    system_params = Systems['Bitcoin']
+    system_params = Systems['Phantom']
     net = SelectNetTemplate(factory, net_name='PeerNet', system_params=system_params, number_of_miners=5,
                             block_creation_rate=10, propagation_delay_parameter=0)
 
@@ -28,11 +28,12 @@ def run_simulation(until: int = 100):
     for leaf in net.total_blockdag.leaves_blocks:
         print(net.total_blockdag.get_pivot_chain(leaf))
 
-    print(net.consus_handler.get_processed_blocks())
-    print(net.consus_handler.sort_finished_blocks())
-    print(net.consus_handler.block_status(5))
-    print(net.consus_handler.block_status(10))
-    print(net.consus_handler.block_status(15))
+    if net.consus_handler is not None:
+        print(net.consus_handler.get_processed_blocks())
+        print(net.consus_handler.sort_finished_blocks())
+        print(net.consus_handler.block_status(5))
+        print(net.consus_handler.block_status(10))
+        print(net.consus_handler.block_status(15))
 
 
 def run_server(port: int = 5006):
