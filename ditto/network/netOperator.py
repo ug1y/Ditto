@@ -218,4 +218,4 @@ class NetOperator(NetContainer):
         :param consus_class: type[ConsusIface]
         """
         if consus_class is not None:
-            self._consus_handler = consus_class(self._total_blockdag)
+            self._consus_handler = consus_class(self, self._total_blockdag)

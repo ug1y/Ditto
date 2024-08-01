@@ -18,6 +18,7 @@ limitations under the License.
 """
 from typing import List, Set
 
+from ditto.network import NetContainer
 from ditto.blockdag import TypeAlias, BlockDAG
 
 from .consusIface import ConsusIface, StatusType
@@ -31,8 +32,8 @@ class NakamotoCons(ConsusIface):
     """
     In nakamoto consensus, blocks with depth of 6 can be safely decided.
     """
-    def __init__(self, blockdag: BlockDAG):
-        super().__init__(blockdag)
+    def __init__(self, network: NetContainer, blockdag: BlockDAG):
+        super().__init__(network, blockdag)
         self._blocks_marked = dict()
         self._sorted_blocks = list()
         self._height_pointer = 0

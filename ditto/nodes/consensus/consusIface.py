@@ -20,6 +20,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Set, List
 
+from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, TypeAlias
 
 
@@ -36,10 +37,11 @@ class ConsusIface(ABC):
     Consensus determination interface.
     """
 
-    def __init__(self, blockdag: BlockDAG):
+    def __init__(self, network: NetContainer, blockdag: BlockDAG):
         """
         Rely on the blockdag object with only read operation.
         """
+        self.network = network
         self.blockdag = blockdag
 
     @abstractmethod
