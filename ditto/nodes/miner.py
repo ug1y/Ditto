@@ -105,15 +105,18 @@ class Miner:
 
     def pre_launch(self, genesis_block: Block,
                    refer_class: type[ReferIface],
+                   network: NetContainer = None,
                    consus_class: type[ConsusIface] = None):
         """
         Prepare the miner for launch.
         :param genesis_block: Block
         :param refer_class: type[ReferIface]
+        :param network: NetContainer
         :param consus_class: type[ConsusIface]
         """
         self.set_genesis_block(genesis_block)
         self.set_refer_handler(refer_class)
+        self.set_network(network)  # The miner must set network handler before mining new blocks.
         self.set_consus_handler(consus_class)
 
     @property

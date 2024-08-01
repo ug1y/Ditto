@@ -50,7 +50,7 @@ class TestMiner:
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
 
         m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
-        m.pre_launch(b1, LeavesRef, CCC)
+        m.pre_launch(b1, LeavesRef, net, CCC)
         net.add_miner(m)
 
         b2 = m.mine_block()
@@ -71,7 +71,7 @@ class TestMiner:
         b1 = Block(bid=net.get_next_block_id(), btype=BlockType.GENESIS, height=1)
 
         m = Miner(name='testMiner', blockdag=BlockDAG(), max_peer_num=10)
-        m.pre_launch(b1, LeavesRef, CCC)
+        m.pre_launch(b1, LeavesRef, net, CCC)
         net.add_miner(m)
 
         b2 = m.mine_block()
@@ -108,24 +108,24 @@ class TestMiner:
         delay = net.get_delay(m1.name, m2.name)
 
         net.add_miner(m1)
-        # m1.set_network(net)
+        m1.set_network(net)
 
         assert m1.connect_peer(m2.name, delay) is False
         net.add_miner(m2)
         assert m1.connect_peer(m2.name, delay) is True
 
         # assert m2.connect_peer(m1.get_name(), delay) is False
-        # m2.set_network(net)
+        m2.set_network(net)
         assert m2.connect_peer(m1.name, delay) is True
 
         net.add_miner(m3)
-        # m3.set_network(net)
+        m3.set_network(net)
 
         net.add_miner(m4)
-        # m4.set_network(net)
+        m4.set_network(net)
 
         net.add_miner(m5)
-        # m5.set_network(net)
+        m5.set_network(net)
 
         assert m1.discover_peer() == 3
         assert m2.discover_peer() == 3

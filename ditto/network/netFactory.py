@@ -56,7 +56,8 @@ class NetFactory:
 
             if system_params.dag_type == DAGType.PARALLEL:
                 genesis_blocks[c].miner = miner.name  # parallel blockdag record miner name in genesis blocks.
-            miner.pre_launch(genesis_blocks[c], system_params.refer_rule, system_params.consus_algo)
+
+            miner.pre_launch(genesis_blocks[c], system_params.refer_rule, net, system_params.consus_algo)
             net.add_miner(miner)
 
         return net
