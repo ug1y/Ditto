@@ -139,7 +139,7 @@ class PlottingApp:
 
         log_filter = config.SimulatorFilter()
         log_handler = ConsoleHandler(self.con_input)
-        log_handler.setFormatter(logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s'))
+        log_handler.setFormatter(logging.Formatter(fmt='[%(levelname)s] %(message)s'))
         log_level = logging.INFO
 
         mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()

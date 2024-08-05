@@ -4,32 +4,31 @@ import sys
 
 from ditto import config
 from ditto.network import NetFactory, SelectNetTemplate
-from ditto.nodes import Systems
+from ditto.nodes import Systems, StatusType
 from ditto.simulation import Simulator
 
 
 def run_simulation(until: int = 100):
     log_filter = config.SimulatorFilter()
     log_handler = logging.StreamHandler()
-    log_handler.setFormatter(logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s'))
+    log_handler.setFormatter(logging.Formatter(fmt='[%(levelname)s] %(message)s'))
     log_level = logging.INFO
 
     mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
 
     factory = NetFactory(mylogger)
-    system_params = Systems['Hashgraph']
+    system_params = Systems['Phantom']
     net = SelectNetTemplate(factory, net_name='PeerNet', system_params=system_params, number_of_miners=5,
-                            block_creation_rate=10, propagation_delay_parameter=0)
+                            block_creation_rate=10, propagation_delay_parameter=30)
 
     sim = Simulator(net)
     sim.set_logger(mylogger)
     sim.run(until)
 
-    for miner in net:
-        print(net[miner].blockdag.column_blocks)
+    print(repr(net.total_blockdag))
 
     if net.consus_handler is not None:
-        print(net.consus_handler.get_processed_blocks())
+        print(net.consus_handler.get_processed_blocks(StatusType.DECIDED))
         print(net.consus_handler.sort_finished_blocks())
         print(net.consus_handler.block_status(5))
         print(net.consus_handler.block_status(10))

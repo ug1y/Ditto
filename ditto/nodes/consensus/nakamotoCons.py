@@ -21,17 +21,14 @@ from typing import List, Set
 from ditto.network import NetContainer
 from ditto.blockdag import TypeAlias, BlockDAG
 
-from .consusIface import ConsusIface, StatusType
-
-
-def _min_hash_value(bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
-    return min(bids)
+from ditto.nodes.consensus import ConsusIface, StatusType
 
 
 class NakamotoCons(ConsusIface):
     """
     In nakamoto consensus, blocks with depth of 6 can be safely decided.
     """
+
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
         self._blocks_marked = dict()
@@ -39,7 +36,7 @@ class NakamotoCons(ConsusIface):
         self._height_pointer = 0
         self._safe_depth = 6
 
-    def execute_consensus(self) -> TypeAlias.BlockHeight:
+    def execute_consensus(self):
         old_height_pointer = self._height_pointer
         self._height_pointer = len(self.blockdag.column_blocks)  # Update the height pointer.
 
@@ -64,7 +61,6 @@ class NakamotoCons(ConsusIface):
                     self._blocks_marked[bid] = StatusType.EXCLUDE
             self._sorted_blocks.extend(sor_bids)
 
-        return tar_height
 
     def block_status(self, bid) -> StatusType:
         if bid not in self.blockdag:
@@ -97,3 +93,7 @@ class NakamotoCons(ConsusIface):
             if self.blockdag[bid].height == max_height:
                 sel_bids.add(bid)
         return min(sel_bids)
+
+
+if __name__ == '__main__':
+    print("Nakamoto Consensus.")

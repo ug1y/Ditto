@@ -151,7 +151,7 @@ class NetFactory:
         return net
 
 
-def SelectNetTemplate(factory: NetFactory, net_name, *args, **kwargs):
+def SelectNetTemplate(factory: NetFactory, net_name, *args, **kwargs) -> NetOperator:
     net_to_use = getattr(factory, net_name)
     if callable(net_to_use):
         return net_to_use(*args, **kwargs)

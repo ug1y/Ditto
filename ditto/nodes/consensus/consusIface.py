@@ -45,7 +45,7 @@ class ConsusIface(ABC):
         self.blockdag = blockdag
 
     @abstractmethod
-    def execute_consensus(self) -> TypeAlias.BlockHeight:
+    def execute_consensus(self):
         """
         Execute consensus and return the max height of processed blocks.
         :return: BlockHeight

@@ -5,4 +5,4 @@ from .reference import ReferIface
 from .reference import RRR, LeavesRef, ChainRef, GossipRef
 
 from .consensus import ConsusIface, StatusType
-from .consensus import CCC, NakamotoCons
+from .consensus import CCC, NakamotoCons, PhantomCons
