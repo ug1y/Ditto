@@ -7,11 +7,11 @@ stages:
 test-job:
   stage: test
   script:
-    - pip install .[test] -i https://pypi.tuna.tsinghua.edu.cn/simple
+    - pip install .[test] -i http://mirrors.aliyun.com/pypi/simple
     - python -m pytest
 
 deploy-job:
   stage: deploy
   script:
-    - pip install . -i https://pypi.tuna.tsinghua.edu.cn/simple
+    - pip install . -i http://mirrors.aliyun.com/pypi/simple
     - python -m ditto.main sim
