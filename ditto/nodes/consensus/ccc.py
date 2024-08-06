@@ -27,7 +27,7 @@ from .consusIface import ConsusIface, StatusType
 
 class CCC(ConsusIface):
 
-    def execute_consensus(self) -> TypeAlias.BlockHeight:
+    def execute_consensus(self):
         pass
 
     def block_status(self, bid) -> StatusType:

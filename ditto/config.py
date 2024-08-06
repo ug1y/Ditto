@@ -54,11 +54,6 @@ class MinerFilter(logging.Filter):
 
 
 class MyLogger:
-    # logging.basicConfig(format='[%(asctime)s] %(levelname)s - '
-    #                            '[Location] %(name)s:%(lineno)d - '
-    #                            '[%(funcName)s] %(message)s',
-    #                     datefmt='%Y-%m-%d %H:%M:%S')
-
     def __init__(self, log_handler: logging.Handler, log_filter: logging.Filter, log_level: int):
         self._logger = logging.getLogger(str(uuid.uuid4()))
         self._logger.addHandler(log_handler)

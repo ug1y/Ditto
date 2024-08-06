@@ -58,7 +58,7 @@ class PlottingApp:
 
         self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
 
-        sys_options = ["Bitcoin", "Phantom", "Hashgraph"]
+        sys_options = ["Bitcoin", "Phantom"]
         self.sys_select = Select(name="system", title="Choose System", height=50,
                                  options=sys_options, sizing_mode='stretch_width')
         self.sys_select.value = sys_options[0]
@@ -73,7 +73,7 @@ class PlottingApp:
 
         self.delay_input = NumericInput(name="delay", title="Propagation Delay", height=50,
                                         low=0, mode="float", sizing_mode='stretch_width')
-        self.delay_input.value = 5.0
+        self.delay_input.value = 10.0
 
         net_options = ["PeerNet", "FullNet", "RingNet", "RandomNet", "StarNet", "LineNet", "TreeNet"]
         self.net_select = Select(name="net_name", title="Select Network", height=50,

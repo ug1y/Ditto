@@ -1,6 +1,8 @@
 from ditto.blockdag import BlockDAG, BlockType, Block
 from ditto.network import NetOperator
-from ditto.nodes import Miner, LeavesRef, CCC, RRR
+from ditto.nodes import Miner
+from ditto.nodes.reference import LeavesRef, RRR
+from ditto.nodes.consensus import CCC
 
 
 class TestMiner:
