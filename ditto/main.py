@@ -17,7 +17,7 @@ def run_simulation(until: int = 100):
     mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
 
     factory = NetFactory(mylogger)
-    system_params = Systems['Phantom']
+    system_params = Systems['Bitcoin']
     net = SelectNetTemplate(factory, net_name='PeerNet', system_params=system_params, number_of_miners=5,
                             block_creation_rate=10, propagation_delay_parameter=30)
 

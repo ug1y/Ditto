@@ -79,14 +79,16 @@ class Simulator(NetSimulation):
         """
         while True:
             miner = self._network.get_random_miner()
+            start = time.time()
             block = miner.mine_block()
+            end = time.time()
             next_mining_wait = np.random.poisson(self._network.block_creation_rate) * \
                                (self._factor if self._factor > 0 else 1)
 
             # print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
             if self._logger is not None:
-                self._logger.info("%s: At simulation time %3.f, selecting %s who mines %s",
-                                  self.FOR_LOG_NAME, self._env.now, miner.name, block)
+                self._logger.info("%s: At simulation time %3.f, it selects %s who mines %s, costs %.3f ms.",
+                                  self.FOR_LOG_NAME, self._env.now, miner.name, block, (end - start) * 1000)
             yield self._env.timeout(next_mining_wait)
 
     def _counter_process(self):

@@ -18,6 +18,8 @@ limitations under the License.
 """
 from typing import List, Set
 
+import networkx as nx
+
 from ditto.network import NetContainer
 from ditto.blockdag import TypeAlias, BlockDAG
 
@@ -31,69 +33,84 @@ class NakamotoCons(ConsusIface):
 
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
-        self._blocks_marked = dict()
-        self._sorted_blocks = list()
-        self._height_pointer = 0
         self._safe_depth = 6
+        self._cons_block_set = set()
+        self._sorted_block_list = list()
 
     def execute_consensus(self):
-        old_height_pointer = self._height_pointer
-        self._height_pointer = len(self.blockdag.column_blocks)  # Update the height pointer.
 
-        cur_height = old_height_pointer - self._safe_depth
-        tar_height = self._height_pointer - self._safe_depth
-        if tar_height < 0:  # Not reach the safe depth.
-            return 0
-
-        if self._height_pointer == old_height_pointer:
-            return tar_height
-
-        potential_bid = self._max_hash_power(self.blockdag.leaves_blocks)
-        pivot_chain = self.blockdag.get_pivot_chain(potential_bid)
-
-        for h in range(max(0, cur_height), tar_height):
-            col_bids = self.blockdag.column_blocks[h]
-            sor_bids = sorted(col_bids)  # Sort all blocks by hash value.
-            for bid in sor_bids:  # Mark the decided and excluded blocks.
-                if bid in pivot_chain:
-                    self._blocks_marked[bid] = StatusType.DECIDED
-                else:
-                    self._blocks_marked[bid] = StatusType.EXCLUDE
-            self._sorted_blocks.extend(sor_bids)
-
+        self._cons_block_set, self._sorted_block_list = self._longest_chain(self.blockdag.graph(),
+                                                                            self.blockdag.column_blocks,
+                                                                            self._safe_depth)
 
     def block_status(self, bid) -> StatusType:
         if bid not in self.blockdag:
             return StatusType.INVALID
-        elif bid not in self._blocks_marked:
+        elif bid not in self._sorted_block_list:
             return StatusType.UNCLEAR
+        elif bid in self._cons_block_set:
+            return StatusType.DECIDED
         else:
-            return self._blocks_marked[bid]
+            return StatusType.EXCLUDE
 
     def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
         if status is None:
-            return set(self._blocks_marked.keys())
+            return set(self._sorted_block_list)
 
-        processed_bids = set()
-        for bid, bst in self._blocks_marked.items():
-            if status == bst:
-                processed_bids.add(bid)
-        return processed_bids
+        if status == StatusType.DECIDED:
+            return set(self._cons_block_set)
+        elif status == StatusType.EXCLUDE:
+            return set(self._sorted_block_list) - set(self._cons_block_set)
+
+        return set()
 
     def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
         if status is None:
-            return self._sorted_blocks.copy()
+            return list(self._sorted_block_list)
 
-        return [bid for bid in self._sorted_blocks if self._blocks_marked[bid] == status]
+        if status == StatusType.DECIDED:
+            return sorted(self._cons_block_set)
+        elif status == StatusType.EXCLUDE:
+            return sorted(set(self._sorted_block_list) - set(self._cons_block_set))
 
-    def _max_hash_power(self, bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
-        max_height = len(self.blockdag.column_blocks)
-        sel_bids = set()
-        for bid in bids:
-            if self.blockdag[bid].height == max_height:
-                sel_bids.add(bid)
-        return min(sel_bids)
+        return list()
+
+    def _longest_chain(self, graph: nx.DiGraph, columns: List[Set[TypeAlias.BlockID]], depth: int) \
+            -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
+        # Check the safe depth.
+        if len(columns) <= depth:
+            return set(), list()
+
+        picked_bid = min(columns[-1])  # Pick the block in the longest chain.
+        # Find the last block in the longest chain within the safe depth.
+        last_bid = [bid for bid in columns[-1 - depth] if nx.has_path(graph, picked_bid, bid)][0]
+
+        cons_blocks = set(nx.descendants(graph, last_bid)).union({last_bid})
+
+        s = set()
+        for bid in columns[-1 - depth]:
+            s = s.union(set(nx.descendants(graph, bid)).union({bid}))
+        sorted_blocks = sorted(s)
+
+        return cons_blocks, sorted_blocks
 
 
 if __name__ == '__main__':
     print("Nakamoto Consensus.")
+    g = nx.DiGraph()
+
+    g.add_nodes_from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+    g.add_edges_from([(2, 1), (3, 2), (4, 3), (5, 3), (6, 3), (7, 6),
+                      (8, 7), (9, 8), (10, 9), (11, 9), (12, 11), (13, 12)])
+
+    colunms = [{1}, {2}, {3}, {4, 5, 6}, {7}, {8}, {9}, {10, 11}, {12}, {13}]
+
+    cons = NakamotoCons(network=None, blockdag=None)
+    print(colunms[-1 - 6])
+    print(cons._longest_chain(g, colunms, 6))
+
+    g = nx.DiGraph()
+    g.add_nodes_from([1, 2, 3, 4, 5, 6])
+    g.add_edges_from([(2, 1), (3, 2), (4, 3), (5, 4), (6, 5)])
+    colunms = [{1}, {2}, {3}, {4}, {5}, {6}]
+    print(cons._longest_chain(g, colunms, 6))

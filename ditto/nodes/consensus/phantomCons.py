@@ -51,12 +51,12 @@ class PhantomCons(ConsusIface):
 
     def execute_consensus(self):
 
-        if not self._thread_lock:
-            self._thread_lock = True
-            thread_consensus = threading.Thread(target=self._consensus_thread)
-            thread_consensus.start()
+        # if not self._thread_lock:
+        #     self._thread_lock = True
+        #     thread_consensus = threading.Thread(target=self._consensus_thread)
+        #     thread_consensus.start()
 
-        # self._latest_blue_set, self._latest_ordered_list = self._order_dag(self.blockdag.graph(), self._k)
+        self._latest_blue_set, self._latest_ordered_list = self._order_dag(self.blockdag.graph(), self._k)
 
     def block_status(self, bid) -> StatusType:
         if bid not in self.blockdag:
