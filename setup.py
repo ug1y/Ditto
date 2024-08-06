@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from ditto import __version__
+from .ditto import __version__
 
 setup(
     name='ditto',
