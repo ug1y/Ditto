@@ -20,7 +20,8 @@ import logging
 
 from bokeh.document import Document
 from bokeh.plotting import figure, curdoc
-from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput, PanTool, SingleIntervalTicker)
+from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput, PanTool, SingleIntervalTicker,
+                          Div)
 from bokeh.server.callbacks import PeriodicCallback
 
 from ditto import config, __version__
@@ -29,7 +30,7 @@ from ditto.network import NetOperator, NetFactory, SelectNetTemplate
 from ditto.nodes import Systems
 
 from .plots import network_plotting, blockdag_plotting
-from .handler import ConsoleHandler
+from .config import ConsoleHandler, SystemRef, ParamsConfig
 
 
 class PlottingApp:
@@ -62,18 +63,19 @@ class PlottingApp:
         self.sys_select = Select(name="system", title="Choose System", height=50,
                                  options=sys_options, sizing_mode='stretch_width')
         self.sys_select.value = sys_options[0]
+        self.sys_select.on_change('value', self.sys_change_event)
+
+        self.link_div = Div(name="link", height=50, sizing_mode='scale_both',
+                            styles={'text-align': 'center'})
 
         self.num_input = NumericInput(name="number", title="Network Scale", height=50,
                                       low=1, high=100, sizing_mode='stretch_width')
-        self.num_input.value = 6
 
         self.rate_input = NumericInput(name="rate", title="Block Creation Rate", height=50,
                                        low=0, mode="float", sizing_mode='stretch_width')
-        self.rate_input.value = 10.0
 
         self.delay_input = NumericInput(name="delay", title="Propagation Delay", height=50,
                                         low=0, mode="float", sizing_mode='stretch_width')
-        self.delay_input.value = 10.0
 
         net_options = ["PeerNet", "FullNet", "RingNet", "RandomNet", "StarNet", "LineNet", "TreeNet"]
         self.net_select = Select(name="net_name", title="Select Network", height=50,
@@ -91,6 +93,9 @@ class PlottingApp:
         self.speed_slider = Slider(name="speed", start=10, end=100, step=10, value=100,
                                    title="Simulation Gap(ms)", sizing_mode='stretch_width')
 
+        # Init the input widgets.
+        self.sys_change_event(None, None, None)
+
     def loop_simulation(self):
         consus = self.network.consus_handler
         dag = self.network.total_blockdag
@@ -101,6 +106,14 @@ class PlottingApp:
 
         if new_scale > old_scale:
             blockdag_plotting(self.dag_figure, dag, consus)
+
+    def sys_change_event(self, attr, old, new):
+        params: ParamsConfig = SystemRef[self.sys_select.value]
+        self.link_div.text = ("<p>View the paper: <a href='" + params.file_path +
+                              "' target='_blank'>" + params.file_name + "</a><p>")
+        self.num_input.value = params.miner_num
+        self.rate_input.value = params.block_rate
+        self.delay_input.value = params.prop_delay
 
     def run_change_event(self, attr, old, new):
         if self.run_toggle.active:
@@ -174,6 +187,7 @@ class PlottingApp:
         doc.add_root(self.con_input)
 
         doc.add_root(self.sys_select)
+        doc.add_root(self.link_div)
         doc.add_root(self.num_input)
         doc.add_root(self.rate_input)
         doc.add_root(self.delay_input)
