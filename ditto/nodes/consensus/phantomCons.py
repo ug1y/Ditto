@@ -25,7 +25,7 @@ import networkx as nx
 from ditto.network import NetContainer
 from ditto.blockdag import TypeAlias, BlockDAG
 
-from ditto.nodes.consensus import ConsusIface, StatusType
+from ditto.nodes.consensus import ConsusIface
 
 
 class PhantomCons(ConsusIface):
@@ -38,9 +38,6 @@ class PhantomCons(ConsusIface):
         self._k = 3
         self._blue_set = {}
         self._ordered_list = {}
-
-        self._latest_blue_set = set()
-        self._latest_ordered_list = list()
 
         self._thread_lock = False
 
@@ -56,39 +53,7 @@ class PhantomCons(ConsusIface):
         #     thread_consensus = threading.Thread(target=self._consensus_thread)
         #     thread_consensus.start()
 
-        self._latest_blue_set, self._latest_ordered_list = self._order_dag(self.blockdag.graph(), self._k)
-
-    def block_status(self, bid) -> StatusType:
-        if bid not in self.blockdag:
-            return StatusType.INVALID
-        elif bid not in self._latest_ordered_list:
-            return StatusType.UNCLEAR
-        elif bid in self._latest_blue_set:
-            return StatusType.DECIDED
-        else:
-            return StatusType.EXCLUDE
-
-    def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
-        if status is None:
-            return set(self._latest_ordered_list)
-
-        if status == StatusType.DECIDED:
-            return set(self._latest_blue_set)
-        elif status == StatusType.EXCLUDE:
-            return set(self._latest_ordered_list) - set(self._latest_blue_set)
-
-        return set()
-
-    def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
-        if status is None:
-            return list(self._latest_ordered_list)
-
-        if status == StatusType.DECIDED:
-            return sorted(self._latest_blue_set)
-        elif status == StatusType.EXCLUDE:
-            return sorted(set(self._latest_ordered_list) - set(self._latest_blue_set))
-
-        return list()
+        self.decided_set, self.ordered_list = self._order_dag(self.blockdag.graph(), self._k)
 
     def _order_dag(self, graph: nx.DiGraph, k: int) -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
         if len(graph) == 1:
@@ -120,7 +85,7 @@ class PhantomCons(ConsusIface):
                 blue_set_g.add(node)
             ordered_list_g.append(node)
 
-        return blue_set_g, sorted(ordered_list_g)
+        return blue_set_g, ordered_list_g
 
     def _get_anticone(self, bid: TypeAlias.BlockID, graph: nx.DiGraph) -> Set[TypeAlias.BlockID]:
         # Require that the bid is in the graph.

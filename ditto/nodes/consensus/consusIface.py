@@ -43,25 +43,33 @@ class ConsusIface(ABC):
         """
         self.network = network
         self.blockdag = blockdag
+        self.decided_set = set()
+        self.ordered_list = list()
 
     @abstractmethod
     def execute_consensus(self):
         """
         Execute consensus and return the max height of processed blocks.
+        Update the decided_set and ordered_list.
         :return: BlockHeight
         """
         pass
 
-    @abstractmethod
     def block_status(self, bid) -> StatusType:
         """
         Get the block status including invalid, unclear, exclude, and decided.
-        :param bid:
+        :param bid: TypeAlias.BlockID
         :return: StatusType
         """
-        pass
+        if bid not in self.blockdag:
+            return StatusType.INVALID
+        elif bid not in self.ordered_list:
+            return StatusType.UNCLEAR
+        elif bid in self.decided_set:
+            return StatusType.DECIDED
+        else:
+            return StatusType.EXCLUDE
 
-    @abstractmethod
     def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
         """
         Get the processed blocks that is already on consensus.
@@ -70,9 +78,16 @@ class ConsusIface(ABC):
         :param status: StatusType
         :return: Set[TypeAlias.BlockID]
         """
-        pass
+        if status is None:
+            return set(self.ordered_list)
 
-    @abstractmethod
+        if status == StatusType.DECIDED:
+            return set(self.decided_set)
+        elif status == StatusType.EXCLUDE:
+            return set(self.ordered_list) - set(self.decided_set)
+
+        return set()
+
     def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
         """
         Sort the finished blocks that is already on consensus.
@@ -81,4 +96,12 @@ class ConsusIface(ABC):
         :param status: StatusType
         :return: List[TypeAlias.BlockID]
         """
-        pass
+        if status is None:
+            return list(self.ordered_list)
+
+        if status == StatusType.DECIDED:
+            return sorted(self.decided_set)
+        elif status == StatusType.EXCLUDE:
+            return sorted(set(self.ordered_list) - set(self.decided_set))
+
+        return list()

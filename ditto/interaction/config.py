@@ -45,4 +45,6 @@ SystemRef = {
                             miner_num=6, block_rate=10.0, prop_delay=10.0),
     'Phantom': ParamsConfig(file_name='2021_Phantom', file_path='interaction/static/papers/2021_Phantom.pdf',
                             miner_num=6, block_rate=10.0, prop_delay=30.0),
+    'ULBlockDAG': ParamsConfig(file_name='2020_ULBlockDAG', file_path='interaction/static/papers/2020_ULBlockDAG.pdf',
+                               miner_num=6, block_rate=10.0, prop_delay=30.0),
 }

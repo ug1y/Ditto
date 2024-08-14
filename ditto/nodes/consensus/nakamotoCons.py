@@ -23,7 +23,7 @@ import networkx as nx
 from ditto.network import NetContainer
 from ditto.blockdag import TypeAlias, BlockDAG
 
-from ditto.nodes.consensus import ConsusIface, StatusType
+from ditto.nodes.consensus import ConsusIface
 
 
 class NakamotoCons(ConsusIface):
@@ -34,46 +34,12 @@ class NakamotoCons(ConsusIface):
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
         self._safe_depth = 6
-        self._cons_block_set = set()
-        self._sorted_block_list = list()
 
     def execute_consensus(self):
 
-        self._cons_block_set, self._sorted_block_list = self._longest_chain(self.blockdag.graph(),
-                                                                            self.blockdag.column_blocks,
-                                                                            self._safe_depth)
-
-    def block_status(self, bid) -> StatusType:
-        if bid not in self.blockdag:
-            return StatusType.INVALID
-        elif bid not in self._sorted_block_list:
-            return StatusType.UNCLEAR
-        elif bid in self._cons_block_set:
-            return StatusType.DECIDED
-        else:
-            return StatusType.EXCLUDE
-
-    def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
-        if status is None:
-            return set(self._sorted_block_list)
-
-        if status == StatusType.DECIDED:
-            return set(self._cons_block_set)
-        elif status == StatusType.EXCLUDE:
-            return set(self._sorted_block_list) - set(self._cons_block_set)
-
-        return set()
-
-    def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
-        if status is None:
-            return list(self._sorted_block_list)
-
-        if status == StatusType.DECIDED:
-            return sorted(self._cons_block_set)
-        elif status == StatusType.EXCLUDE:
-            return sorted(set(self._sorted_block_list) - set(self._cons_block_set))
-
-        return list()
+        self.decided_set, self.ordered_list = self._longest_chain(self.blockdag.graph(),
+                                                                  self.blockdag.column_blocks,
+                                                                  self._safe_depth)
 
     def _longest_chain(self, graph: nx.DiGraph, columns: List[Set[TypeAlias.BlockID]], depth: int) \
             -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
@@ -86,11 +52,7 @@ class NakamotoCons(ConsusIface):
         last_bid = [bid for bid in columns[-1 - depth] if nx.has_path(graph, picked_bid, bid)][0]
 
         cons_blocks = set(nx.descendants(graph, last_bid)).union({last_bid})
-
-        s = set()
-        for bid in columns[-1 - depth]:
-            s = s.union(set(nx.descendants(graph, bid)).union({bid}))
-        sorted_blocks = sorted(s)
+        sorted_blocks = [n for c in columns[:-1 - depth + 1] for n in sorted(c)]
 
         return cons_blocks, sorted_blocks
 
