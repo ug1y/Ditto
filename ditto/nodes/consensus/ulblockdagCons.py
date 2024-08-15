@@ -100,6 +100,22 @@ class ULBlockDAGCons(ConsusIface):
 
         return blue_list, ord_list
 
+    def _find_list_order_by_figure(self, graph: nx.DiGraph, columns: List[Set[TypeAlias.BlockID]], k: int) \
+            -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
+        # If using the whole graph to find the clusters, it will be slow with the size of the graph.
+        # By testing, the effect is similar to the algorithm by the sliding window.
+        i = len(columns)
+        x = i - k if i > k else 0
+        # Get the confirmed blocks
+        nodes_c = {n for c in columns[:x+1] for n in c}
+        # Find the clusters
+        c1, c2 = self._find_clusters(graph)
+
+        blue_list = c1 & nodes_c
+        ord_list = [n for c in columns[:x+1] for n in sorted(c)]
+
+        return blue_list, ord_list
+
 
 if __name__ == '__main__':
     G = nx.DiGraph()
@@ -124,3 +140,5 @@ if __name__ == '__main__':
             {20, 21, 22}, {23, 24, 25}]
 
     print(cons._find_list_order(G, cols, 5))
+
+    print(cons._find_list_order_by_figure(G, cols, 5))

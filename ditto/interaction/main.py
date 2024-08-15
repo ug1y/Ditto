@@ -65,7 +65,7 @@ class PlottingApp:
         self.sys_select.value = sys_options[0]
         self.sys_select.on_change('value', self.sys_change_event)
 
-        self.link_div = Div(name="link", height=50, sizing_mode='scale_both',
+        self.link_div = Div(name="link", height=50, sizing_mode='stretch_both',
                             styles={'text-align': 'center'})
 
         self.num_input = NumericInput(name="number", title="Network Scale", height=50,
@@ -164,9 +164,6 @@ class PlottingApp:
                                          number_of_miners=self.num_input.value,
                                          block_creation_rate=self.rate_input.value,
                                          propagation_delay_parameter=self.delay_input.value)
-        # self.network = factory.PeerNet(system_params=system_params, number_of_miners=self.num_input.value,
-        #                                block_creation_rate=self.rate_input.value,
-        #                                propagation_delay_parameter=self.delay_input.value)
         self.simulator = Simulator(self.network)
         self.simulator.set_logger(mylogger)
 
