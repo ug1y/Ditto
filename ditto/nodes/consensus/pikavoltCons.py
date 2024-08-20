@@ -40,13 +40,9 @@ class PikavoltCons(ConsusIface):
         self._col_ord_lst = []
 
     def execute_consensus(self):
-        import time
-        start = time.time()
         self.decided_set, self.ordered_list = self._compute_cluster(self.blockdag.graph(),
                                                                     self.blockdag.column_blocks,
                                                                     self._d)
-        end = time.time()
-        print("Executing consensus cost ", (end - start) * 1000, " ms")
 
     def _scale(self, bids: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
         bids = {bids} if isinstance(bids, TypeAlias.BlockID) else set(bids)
@@ -100,8 +96,6 @@ class PikavoltCons(ConsusIface):
             clas = self._binary_clustering(curr, graph)
             val_clas = (sum([self._coefficient(bs, graph) * self._scale(bs, graph) for bs in clas])
                         - 2 * pow(self._coefficient(clas, graph), 2) * self._scale(curr, graph))
-
-            print(val_curr, val_clas)
 
             if val_clas > val_curr:
                 c1 = clas.pop()
