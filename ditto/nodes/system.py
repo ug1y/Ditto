@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from ditto.blockdag import DAGType
 
 from .reference import ReferIface, ChainRef, LeavesRef, GossipRef
-from .consensus import ConsusIface, NakamotoCons, PhantomCons, ULBlockDAGCons
+from .consensus import ConsusIface, NakamotoCons, PhantomCons, ULBlockDAGCons, PikavoltCons
 
 
 @dataclass
@@ -38,5 +38,6 @@ Systems = {
     'Bitcoin': SystemParams(DAGType.CONVERGENCE, ChainRef, NakamotoCons),
     'Phantom': SystemParams(DAGType.DIVERGENCE, LeavesRef, PhantomCons),
     'ULBlockDAG': SystemParams(DAGType.DIVERGENCE, LeavesRef, ULBlockDAGCons),
+    'Pikavolt': SystemParams(DAGType.DIVERGENCE, LeavesRef, PikavoltCons),
     'Hashgraph': SystemParams(DAGType.PARALLEL, GossipRef, None),
 }

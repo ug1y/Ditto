@@ -59,7 +59,7 @@ class PlottingApp:
 
         self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
 
-        sys_options = ["Bitcoin", "Phantom", "ULBlockDAG"]
+        sys_options = ["Bitcoin", "Phantom", "ULBlockDAG", "Pikavolt"]
         self.sys_select = Select(name="system", title="Choose System", height=50,
                                  options=sys_options, sizing_mode='stretch_width')
         self.sys_select.value = sys_options[0]
