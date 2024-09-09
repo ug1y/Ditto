@@ -45,11 +45,13 @@ class PikavoltCons(ConsusIface):
                                                                     self._d)
 
     def _scale(self, bids: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
+        """ Return the number of ancestors of the block or blocks. """
         bids = {bids} if isinstance(bids, TypeAlias.BlockID) else set(bids)
         return len({a for bid in bids for a in nx.ancestors(graph, bid)})
 
     def _weight(self, bids1: set | frozenset | TypeAlias.BlockID,
                 bids2: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
+        """ Return the number of common ancestors of the blocks. """
         bids1 = {bids1} if isinstance(bids1, TypeAlias.BlockID) else set(bids1)
         c1 = {a for bid in bids1 for a in nx.ancestors(graph, bid)}
         bids2 = {bids2} if isinstance(bids2, TypeAlias.BlockID) else set(bids2)
@@ -57,6 +59,10 @@ class PikavoltCons(ConsusIface):
         return len(c1 & c2)
 
     def _coefficient(self, bids: set, graph: nx.DiGraph) -> float:
+        """
+        The number of common ancestors divided by the minimum number of ancestors.
+        The division is treat as clustering coefficient.
+        """
         if len(bids) == 1:
             return 1.0
         cur_wei = sum([self._weight(bi, bj, graph)
@@ -68,6 +74,12 @@ class PikavoltCons(ConsusIface):
         return cur_wei / max_wei
 
     def _binary_clustering(self, bids: set, graph: nx.DiGraph) -> set:
+        """
+        The binary clustering algorithm.
+        :param bids:
+        :param graph:
+        :return:
+        """
         if len(bids) <= 2:
             return {frozenset({b}) if isinstance(b, TypeAlias.BlockID) else frozenset(b) for b in bids}
         lst = [(self._weight(bi, bj, graph), min(self._scale(bi, graph), self._scale(bj, graph)), (bi, bj))
@@ -90,14 +102,16 @@ class PikavoltCons(ConsusIface):
         res = [bids]
 
         while True:
+            # The value without binary clustering
             curr = res[0]
             val_curr = self._coefficient(curr, graph) * self._scale(curr, graph)
 
+            # The value with binary clustering
             clas = self._binary_clustering(curr, graph)
             val_clas = (sum([self._coefficient(bs, graph) * self._scale(bs, graph) for bs in clas])
                         - 2 * pow(self._coefficient(clas, graph), 2) * self._scale(curr, graph))
 
-            if val_clas > val_curr:
+            if val_clas > val_curr:  # The condition to stop binary clustering
                 c1 = clas.pop()
                 c2 = clas.pop()
                 if self._coefficient(c1, graph) * self._scale(c1, graph) < \

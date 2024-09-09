@@ -47,17 +47,17 @@ class ConsusIface(ABC):
         self.ordered_list = list()
 
     @abstractmethod
-    def execute_consensus(self):
+    def execute_consensus(self, bid: TypeAlias.BlockID):
         """
-        Execute consensus and return the max height of processed blocks.
-        Update the decided_set and ordered_list.
-        :return: BlockHeight
+        Triggered by a block, the consensus instance should be implemented this method.\n
+        Update the variables of `decided_set` and `ordered_list`.
+        :param bid: TypeAlias.BlockID
         """
         pass
 
-    def block_status(self, bid) -> StatusType:
+    def block_status(self, bid: TypeAlias.BlockID) -> StatusType:
         """
-        Get the block status including invalid, unclear, exclude, and decided.
+        Get the block status including INVALID, UNCLEAR, EXCLUDE, and DECIDED.
         :param bid: TypeAlias.BlockID
         :return: StatusType
         """
@@ -72,8 +72,8 @@ class ConsusIface(ABC):
 
     def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
         """
-        Get the processed blocks that is already on consensus.
-        If status is None, return all the processed blocks.
+        Get the processed blocks that is already on consensus.\n
+        If status is None, return all the processed blocks.\n
         Supported status: EXCLUDE, DECIDED
         :param status: StatusType
         :return: Set[TypeAlias.BlockID]
@@ -90,9 +90,9 @@ class ConsusIface(ABC):
 
     def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
         """
-        Sort the finished blocks that is already on consensus.
-        If status is None, return all the sorted blocks.
-        Supported status: EXCLUDE, DECIDED
+        Sort the finished blocks that is already on consensus.\n
+        If status is None, return all the sorted blocks.\n
+        Supported status: EXCLUDE, DECIDED.
         :param status: StatusType
         :return: List[TypeAlias.BlockID]
         """
@@ -100,8 +100,9 @@ class ConsusIface(ABC):
             return list(self.ordered_list)
 
         if status == StatusType.DECIDED:
-            return sorted(self.decided_set)
+            return [n for n in self.ordered_list if n in self.decided_set]
+
         elif status == StatusType.EXCLUDE:
-            return sorted(set(self.ordered_list) - set(self.decided_set))
+            return [n for n in self.ordered_list if n not in self.decided_set]
 
         return list()
