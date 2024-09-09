@@ -34,17 +34,16 @@ class PikavoltCons(ConsusIface):
 
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
-        self._d = 6
-        self._height = 0
+        self._depth = 6
         self._col_dec_set = []
         self._col_ord_lst = []
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
         self.decided_set, self.ordered_list = self._compute_cluster(self.blockdag.graph(),
                                                                     self.blockdag.column_blocks,
-                                                                    self._d)
+                                                                    self._depth, self.blockdag[bid].height)
 
-    def _scale(self, bids: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
+    def _capacity(self, bids: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
         """ Return the number of ancestors of the block or blocks. """
         bids = {bids} if isinstance(bids, TypeAlias.BlockID) else set(bids)
         return len({a for bid in bids for a in nx.ancestors(graph, bid)})
@@ -67,7 +66,7 @@ class PikavoltCons(ConsusIface):
             return 1.0
         cur_wei = sum([self._weight(bi, bj, graph)
                        for bi in bids for bj in bids if bi != bj]) / 2
-        max_wei = sum([min(self._scale(bi, graph), self._scale(bj, graph))
+        max_wei = sum([min(self._capacity(bi, graph), self._capacity(bj, graph))
                        for bi in bids for bj in bids if bi != bj]) / 2
         if max_wei == 0:
             return 0.0
@@ -76,13 +75,13 @@ class PikavoltCons(ConsusIface):
     def _binary_clustering(self, bids: set, graph: nx.DiGraph) -> set:
         """
         The binary clustering algorithm.
-        :param bids:
-        :param graph:
+        :param bids: set
+        :param graph: nx.DiGraph
         :return:
         """
         if len(bids) <= 2:
             return {frozenset({b}) if isinstance(b, TypeAlias.BlockID) else frozenset(b) for b in bids}
-        lst = [(self._weight(bi, bj, graph), min(self._scale(bi, graph), self._scale(bj, graph)), (bi, bj))
+        lst = [(self._weight(bi, bj, graph), min(self._capacity(bi, graph), self._capacity(bj, graph)), (bi, bj))
                for bi in bids for bj in bids if bi != bj]
         lst.sort(key=lambda x: (x[0], x[1]), reverse=True)
         com1, com2 = lst[0][2]
@@ -96,63 +95,58 @@ class PikavoltCons(ConsusIface):
         return self._binary_clustering(new_bids, graph)
 
     def _extend_clustering(self, bids: set, graph: nx.DiGraph) -> list:
+        """
+        Extend the binary clustering by evaluate the score of clustering.
+        :param bids: set
+        :param graph: nx.DiGraph
+        :return:
+        """
+        score = lambda x: self._coefficient(x, graph) * self._capacity(x, graph)
+
         if len(bids) == 1:
             return [bids]
 
         res = [bids]
 
         while True:
-            # The value without binary clustering
+            # The score value without binary clustering
             curr = res[0]
-            val_curr = self._coefficient(curr, graph) * self._scale(curr, graph)
+            val_curr = score(curr)  # self._coefficient(curr, graph) * self._capacity(curr, graph)
 
-            # The value with binary clustering
+            # The score value with binary clustering
             clas = self._binary_clustering(curr, graph)
-            val_clas = (sum([self._coefficient(bs, graph) * self._scale(bs, graph) for bs in clas])
-                        - 2 * pow(self._coefficient(clas, graph), 2) * self._scale(curr, graph))
+            val_clas = (sum([score(bs) for bs in clas]) -
+                        2 * pow(self._coefficient(clas, graph), 2) * self._capacity(curr, graph))
 
             if val_clas > val_curr:  # The condition to stop binary clustering
-                c1 = clas.pop()
-                c2 = clas.pop()
-                if self._coefficient(c1, graph) * self._scale(c1, graph) < \
-                        self._coefficient(c2, graph) * self._scale(c2, graph):
-                    c1, c2 = c2, c1
-                res = [c1, c2] + res[1:]
+                res = sorted(list(clas) + res[1:], key=lambda x: score(x), reverse=True)
             else:
                 break
 
         return res
 
-    def _compute_cluster(self, graph: nx.DiGraph, columns: list[set[TypeAlias.BlockID]], d: int):
-        i = self._height - d
-        # blue_set = self.decided_set
-        # ord_list = self.ordered_list
-        while i < len(columns):
-            i = i + 1
-            if i < d:
-                continue
-            x = i - d
+    def _compute_cluster(self, graph: nx.DiGraph, columns: list[set[TypeAlias.BlockID]],
+                         depth: int, height: int) -> (set, list):
+
+        for i in range(max(0, (height - depth - 1)), (len(columns) - depth)):
+            # ... i ... ... ... x ... [i,x] is the slide window.
+            x = i + depth
+
             nodes_i = {n for c in columns[:i] for n in c}
             nodes_x = {n for c in columns[:x] for n in c}
-            g = graph.subgraph(nodes_i - nodes_x)
+            g = graph.subgraph(nodes_x - nodes_i)
 
-            r = self._extend_clustering(columns[x], g)
+            r = self._extend_clustering(columns[i], g)
 
-            # blue_set.update(r[0])
-            # ord_list.extend(sorted(r[0]))
-            # ord_list.extend(sorted(columns[x] - set(r[0])))
-
-            if len(self._col_dec_set) <= x:
+            if len(self._col_dec_set) <= i:
                 self._col_dec_set.append(r[0])
             else:
-                self._col_dec_set[x] = r[0]
+                self._col_dec_set[i] = r[0]
 
-            if len(self._col_ord_lst) <= x:
-                self._col_ord_lst.append(sorted(r[0]) + sorted(columns[x] - set(r[0])))
+            if len(self._col_ord_lst) <= i:
+                self._col_ord_lst.append(sorted(r[0]) + sorted(columns[i] - set(r[0])))
             else:
-                self._col_ord_lst[x] = sorted(r[0]) + sorted(columns[x] - set(r[0]))
-
-        self._height = len(columns)
+                self._col_ord_lst[i] = sorted(r[0]) + sorted(columns[i] - set(r[0]))
 
         return {d for st in self._col_dec_set for d in st}, [o for lt in self._col_ord_lst for o in lt]
 

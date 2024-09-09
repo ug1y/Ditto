@@ -86,7 +86,7 @@ class ULBlockDAGCons(ConsusIface):
             # Get the blocks with the height less than i
             nodes_i = {n for c in columns[:i] for n in c}
             # Get the blocks with the height less than x
-            nodes_x = {n for c in columns[:x] for n in c} if x > 0 else set()
+            nodes_x = {n for c in columns[:x] for n in c}
             # Get the graph in the windows of k
             nodes_k = nodes_i - nodes_x
             g = graph.subgraph(nodes_k)
