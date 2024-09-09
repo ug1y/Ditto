@@ -25,8 +25,8 @@ import networkx as nx
 from ditto.network import NetContainer
 from ditto.blockdag import BlockDAG, Block, BlockType, TypeAlias
 
-from .reference import ReferIface
-from .consensus import ConsusIface
+from ditto.nodes.reference import ReferIface
+from ditto.nodes.consensus import ConsusIface
 
 
 class Miner:

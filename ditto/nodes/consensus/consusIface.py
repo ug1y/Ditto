@@ -49,8 +49,10 @@ class ConsusIface(ABC):
     @abstractmethod
     def execute_consensus(self, bid: TypeAlias.BlockID):
         """
-        Triggered by a block, the consensus instance should be implemented this method.\n
+        Triggered by a block, the consensus instance should be implemented this method.
+
         Update the variables of `decided_set` and `ordered_list`.
+
         :param bid: TypeAlias.BlockID
         """
         pass
@@ -58,6 +60,7 @@ class ConsusIface(ABC):
     def block_status(self, bid: TypeAlias.BlockID) -> StatusType:
         """
         Get the block status including INVALID, UNCLEAR, EXCLUDE, and DECIDED.
+
         :param bid: TypeAlias.BlockID
         :return: StatusType
         """
@@ -72,9 +75,10 @@ class ConsusIface(ABC):
 
     def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
         """
-        Get the processed blocks that is already on consensus.\n
-        If status is None, return all the processed blocks.\n
-        Supported status: EXCLUDE, DECIDED
+        Get the processed blocks that is already on consensus.
+
+        If status is None, return all the processed blocks. Supported status: EXCLUDE, DECIDED.
+
         :param status: StatusType
         :return: Set[TypeAlias.BlockID]
         """
@@ -90,9 +94,10 @@ class ConsusIface(ABC):
 
     def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
         """
-        Sort the finished blocks that is already on consensus.\n
-        If status is None, return all the sorted blocks.\n
-        Supported status: EXCLUDE, DECIDED.
+        Sort the finished blocks that is already on consensus.
+
+        If status is None, return all the sorted blocks. Supported status: EXCLUDE, DECIDED.
+
         :param status: StatusType
         :return: List[TypeAlias.BlockID]
         """

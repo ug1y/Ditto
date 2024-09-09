@@ -20,7 +20,7 @@ from typing import Set
 
 from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType
 
-from .referIface import ReferIface
+from ditto.nodes.reference import ReferIface
 
 
 class GossipRef(ReferIface):

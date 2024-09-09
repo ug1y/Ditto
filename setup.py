@@ -10,12 +10,15 @@ setup(
     long_description_content_type='text/markdown',
     # url='https://github.com/ug1y/ditto',
     packages=find_packages(),
+    python_requires='>=3.10',
     install_requires=[
         'networkx==3.3.0',
         'numpy==1.26.0',
         'simpy==4.1.0',
         'bokeh==3.5.0',
+        'click==8.1.7'
     ],
+    extras_require={'test': ['pytest']},
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: science/Research',
@@ -23,9 +26,5 @@ setup(
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-    ],
-    python_requires='>=3.10',
-    extras_require={
-        'test': ['pytest'],
-    }
+    ]
 )

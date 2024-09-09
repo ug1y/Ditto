@@ -46,7 +46,7 @@ class PhantomCons(ConsusIface):
             self._latest_blue_set, self._latest_ordered_list = self._order_dag(self.blockdag.graph(), self._k)
             self._thread_lock = False
 
-    def execute_consensus(self):
+    def execute_consensus(self, bid: TypeAlias.BlockID):
 
         # if not self._thread_lock:
         #     self._thread_lock = True

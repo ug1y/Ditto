@@ -20,8 +20,8 @@ from dataclasses import dataclass
 
 from ditto.blockdag import DAGType
 
-from .reference import ReferIface, ChainRef, LeavesRef, GossipRef
-from .consensus import ConsusIface, NakamotoCons, PhantomCons, ULBlockDAGCons, PikavoltCons
+from ditto.nodes.reference import ReferIface, ChainRef, LeavesRef, GossipRef
+from ditto.nodes.consensus import ConsusIface, NakamotoCons, PhantomCons, ULBlockDAGCons, PikavoltCons
 
 
 @dataclass

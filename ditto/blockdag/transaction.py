@@ -20,7 +20,7 @@ from collections.abc import Hashable
 from dataclasses import dataclass
 from typing import Set
 
-from .typedef import TypeAlias, TransactionType
+from ditto.blockdag.typedef import TypeAlias, TransactionType
 
 
 @dataclass

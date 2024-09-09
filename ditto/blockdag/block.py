@@ -20,8 +20,8 @@ from collections.abc import Hashable
 from dataclasses import dataclass
 from typing import Set, Tuple, List
 
-from .transaction import Transaction
-from .typedef import TypeAlias, BlockType
+from ditto.blockdag.transaction import Transaction
+from ditto.blockdag.typedef import TypeAlias, BlockType
 
 
 @dataclass
@@ -50,7 +50,9 @@ class Block(Hashable):
     def get_parents(self) -> List[TypeAlias.BlockID]:
         """
         Get the parents of the block.
+
         The first item is the pivot reference if the blockDAG type is convergence.
+
         :return: the bids of the block's parent blocks.
         """
         if self.pref is None:

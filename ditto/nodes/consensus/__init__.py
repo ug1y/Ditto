@@ -1,7 +1,7 @@
-from .consusIface import ConsusIface, StatusType
+from ditto.nodes.consensus.consusIface import ConsusIface, StatusType
 
-from .ccc import CCC
-from .nakamotoCons import NakamotoCons
-from .phantomCons import PhantomCons
-from .ulblockdagCons import ULBlockDAGCons
-from .pikavoltCons import PikavoltCons
+from ditto.nodes.consensus.ccc import CCC
+from ditto.nodes.consensus.nakamotoCons import NakamotoCons
+from ditto.nodes.consensus.phantomCons import PhantomCons
+from ditto.nodes.consensus.ulblockdagCons import ULBlockDAGCons
+from ditto.nodes.consensus.pikavoltCons import PikavoltCons

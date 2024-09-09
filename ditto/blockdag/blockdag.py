@@ -21,8 +21,8 @@ from collections.abc import Collection
 from typing import Iterator, Any, Set, List
 import networkx as nx
 
-from .block import Block, BlockType
-from .typedef import TypeAlias, DAGType, EdgeType
+from ditto.blockdag.block import Block, BlockType
+from ditto.blockdag.typedef import TypeAlias, DAGType, EdgeType
 
 
 def caller_info() -> str:

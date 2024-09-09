@@ -35,7 +35,7 @@ class NakamotoCons(ConsusIface):
         super().__init__(network, blockdag)
         self._safe_depth = 6
 
-    def execute_consensus(self):
+    def execute_consensus(self, bid: TypeAlias.BlockID):
 
         self.decided_set, self.ordered_list = self._longest_chain(self.blockdag.graph(),
                                                                   self.blockdag.column_blocks,

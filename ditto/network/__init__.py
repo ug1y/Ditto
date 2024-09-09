@@ -1,3 +1,3 @@
-from .netContainer import NetContainer
-from .netOperator import NetOperator
-from .netFactory import NetFactory, SelectNetTemplate
+from ditto.network.netContainer import NetContainer
+from ditto.network.netOperator import NetOperator
+from ditto.network.netFactory import NetFactory, SelectNetTemplate

@@ -29,7 +29,7 @@ from simpy.util import start_delayed
 from ditto.network import NetOperator
 from ditto.blockdag import TypeAlias, Block
 
-from .netSimulation import NetSimulation
+from ditto.simulation.netSimulation import NetSimulation
 
 
 class Simulator(NetSimulation):

@@ -1,2 +1,2 @@
-from .netSimulation import NetSimulation
-from .simulator import Simulator
+from ditto.simulation.netSimulation import NetSimulation
+from ditto.simulation.simulator import Simulator

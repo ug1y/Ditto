@@ -36,7 +36,7 @@ class ULBlockDAGCons(ConsusIface):
         super().__init__(network, blockdag)
         self._k = 6
 
-    def execute_consensus(self):
+    def execute_consensus(self, bid: TypeAlias.BlockID):
         self.decided_set, self.ordered_list = self._find_list_order(self.blockdag.graph(),
                                                                     self.blockdag.column_blocks,
                                                                     self._k)

@@ -29,8 +29,8 @@ from ditto.simulation import Simulator
 from ditto.network import NetOperator, NetFactory, SelectNetTemplate
 from ditto.nodes import Systems
 
-from .plots import network_plotting, blockdag_plotting
-from .config import ConsoleHandler, SystemRef, ParamsConfig
+from ditto.interaction.plots import network_plotting, blockdag_plotting
+from ditto.interaction.param import ConsoleHandler, SystemRef, ParamsConfig
 
 
 class PlottingApp:

@@ -23,7 +23,7 @@ import numpy as np
 from ditto.nodes import Miner, SystemParams
 from ditto.blockdag import BlockDAG, DAGType
 
-from .netOperator import NetOperator
+from ditto.network.netOperator import NetOperator
 
 
 class NetFactory:

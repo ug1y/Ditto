@@ -39,7 +39,7 @@ class PikavoltCons(ConsusIface):
         self._col_dec_set = []
         self._col_ord_lst = []
 
-    def execute_consensus(self):
+    def execute_consensus(self, bid: TypeAlias.BlockID):
         self.decided_set, self.ordered_list = self._compute_cluster(self.blockdag.graph(),
                                                                     self.blockdag.column_blocks,
                                                                     self._d)

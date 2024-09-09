@@ -24,7 +24,7 @@ from ditto.simulation import NetSimulation
 from ditto.nodes import Miner, ConsusIface
 from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType, BlockType
 
-from .netContainer import NetContainer
+from ditto.network.netContainer import NetContainer
 
 
 class NetOperator(NetContainer):
