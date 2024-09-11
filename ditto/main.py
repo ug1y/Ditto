@@ -16,7 +16,7 @@ banner = """
 """
 
 
-def run_simulation(until: int = 100, net: str = 'PeerNet', cons: str = 'Bitcoin',
+def run_simulation(until: int = 100, net_template: str = 'PeerNet', cons_method: str = 'Bitcoin',
                    scale: int = 6, rate: float = 10.0, delay: float = 30.0):
     log_filter = config.SimulatorFilter()
     log_handler = logging.StreamHandler()
@@ -26,8 +26,8 @@ def run_simulation(until: int = 100, net: str = 'PeerNet', cons: str = 'Bitcoin'
     mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
 
     factory = NetFactory(mylogger)
-    system_params = Systems[cons]
-    net = SelectNetTemplate(factory, net_name=net, system_params=system_params, number_of_miners=scale,
+    system_params = Systems[cons_method]
+    net = SelectNetTemplate(factory, net_name=net_template, system_params=system_params, number_of_miners=scale,
                             block_creation_rate=rate, propagation_delay_parameter=delay)
 
     sim = Simulator(net)
@@ -35,7 +35,7 @@ def run_simulation(until: int = 100, net: str = 'PeerNet', cons: str = 'Bitcoin'
     sim.run(until)
 
     print("Simulation Done!\n")
-    print(f"The simulation parameters: (Network='{net}', Consensus='{cons}', "
+    print(f"The simulation parameters: (Network='{net_template}', Consensus='{cons_method}', "
           f"Scale='{scale}', Rate='{rate}', Delay='{delay}')")
     print("Total blockDAG:", repr(net.total_blockdag))
 
@@ -58,17 +58,17 @@ def cli():
 @cli.command()
 @click.option(
     "-n",
-    "--net",
+    "--net_template",
     type=click.Choice(['PeerNet', 'FullNet', 'RingNet', 'RandomNet', 'StarNet', 'LineNet', 'TreeNet']),
     default="PeerNet",
     help="Specify network template, default PeerNet.",
 )
 @click.option(
     "-c",
-    "--cons",
+    "--cons_method",
     type=click.Choice(['Bitcoin', 'Phantom', 'ULBlockDAG', 'Pikavolt']),
     default="Bitcoin",
-    help="Choose simulated consensus, default Bitcoin.",
+    help="Choose consensus method, default Bitcoin.",
 )
 @click.option(
     "-s",
@@ -98,12 +98,12 @@ def cli():
     default=100,
     help="Run simulation until time, default 100.",
 )
-def simu(net, cons, scale, rate, delay, until):
+def simu(net_template, cons_method, scale, rate, delay, until):
     """ Run a simulation with the given parameters. """
     # click.echo(f"Run simulation with the following parameters:")
     # click.echo(f"(Network='{net}', Consensus='{cons}', Scale='{scale}', Rate='{rate}', Delay='{delay}')")
     click.echo(f"Simulation will run until '{until}' sim times.")
-    run_simulation(until, net, cons, scale, rate, delay)
+    run_simulation(until, net_template, cons_method, scale, rate, delay)
 
 
 @cli.command()
