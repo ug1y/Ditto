@@ -14,4 +14,4 @@ deploy-job:
   stage: deploy
   script:
     - pip install . -i https://pypi.tuna.tsinghua.edu.cn/simple
-    - python -m ditto.main sim
+    - python -m ditto.main simu
