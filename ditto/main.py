@@ -42,6 +42,7 @@ def run_simulation(until: int = 100, net_template: str = 'PeerNet', cons_method:
     if net.consus_handler is not None:
         print("The consensus blocks set:", net.consus_handler.get_processed_blocks(StatusType.DECIDED))
         print("The finished blocks sorted:", net.consus_handler.sort_finished_blocks())
+        print("The consensus change logs:", net.consus_handler.consus_logs)
 
 
 def run_server(port: int = 5006):
@@ -112,7 +113,7 @@ def simu(net_template, cons_method, scale, rate, delay, until):
     "--port",
     type=click.INT,
     default=5006,
-    help="The port number (default 5006).",
+    help="The port number, default 5006.",
 )
 def serv(port):
     """ Run a bokeh server with the given port. """

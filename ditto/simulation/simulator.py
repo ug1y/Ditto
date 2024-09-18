@@ -81,6 +81,7 @@ class Simulator(NetSimulation):
             miner = self._network.get_random_miner()
             start = time.time()
             block = miner.mine_block()
+            block.data = self.now
             end = time.time()
             next_mining_wait = np.random.poisson(self._network.block_creation_rate) * \
                                (self._factor if self._factor > 0 else 1)

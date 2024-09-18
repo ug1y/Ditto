@@ -37,9 +37,7 @@ class ULBlockDAGCons(ConsusIface):
         self._k = 6
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
-        self.decided_set, self.ordered_list = self._find_list_order(self.blockdag.graph(),
-                                                                    self.blockdag.column_blocks,
-                                                                    self._k)
+        return self._find_list_order(self.blockdag.graph(), self.blockdag.column_blocks, self._k)
 
     def _find_clusters(self, graph: nx.DiGraph) -> (Set[TypeAlias.BlockID], Set[TypeAlias.BlockID]):
         nodelist = sorted(graph.nodes)
@@ -107,12 +105,12 @@ class ULBlockDAGCons(ConsusIface):
         i = len(columns)
         x = i - k if i > k else 0
         # Get the confirmed blocks
-        nodes_c = {n for c in columns[:x+1] for n in c}
+        nodes_c = {n for c in columns[:x + 1] for n in c}
         # Find the clusters
         c1, c2 = self._find_clusters(graph)
 
         blue_list = c1 & nodes_c
-        ord_list = [n for c in columns[:x+1] for n in sorted(c)]
+        ord_list = [n for c in columns[:x + 1] for n in sorted(c)]
 
         return blue_list, ord_list
 

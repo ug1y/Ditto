@@ -36,10 +36,7 @@ class NakamotoCons(ConsusIface):
         self._safe_depth = 6
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
-
-        self.decided_set, self.ordered_list = self._longest_chain(self.blockdag.graph(),
-                                                                  self.blockdag.column_blocks,
-                                                                  self._safe_depth)
+        return self._longest_chain(self.blockdag.graph(), self.blockdag.column_blocks, self._safe_depth)
 
     def _longest_chain(self, graph: nx.DiGraph, columns: List[Set[TypeAlias.BlockID]], depth: int) \
             -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):

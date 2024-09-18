@@ -16,8 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import threading
-import time
 from typing import List, Set
 
 import networkx as nx
@@ -41,19 +39,9 @@ class PhantomCons(ConsusIface):
 
         self._thread_lock = False
 
-    def _consensus_thread(self):
-        if self._thread_lock:
-            self._latest_blue_set, self._latest_ordered_list = self._order_dag(self.blockdag.graph(), self._k)
-            self._thread_lock = False
-
     def execute_consensus(self, bid: TypeAlias.BlockID):
 
-        # if not self._thread_lock:
-        #     self._thread_lock = True
-        #     thread_consensus = threading.Thread(target=self._consensus_thread)
-        #     thread_consensus.start()
-
-        self.decided_set, self.ordered_list = self._order_dag(self.blockdag.graph(), self._k)
+        return self._order_dag(self.blockdag.graph(), self._k)
 
     def _order_dag(self, graph: nx.DiGraph, k: int) -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
         if len(graph) == 1:

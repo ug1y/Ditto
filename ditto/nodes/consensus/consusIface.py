@@ -45,17 +45,44 @@ class ConsusIface(ABC):
         self.blockdag = blockdag
         self.decided_set = set()
         self.ordered_list = list()
+        self.consus_logs = dict()
 
     @abstractmethod
-    def execute_consensus(self, bid: TypeAlias.BlockID):
+    def execute_consensus(self, bid: TypeAlias.BlockID) -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
         """
-        Triggered by a block, the consensus instance should be implemented this method.
+        The consensus instance should be implemented this method.
 
-        Update the variables of `decided_set` and `ordered_list`.
+        To update the variables of `decided_set` and `ordered_list`.
+
+        :param bid: TypeAlias.BlockID
+        :return: Set[TypeAlias.BlockID], List[TypeAlias.BlockID]
+        """
+        pass
+
+    def trigger_consensus(self, bid: TypeAlias.BlockID):
+        """
+        Trigger the consensus with the given block id.
+
+        Record the change of history consensus results.
 
         :param bid: TypeAlias.BlockID
         """
-        pass
+        old_decided_set = set(self.decided_set)
+        self.decided_set, self.ordered_list = self.execute_consensus(bid)
+        new_decided_set = set(self.decided_set)
+
+        # Record new blocks and changed blocks confirmed by consensus.
+        confirms = new_decided_set - old_decided_set
+        for c in confirms:
+            if c not in self.consus_logs:
+                self.consus_logs[c] = [bid]
+            else:
+                self.consus_logs[c].append(bid)
+
+        # Record old blocks where the confirmation is changed.
+        changes = old_decided_set - new_decided_set
+        for c in changes:
+            self.consus_logs[c].append(bid)
 
     def block_status(self, bid: TypeAlias.BlockID) -> StatusType:
         """

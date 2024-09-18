@@ -345,7 +345,7 @@ class Miner:
             self.broadcast_block(block)
             # execute the consensus
             if self._consus_handler is not None:
-                pass # self._consus_handler.execute_consensus()
+                pass # self._consus_handler.trigger_consensus()
             return True
         return False
 

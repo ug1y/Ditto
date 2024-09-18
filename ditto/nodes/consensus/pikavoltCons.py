@@ -39,9 +39,8 @@ class PikavoltCons(ConsusIface):
         self._col_ord_lst = []
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
-        self.decided_set, self.ordered_list = self._compute_cluster(self.blockdag.graph(),
-                                                                    self.blockdag.column_blocks,
-                                                                    self._depth, self.blockdag[bid].height)
+        return self._compute_cluster(self.blockdag.graph(), self.blockdag.column_blocks,
+                                     self._depth, self.blockdag[bid].height)
 
     def _capacity(self, bids: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
         """ Return the number of ancestors of the block or blocks. """
