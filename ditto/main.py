@@ -4,8 +4,9 @@ import click
 
 from ditto import config
 from ditto.network import NetFactory, SelectNetTemplate
-from ditto.nodes import Systems, StatusType
+from ditto.nodes import Systems
 from ditto.simulation import Simulator, StatsRecorder
+from ditto import __version__
 
 banner = """
            __    _    __     __         
@@ -39,10 +40,10 @@ def run_simulation(until: int = 100, net_template: str = 'PeerNet', cons_method:
     #       f"Scale='{scale}', Rate='{rate}', Delay='{delay}')")
     print("Total blockDAG:", repr(net.total_blockdag))
 
-    if net.consus_handler is not None:
+    # if net.consus_handler is not None:
     #     print("The consensus blocks set:", net.consus_handler.get_processed_blocks(StatusType.DECIDED))
     #     print("The finished blocks sorted:", net.consus_handler.sort_finished_blocks())
-        print("The consensus change logs:", net.consus_handler.consus_logs)
+    #     print("The consensus change logs:", net.consus_handler.consus_logs)
 
     if net.consus_handler is not None:
         srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
@@ -134,6 +135,6 @@ def serv(port):
 
 
 if __name__ == '__main__':
-    click.echo(f">>> Ditto: A Hybrid BlockDAG Simulation Framework <<<")
+    click.echo(f">>> Ditto: A Hybrid BlockDAG Simulation Framework (v{__version__}) <<<")
     click.echo(banner)
     cli()
