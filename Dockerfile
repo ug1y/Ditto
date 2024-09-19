@@ -10,4 +10,4 @@ EXPOSE 5006
 
 ENV BOKEH_ALLOW_WS_ORIGIN=*
 
-CMD ["python", "-m", "ditto.main", "ser"]
+CMD ["python", "-m", "ditto.main", "serv"]
