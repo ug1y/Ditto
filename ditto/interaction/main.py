@@ -60,7 +60,7 @@ class PlottingApp:
 
         self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
 
-        self.stats_div = Div(name="stats", sizing_mode='stretch_both')
+        self.stats_div = Div(name="stats", sizing_mode='stretch_both', styles={'font-size': '14px'})
 
         sys_options = ["Nakamoto", "Phantom", "ULBlockDAG", "Pikavolt"]
         self.sys_select = Select(name="system", title="Choose System", height=50,
@@ -112,12 +112,12 @@ class PlottingApp:
             throughput = self.recorder.compute_throughput()
             latency = self.recorder.compute_latency()
             change_dist = self.recorder.compute_change_dist()
-            self.stats_div.text = "<h3 style='margin:auto'>[The simulated throughput]</h3> " + \
+            self.stats_div.text = "<b>[The simulated throughput]</b> " + \
                                   f"<p>processed blocks and speed: {throughput[0][0]}, {throughput[0][1]:.2f} </p>" + \
                                   f"<p>decided blocks and speed: {throughput[1][0]}, {throughput[1][1]:.2f} </p>" + \
-                                  "<br><h3 style='margin:auto'>[The simulated latency]</h3>" + \
+                                  "<br><b>[The simulated latency]</b>" + \
                                   f"<p>average latency: {latency[0]:.2f} </p>" + \
-                                  "<br><h3 style='margin:auto'>[The simulated change distribution]</h3>" + \
+                                  "<br><b>[The simulated change distribution]</b>" + \
                                   f"<p>change index: {change_dist[0]:.2f} </p>" + \
                                   f"<p>change distribution: {change_dist[1]} </p>"
 

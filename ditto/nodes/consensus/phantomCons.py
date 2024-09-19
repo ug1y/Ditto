@@ -38,11 +38,23 @@ class PhantomCons(ConsusIface):
         self._blue_set = {}
         self._ordered_list = {}
 
-        self._thread_lock = False
+        self._depth = 6  # to compare with other schemes, set a depth to trigger consensus.
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
 
-        return self._order_dag(self.blockdag.graph(), self._k)
+        # return self._order_dag(self.blockdag.graph(), self._k)
+        return self._wrapper_order_dag(self.blockdag.graph(), self.blockdag.column_blocks, self._k, self._depth)
+
+    def _wrapper_order_dag(self, graph: nx.DiGraph, columns: list[set[TypeAlias.BlockID]], k: int, depth: int) \
+            -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
+        if len(columns) < depth:
+            return set(), list()
+
+        h = len(columns) - depth
+        nodes_h = {n for c in columns[:h+1] for n in c}
+        g = graph.subgraph(nodes_h)
+
+        return self._order_dag(g, k)
 
     def _order_dag(self, graph: nx.DiGraph, k: int) -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
         if len(graph) == 1:
