@@ -33,14 +33,28 @@
                     {{ embed(roots.blockdag) }}
                 </div>
             </article>
-            <article class="message" style="height: 280px">
-                <div class="message-header" style="height: 40px">
-                    <p class="subtitle has-text-light">日志输出</p>
+            <div class="columns is-vcentered is-desktop">
+                <div class="column is-8">
+                    <article class="message" style="height: 280px">
+                        <div class="message-header" style="height: 40px">
+                            <p class="subtitle has-text-light">日志输出</p>
+                        </div>
+                        <div class="message-body" style="height: 240px">
+                            {{ embed(roots.console) }}
+                        </div>
+                    </article>
                 </div>
-                <div class="message-body" style="height: 240px">
-                    {{ embed(roots.console) }}
+                <div class="column is-4">
+                    <article class="message" style="height: 280px">
+                        <div class="message-header" style="height: 40px">
+                            <p class="subtitle has-text-light">统计结果</p>
+                        </div>
+                        <div class="message-body" style="height: 240px">
+                            {{ embed(roots.stats) }}
+                        </div>
+                    </article>
                 </div>
-            </article>
+            </div>
         </div>
         <div class="column is-4">
             <article class="message" style="height: 350px">

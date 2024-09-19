@@ -33,6 +33,7 @@ class NakamotoCons(ConsusIface):
 
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
+        self.algo_name = "Nakamoto"
         self._safe_depth = 6
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
@@ -41,15 +42,15 @@ class NakamotoCons(ConsusIface):
     def _longest_chain(self, graph: nx.DiGraph, columns: List[Set[TypeAlias.BlockID]], depth: int) \
             -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
         # Check the safe depth.
-        if len(columns) <= depth:
+        if len(columns) < depth:
             return set(), list()
 
         picked_bid = min(columns[-1])  # Pick the block in the longest chain.
         # Find the last block in the longest chain within the safe depth.
-        last_bid = [bid for bid in columns[-1 - depth] if nx.has_path(graph, picked_bid, bid)][0]
+        last_bid = [bid for bid in columns[-depth] if nx.has_path(graph, picked_bid, bid)][0]
 
         cons_blocks = set(nx.descendants(graph, last_bid)).union({last_bid})
-        sorted_blocks = [n for c in columns[:-1 - depth + 1] for n in sorted(c)]
+        sorted_blocks = [n for c in columns[:1 - depth] for n in sorted(c)]
 
         return cons_blocks, sorted_blocks
 

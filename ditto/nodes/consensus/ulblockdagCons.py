@@ -34,6 +34,7 @@ class ULBlockDAGCons(ConsusIface):
 
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
+        self.algo_name = "ULBlockDAG"
         self._k = 6
 
     def execute_consensus(self, bid: TypeAlias.BlockID):

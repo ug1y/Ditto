@@ -25,7 +25,7 @@ from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextArea
 from bokeh.server.callbacks import PeriodicCallback
 
 from ditto import config, __version__
-from ditto.simulation import Simulator
+from ditto.simulation import Simulator, StatsRecorder
 from ditto.network import NetOperator, NetFactory, SelectNetTemplate
 from ditto.nodes import Systems
 
@@ -38,6 +38,7 @@ class PlottingApp:
     def __init__(self):
         self.network: NetOperator = None
         self.simulator: Simulator = None
+        self.recorder: StatsRecorder = None
         self.callfunc: PeriodicCallback = None
 
         self.title = "Ditto: A Hybrid BlockDAG Simulation Framework"
@@ -59,7 +60,9 @@ class PlottingApp:
 
         self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
 
-        sys_options = ["Bitcoin", "Phantom", "ULBlockDAG", "Pikavolt"]
+        self.stats_div = Div(name="stats", sizing_mode='stretch_both')
+
+        sys_options = ["Nakamoto", "Phantom", "ULBlockDAG", "Pikavolt"]
         self.sys_select = Select(name="system", title="Choose System", height=50,
                                  options=sys_options, sizing_mode='stretch_width')
         self.sys_select.value = sys_options[0]
@@ -106,6 +109,18 @@ class PlottingApp:
 
         if new_scale > old_scale:
             blockdag_plotting(self.dag_figure, dag, consus)
+            throughput = self.recorder.compute_throughput()
+            latency = self.recorder.compute_latency()
+            change_dist = self.recorder.compute_change_dist()
+            self.stats_div.text = "<h3 style='margin:auto'>[The simulated throughput]</h3> " + \
+                                  f"<p>processed blocks and speed: {throughput[0][0]}, {throughput[0][1]:.2f} </p>" + \
+                                  f"<p>decided blocks and speed: {throughput[1][0]}, {throughput[1][1]:.2f} </p>" + \
+                                  "<br><h3 style='margin:auto'>[The simulated latency]</h3>" + \
+                                  f"<p>average latency: {latency[0]:.2f} </p>" + \
+                                  "<br><h3 style='margin:auto'>[The simulated change distribution]</h3>" + \
+                                  f"<p>change index: {change_dist[0]:.2f} </p>" + \
+                                  f"<p>change distribution: {change_dist[1]} </p>"
+
 
     def sys_change_event(self, attr, old, new):
         params: ParamsConfig = SystemRef[self.sys_select.value]
@@ -149,6 +164,7 @@ class PlottingApp:
 
         self.run_toggle.disabled = False
         self.con_input.value = ""
+        self.stats_div.text = ""
 
         log_filter = config.SimulatorFilter()
         log_handler = ConsoleHandler(self.con_input)
@@ -166,6 +182,7 @@ class PlottingApp:
                                          propagation_delay_parameter=self.delay_input.value)
         self.simulator = Simulator(self.network)
         self.simulator.set_logger(mylogger)
+        self.recorder = StatsRecorder(self.simulator, self.network.total_blockdag, self.network.consus_handler)
 
         # Draw the network graph.
         network_plotting(self.net_figure, self.network.network_graph)
@@ -182,6 +199,7 @@ class PlottingApp:
         doc.add_root(self.dag_figure)
         doc.add_root(self.net_figure)
         doc.add_root(self.con_input)
+        doc.add_root(self.stats_div)
 
         doc.add_root(self.sys_select)
         doc.add_root(self.link_div)

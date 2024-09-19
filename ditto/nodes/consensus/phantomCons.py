@@ -33,6 +33,7 @@ class PhantomCons(ConsusIface):
 
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
+        self.algo_name = "Phantom"
         self._k = 3
         self._blue_set = {}
         self._ordered_list = {}

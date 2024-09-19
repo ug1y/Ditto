@@ -35,7 +35,7 @@ class SystemParams:
 
 
 Systems = {
-    'Bitcoin': SystemParams(DAGType.CONVERGENCE, ChainRef, NakamotoCons),
+    'Nakamoto': SystemParams(DAGType.CONVERGENCE, ChainRef, NakamotoCons),
     'Phantom': SystemParams(DAGType.DIVERGENCE, LeavesRef, PhantomCons),
     'ULBlockDAG': SystemParams(DAGType.DIVERGENCE, LeavesRef, ULBlockDAGCons),
     'Pikavolt': SystemParams(DAGType.DIVERGENCE, LeavesRef, PikavoltCons),

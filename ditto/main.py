@@ -5,7 +5,7 @@ import click
 from ditto import config
 from ditto.network import NetFactory, SelectNetTemplate
 from ditto.nodes import Systems, StatusType
-from ditto.simulation import Simulator
+from ditto.simulation import Simulator, StatsRecorder
 
 banner = """
            __    _    __     __         
@@ -21,7 +21,7 @@ def run_simulation(until: int = 100, net_template: str = 'PeerNet', cons_method:
     log_filter = config.SimulatorFilter()
     log_handler = logging.StreamHandler()
     log_handler.setFormatter(logging.Formatter(fmt='[%(levelname)s] %(message)s'))
-    log_level = logging.INFO
+    log_level = logging.WARNING
 
     mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
 
@@ -35,14 +35,26 @@ def run_simulation(until: int = 100, net_template: str = 'PeerNet', cons_method:
     sim.run(until)
 
     print("Simulation Done!\n")
-    print(f"The simulation parameters: (Network='{net_template}', Consensus='{cons_method}', "
-          f"Scale='{scale}', Rate='{rate}', Delay='{delay}')")
+    # print(f"The simulation parameters: (Network='{net_template}', Consensus='{cons_method}', "
+    #       f"Scale='{scale}', Rate='{rate}', Delay='{delay}')")
     print("Total blockDAG:", repr(net.total_blockdag))
 
     if net.consus_handler is not None:
-        print("The consensus blocks set:", net.consus_handler.get_processed_blocks(StatusType.DECIDED))
-        print("The finished blocks sorted:", net.consus_handler.sort_finished_blocks())
+    #     print("The consensus blocks set:", net.consus_handler.get_processed_blocks(StatusType.DECIDED))
+    #     print("The finished blocks sorted:", net.consus_handler.sort_finished_blocks())
         print("The consensus change logs:", net.consus_handler.consus_logs)
+
+    if net.consus_handler is not None:
+        srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
+        print("\nStatistical Records:")
+        print("[Consensus Algorithm]", srd.get_consus_algo_name())
+        print("[Network Scale]", srd.get_network_scale())
+        print("[Block Creation Rate]", srd.get_block_creation_rate())
+        print("[Block Propagation Delay]", srd.get_block_propagation_delay_())
+
+        print("The simulated throughput: ", srd.compute_throughput())
+        print("The simulated latency: ", srd.compute_latency())
+        print("The simulated change distribution: ", srd.compute_change_dist())
 
 
 def run_server(port: int = 5006):
@@ -67,9 +79,9 @@ def cli():
 @click.option(
     "-c",
     "--cons_method",
-    type=click.Choice(['Bitcoin', 'Phantom', 'ULBlockDAG', 'Pikavolt']),
-    default="Bitcoin",
-    help="Choose consensus method, default Bitcoin.",
+    type=click.Choice(['Nakamoto', 'Phantom', 'ULBlockDAG', 'Pikavolt']),
+    default="Nakamoto",
+    help="Choose consensus method, default Nakamoto.",
 )
 @click.option(
     "-s",

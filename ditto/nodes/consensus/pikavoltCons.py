@@ -34,6 +34,7 @@ class PikavoltCons(ConsusIface):
 
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
+        self.algo_name = "Pikavolt"
         self._depth = 6
         self._col_dec_set = []
         self._col_ord_lst = []
@@ -127,7 +128,7 @@ class PikavoltCons(ConsusIface):
     def _compute_cluster(self, graph: nx.DiGraph, columns: list[set[TypeAlias.BlockID]],
                          depth: int, height: int) -> (set, list):
 
-        for i in range(max(0, (height - depth - 1)), (len(columns) - depth)):
+        for i in range(max(0, (height - depth - 1)), (len(columns) - depth + 1)):
             # ... i ... ... ... x ... [i,x] is the slide window.
             x = i + depth
 

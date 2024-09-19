@@ -43,6 +43,7 @@ class ConsusIface(ABC):
         """
         self.network = network
         self.blockdag = blockdag
+        self.algo_name = str()  # The name of the consensus algorithm.
         self.decided_set = set()
         self.ordered_list = list()
         self.consus_logs = dict()

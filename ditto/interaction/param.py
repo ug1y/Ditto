@@ -41,7 +41,7 @@ class ParamsConfig:
 
 
 SystemRef = {
-    'Bitcoin': ParamsConfig(file_name='2008_Bitcoin', file_path='interaction/static/papers/2008_Bitcoin.pdf',
+    'Nakamoto': ParamsConfig(file_name='2008_Bitcoin', file_path='interaction/static/papers/2008_Bitcoin.pdf',
                             miner_num=6, block_rate=10.0, prop_delay=10.0),
     'Phantom': ParamsConfig(file_name='2021_Phantom', file_path='interaction/static/papers/2021_Phantom.pdf',
                             miner_num=6, block_rate=10.0, prop_delay=30.0),
