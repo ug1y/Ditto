@@ -73,7 +73,7 @@ def cli():
 @click.option(
     "-n",
     "--net_template",
-    type=click.Choice(['PeerNet', 'FullNet', 'RingNet', 'RandomNet', 'StarNet', 'LineNet', 'TreeNet']),
+    type=click.Choice(['PeerNet', 'FullNet', 'RingNet', 'StarNet', 'TreeNet']),
     default="PeerNet",
     help="Specify network template, default PeerNet.",
 )

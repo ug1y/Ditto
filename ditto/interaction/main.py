@@ -80,7 +80,7 @@ class PlottingApp:
         self.delay_input = NumericInput(name="delay", title="Propagation Delay", height=50,
                                         low=0, mode="float", sizing_mode='stretch_width')
 
-        net_options = ["PeerNet", "FullNet", "RingNet", "RandomNet", "StarNet", "LineNet", "TreeNet"]
+        net_options = ["PeerNet", "FullNet", "RingNet", "StarNet", "TreeNet"]
         self.net_select = Select(name="net_name", title="Select Network", height=50,
                                  options=net_options, sizing_mode='stretch_width')
         self.net_select.value = net_options[0]

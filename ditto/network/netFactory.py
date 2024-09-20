@@ -97,16 +97,16 @@ class NetFactory:
 
         return net
 
-    def RandomNet(self, system_params: SystemParams, number_of_miners: int,
-                  block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-        """Random network in which the miners are connected to random numbers of miners."""
-        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-
-        for miner in net:
-            net[miner].max_peer_num = np.random.randint(low=1, high=number_of_miners)
-            net[miner].discover_peer()
-
-        return net
+    # def RandomNet(self, system_params: SystemParams, number_of_miners: int,
+    #               block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+    #     """Random network in which the miners are connected to random numbers of miners."""
+    #     net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
+    #
+    #     for miner in net:
+    #         net[miner].max_peer_num = np.random.randint(low=1, high=number_of_miners)
+    #         net[miner].discover_peer()
+    #
+    #     return net
 
     def StarNet(self, system_params: SystemParams, number_of_miners: int,
                 block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
@@ -119,16 +119,16 @@ class NetFactory:
 
         return net
 
-    def LineNet(self, system_params: SystemParams, number_of_miners: int,
-                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-        """ Line network in which the miners are connected to the previous miner in a line."""
-        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-
-        miners = list(net)
-        for i in range(1, len(miners)):
-            net[miners[i]].connect_peer(miners[i - 1])
-
-        return net
+    # def LineNet(self, system_params: SystemParams, number_of_miners: int,
+    #             block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+    #     """ Line network in which the miners are connected to the previous miner in a line."""
+    #     net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
+    #
+    #     miners = list(net)
+    #     for i in range(1, len(miners)):
+    #         net[miners[i]].connect_peer(miners[i - 1])
+    #
+    #     return net
 
     def TreeNet(self, system_params: SystemParams, number_of_miners: int,
                 block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
