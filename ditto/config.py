@@ -53,12 +53,12 @@ class MinerFilter(logging.Filter):
             return False
 
 
-class MyLogger:
-    def __init__(self, log_handler: logging.Handler, log_filter: logging.Filter, log_level: int):
-        self._logger = logging.getLogger(str(uuid.uuid4()))
-        self._logger.addHandler(log_handler)
-        self._logger.addFilter(log_filter)
-        self._logger.setLevel(log_level)
-
-    def getLogger(self) -> logging.Logger:
-        return self._logger
+def create_logger(log_handler: logging.Handler = logging.StreamHandler(),
+                  log_filter: logging.Filter = SimulatorFilter(),
+                  log_level: int = logging.INFO) -> logging.Logger:
+    logger = logging.getLogger(str(uuid.uuid4()))
+    log_handler.setFormatter(logging.Formatter(fmt='[%(levelname)s] %(message)s'))
+    logger.addHandler(log_handler)
+    logger.addFilter(log_filter)
+    logger.setLevel(log_level)
+    return logger

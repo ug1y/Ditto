@@ -1,7 +1,5 @@
 __version__ = '0.6.0'
 
-from ditto import config
-
 from ditto import interaction
 from ditto import simulation
 from ditto import network

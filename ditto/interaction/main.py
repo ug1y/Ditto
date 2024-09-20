@@ -166,13 +166,7 @@ class PlottingApp:
         self.con_input.value = ""
         self.stats_div.text = ""
 
-        log_filter = config.SimulatorFilter()
-        log_handler = ConsoleHandler(self.con_input)
-        log_handler.setFormatter(logging.Formatter(fmt='[%(levelname)s] %(message)s'))
-        log_level = logging.INFO
-
-        mylogger = config.MyLogger(log_handler, log_filter, log_level).getLogger()
-
+        mylogger = config.create_logger(ConsoleHandler(self.con_input))
         factory = NetFactory(mylogger)
         system_params = Systems[self.sys_select.value]
         self.network = SelectNetTemplate(factory, net_name=self.net_select.value,
