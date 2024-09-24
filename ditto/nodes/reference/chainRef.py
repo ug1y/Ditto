@@ -40,15 +40,14 @@ class ChainRef(ReferIface):
     def can_referred(self) -> bool:
         return True
 
-    def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
+    def get_virtual_pivot_ref(self, *args, **kwargs) -> TypeAlias.BlockID | None:
         return self._max_hash_power(self.blockdag.leaves_blocks)
 
-    def get_virtual_common_refs(self) -> Set[TypeAlias.BlockID]:
+    def get_virtual_common_refs(self, *args, **kwargs) -> Set[TypeAlias.BlockID]:
         return set()
 
-    def get_virtual_new_height(self) -> TypeAlias.BlockHeight:
-        vp = self.get_virtual_pivot_ref()
-        return self.blockdag[vp].height + 1
+    def get_virtual_new_height(self, *args, **kwargs) -> TypeAlias.BlockHeight:
+        return self.blockdag[self.get_virtual_pivot_ref()].height + 1
 
     def _max_hash_power(self, bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
         max_height = len(self.blockdag.column_blocks)

@@ -20,7 +20,7 @@ from collections import deque
 from typing import Deque
 
 from ditto.nodes import Miner
-from ditto.blockdag import BlockDAG, TypeAlias, Block
+from ditto.blockdag import BlockDAG, TypeAlias, Block, BlockType
 from ditto.nodes.reference import ReferIface
 
 
@@ -35,7 +35,7 @@ class Attacker(Miner):
     def __repr__(self):
         return "Attacker(name=" + repr(self._name) + \
             ", blockdag=" + repr(self._blockdag) + \
-            ", blocks_queue=" + repr(self._blocks_to_attack_queue) + ")"
+            ", blocks_queue=" + str({hash(b) for b in self._blocks_to_attack_queue}) + ")"
 
     @property
     def attack_flag(self) -> bool:
@@ -54,17 +54,6 @@ class Attacker(Miner):
         """
         pass
 
-    def _broadcast_malicious_block(self, block: Block):
-        """
-        Broadcast a malicious block to the network.
-
-        Add it to the block queue without sending it to neighbors.
-        :param block: Block
-        """
-        self.network.add_block(block)
-        self._blocks_to_attack_queue.append(block)
-        self._broadcast_blocks_queue()  # Try to complete the attack.
-
     def set_refer_handler(self, refer_class: type[ReferIface]):
         """
         Set the reference handler, passing blocks_deque to the refer class.
@@ -79,30 +68,27 @@ class Attacker(Miner):
 
         Do not forward the added block to neighbors.
 
-        The attacker is a communication black hole.
+        The attacker is a network black hole.
         :param block: Block
         """
-        if self._attack_flag:
-            self._broadcast_blocks_queue()  # Try to complete the attack.
+        if self._attack_flag and block.miner == self._name:
+            self.network.add_block(block)  # Add the malicious block to the network.
+            self._blocks_to_attack_queue.append(block)  # Add it to the block queue.
 
-    # def add_block(self, block: Block) -> bool:
-    #     """
-    #     Add new block might influence that attack's status (success/failure).
-    #     :param block: Block
-    #     :return: bool
-    #     """
-    #     addition_result = super().add_block(block)
-    #     self._broadcast_blocks_queue()  # Try to complete the attack.
-    #     return addition_result
+        self._broadcast_blocks_queue()  # Try to complete the attack.
 
-    def mine_block(self) -> Block | None:
+    def create_new_block(self) -> Block:
         """
-        Rewrite the block mining method.
+        Rewrite the block creation method.
 
         Once attacking start, new malicious blocks will be added to the queue.
-        :return:
+        :return: Block
         """
-        if not self._attack_flag:
-            return super().mine_block()
-        else:
-            return
+        if not self._attack_flag or len(self._blocks_to_attack_queue) == 0:
+            return super().create_new_block()
+
+        return Block(bid=self.network.get_next_block_id(), btype=BlockType.MINED, miner=self.name,
+                     pref=self.refer_handler.get_virtual_pivot_ref(is_malicious=True),
+                     crefs=self.refer_handler.get_virtual_common_refs(is_malicious=True),
+                     height=self.refer_handler.get_virtual_new_height(is_malicious=True))
+

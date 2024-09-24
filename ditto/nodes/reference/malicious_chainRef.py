@@ -32,3 +32,14 @@ class MaliciousChainRef(ChainRef, SelfishHolder):
         ChainRef.__init__(self, miner_name, genesis_block, blockdag)
         SelfishHolder.__init__(self, blocks_queue)
 
+    def get_virtual_pivot_ref(self, is_malicious: bool = False) -> TypeAlias.BlockID | None:
+        if not is_malicious:
+            return ChainRef.get_virtual_pivot_ref(self)
+        else:
+            return hash(self.blocks_queue[-1])
+
+    def get_virtual_new_height(self, is_malicious: bool = False) -> TypeAlias.BlockHeight:
+        if not is_malicious:
+            return ChainRef.get_virtual_new_height(self)
+        else:
+            return self.blockdag[self.get_virtual_pivot_ref(is_malicious=True)].height + 1

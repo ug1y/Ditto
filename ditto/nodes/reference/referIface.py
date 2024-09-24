@@ -44,7 +44,7 @@ class ReferIface(ABC):
         """
 
     @abstractmethod
-    def get_virtual_pivot_ref(self) -> TypeAlias.BlockID | None:
+    def get_virtual_pivot_ref(self, *args, **kwargs) -> TypeAlias.BlockID | None:
         """
         Get the virtual pivot ref where the divergence blockDAG return None.
         :return: TypeAlias.BlockID | None
@@ -52,7 +52,7 @@ class ReferIface(ABC):
         pass
 
     @abstractmethod
-    def get_virtual_common_refs(self) -> Set[TypeAlias.BlockID]:
+    def get_virtual_common_refs(self, *args, **kwargs) -> Set[TypeAlias.BlockID]:
         """
         Get the virtual common refs by different strategies.
         :return: Set[TypeAlias.BlockID]
@@ -60,7 +60,7 @@ class ReferIface(ABC):
         pass
 
     @abstractmethod
-    def get_virtual_new_height(self) -> TypeAlias.BlockHeight:
+    def get_virtual_new_height(self, *args, **kwargs) -> TypeAlias.BlockHeight:
         """
         Get the virtual new height if adopt this strategy.
         :return: TypeAlias.BlockHeight

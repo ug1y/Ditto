@@ -67,7 +67,7 @@ def run_simulation(until: int = 100, net_template: str = 'PeerNet', cons_method:
 
 
 def run_with_attack():
-    mylogger = config.create_logger()
+    mylogger = config.create_logger(log_level=logging.WARNING)
     factory = NetFactory(mylogger)
     params = Systems["Nakamoto"]
     net = SelectNetTemplate(factory, net_name="PeerNet", system_params=params, number_of_miners=5,
@@ -75,13 +75,11 @@ def run_with_attack():
 
     dag_for_attacker = BlockDAG(params.dag_type)
     dag_for_attacker.set_logger(mylogger)
-    attacker = Attacker("Attacker", dag_for_attacker)
+    attacker = Attacker("Attacker", dag_for_attacker, True)
     attacker.set_logger(mylogger)
 
     attacker.pre_launch(list(net.genesis_blocks)[0], params.malicious_ref, net, params.consus_algo)
     net.add_miner(attacker, 40.0)
-    print(repr(attacker))
-    print(attacker.refer_handler.blocks_queue)
 
     for m in net:
         if m != attacker.name:
@@ -105,6 +103,10 @@ def run_with_attack():
         print("The simulated throughput: ", srd.compute_throughput())
         print("The simulated latency: ", srd.compute_latency())
         print("The simulated change distribution: ", srd.compute_change_dist())
+
+    print()
+    print(repr(attacker))
+    print(repr(net["Miner1"]))
 
 
 if __name__ == '__main__':

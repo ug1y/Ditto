@@ -211,6 +211,12 @@ class Miner:
 
         return self._network.get_neighbors(self._name)
 
+    def create_new_block(self) -> Block:
+        return Block(bid=self.network.get_next_block_id(), btype=BlockType.MINED, miner=self.name,
+                     pref=self.refer_handler.get_virtual_pivot_ref(),
+                     crefs=self.refer_handler.get_virtual_common_refs(),
+                     height=self.refer_handler.get_virtual_new_height())
+
     def mine_block(self) -> Block | None:
         """
         Mine a new block to extend dag.
@@ -236,12 +242,13 @@ class Miner:
             return None
 
         # Use the reference handler to select the pref and crefs.
-        block = Block(bid=self._network.get_next_block_id(),
-                      btype=BlockType.MINED,
-                      miner=self._name,
-                      pref=self.refer_handler.get_virtual_pivot_ref(),
-                      crefs=self.refer_handler.get_virtual_common_refs(),
-                      height=self.refer_handler.get_virtual_new_height())
+        block = self.create_new_block()
+        # block = Block(bid=self._network.get_next_block_id(),
+        #               btype=BlockType.MINED,
+        #               miner=self._name,
+        #               pref=self.refer_handler.get_virtual_pivot_ref(),
+        #               crefs=self.refer_handler.get_virtual_common_refs(),
+        #               height=self.refer_handler.get_virtual_new_height())
 
         # TODO: 从交易池中拿交易来构建新区块
 
@@ -345,7 +352,7 @@ class Miner:
             self.broadcast_block(block)
             # execute the consensus
             if self._consus_handler is not None:
-                pass # self._consus_handler.trigger_consensus()
+                pass  # self._consus_handler.trigger_consensus()
             return True
         return False
 
