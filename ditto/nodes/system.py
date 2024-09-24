@@ -22,6 +22,7 @@ from ditto.blockdag import DAGType
 
 from ditto.nodes.reference import ReferIface, ChainRef, LeavesRef, GossipRef
 from ditto.nodes.consensus import ConsusIface, NakamotoCons, PhantomCons, ULBlockDAGCons, PikavoltCons
+from ditto.nodes.reference import MaliciousChainRef
 
 
 @dataclass
@@ -32,10 +33,11 @@ class SystemParams:
     dag_type: DAGType
     refer_rule: type[ReferIface]
     consus_algo: type[ConsusIface]
+    malicious_ref: type[ReferIface] = None
 
 
 Systems = {
-    'Nakamoto': SystemParams(DAGType.CONVERGENCE, ChainRef, NakamotoCons),
+    'Nakamoto': SystemParams(DAGType.CONVERGENCE, ChainRef, NakamotoCons, MaliciousChainRef),
     'Phantom': SystemParams(DAGType.DIVERGENCE, LeavesRef, PhantomCons),
     'ULBlockDAG': SystemParams(DAGType.DIVERGENCE, LeavesRef, ULBlockDAGCons),
     'Pikavolt': SystemParams(DAGType.DIVERGENCE, LeavesRef, PikavoltCons),

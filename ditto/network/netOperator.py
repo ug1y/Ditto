@@ -49,9 +49,13 @@ class NetOperator(NetContainer):
         self._simulator: NetSimulation = None  # The simulator to simulate network delay.
 
         self._consus_handler: ConsusIface = None
+        self._genesis_blocks = set()  # The genesis blocks created by network initialization.
 
-    def __getitem__(self, miner: TypeAlias.MinerName) -> Miner:
-        return self.network_graph.nodes[miner][NetOperator.MINER_DATA_KEY]
+    def __getitem__(self, miner_name: TypeAlias.MinerName) -> Miner:
+        return self.network_graph.nodes[miner_name][NetOperator.MINER_DATA_KEY]
+
+    def get_miner_hash_rate(self, miner_name: TypeAlias.MinerName) -> float:
+        return self.network_graph.nodes[miner_name][NetOperator.HASH_RATE_KEY]
 
     def __repr__(self):
         return "NetOperator(inc_block_id=" + repr(self._inc_block_id) + \
@@ -82,6 +86,14 @@ class NetOperator(NetContainer):
         """
         return self._consus_handler
 
+    @property
+    def genesis_blocks(self) -> Set[Block]:
+        """
+        Get the genesis blocks of the network.
+        :return: Set[Block]
+        """
+        return self._genesis_blocks
+
     def add_miner(self, miner: Miner, hash_rate: float = 10.0):
         """
         Add a miner into the network.
@@ -111,6 +123,14 @@ class NetOperator(NetContainer):
         :return: bool
         """
         self.network_graph.remove_node(miner_name)
+
+    def add_block(self, block: Block):
+        """
+        Add the given block into the network.
+        :param block: Block
+        """
+        if hash(block) not in self._total_blockdag:
+            self._total_blockdag.add_block(block)
 
     def send_block(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName, block: Block):
         """
@@ -205,12 +225,12 @@ class NetOperator(NetContainer):
                                      "blockDAG is allowed to have only one genesis block.", self.FOR_LOG_NAME)
             return set()
 
-        genesis_blocks = set()
+        self._genesis_blocks = set()
         for i in range(genesis_block_num):
             block = Block(bid=self.get_next_block_id(), btype=BlockType.GENESIS, height=1)
-            genesis_blocks.add(block)
+            self._genesis_blocks.add(block)
             self._total_blockdag.add_block(block)
-        return genesis_blocks
+        return self._genesis_blocks
 
     def set_consus_handler(self, consus_class: type[ConsusIface]):
         """

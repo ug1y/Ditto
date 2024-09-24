@@ -27,12 +27,13 @@ banner = """
     / /_/ /   / /  / /_   / /_   / /_/ /
     \__,_/   /_/   \__/   \__/   \____/
 """
+title = "Ditto: A Hybrid BlockDAG Simulation Framework"
 
 
-@click.version_option(version=__version__)
+@click.version_option(version=__version__, prog_name=title)
 @click.group()
 def cli():
-    click.echo(f">>> Ditto: A Hybrid BlockDAG Simulation Framework <<<")
+    click.echo(f">>> {title} <<<")
     click.echo(banner)
 
 

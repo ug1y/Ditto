@@ -78,7 +78,7 @@ class Simulator(NetSimulation):
         Running the network, generating blocks at a poisson rate.
         """
         while True:
-            miner = self._network.get_random_miner()
+            miner = self._network.get_random_miner(True)
             start = time.time()
             block = miner.mine_block()
             block.data = self.now

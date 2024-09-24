@@ -27,7 +27,8 @@ class ReferIface(ABC):
     Reference strategies interface.
     """
 
-    def __init__(self, miner_name: TypeAlias.MinerName, genesis_block: Block, blockdag: BlockDAG):
+    def __init__(self, miner_name: TypeAlias.MinerName, genesis_block: Block, blockdag: BlockDAG,
+                 *args, **kwargs):  # for extending in subclasses
         """
         Rely on the blockdag object with only read operation.
         """

@@ -65,6 +65,9 @@ class NetContainer(Collection):
         return "NetContainer(inc_block_id=" + repr(self._inc_block_id) + \
             ", network_graph=" + repr(self._network_graph) + ")"
 
+    def get_connect_delay_time(self, miner_connect: (TypeAlias.MinerName, TypeAlias.MinerName)) -> float:
+        return self._network_graph.edges[miner_connect][NetContainer.DELAY_TIME_KEY]
+
     @property
     def network_graph(self) -> nx.Graph:
         """
@@ -163,6 +166,13 @@ class NetContainer(Collection):
             return self._network_graph.edges[(miner_name, peer_name)][NetContainer.DELAY_TIME_KEY]
 
         return np.random.poisson(self._propagation_delay_parameter)
+
+    @abstractmethod
+    def add_block(self, block: Block):
+        """
+        Add a block to the total network DAG without any propagation.
+        :param block: Block
+        """
 
     @abstractmethod
     def send_block(self, source_miner: TypeAlias.MinerName, target_miner: TypeAlias.MinerName, block: Block):

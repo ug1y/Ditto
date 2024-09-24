@@ -29,7 +29,7 @@ def _min_hash_value(bids: Set[TypeAlias.BlockID]) -> TypeAlias.BlockID:
 
 class ChainRef(ReferIface):
     """
-    For convergence blockDAG to simulate the Bitcoin blockchain.
+    For convergence blockDAG to simulate the Nakamoto blockchain.
     """
 
     def __init__(self, miner_name: TypeAlias.MinerName, genesis_block: Block, blockdag: BlockDAG):
