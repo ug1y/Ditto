@@ -22,7 +22,7 @@ import os
 from ditto import config
 from ditto.blockdag import BlockDAG
 from ditto.network import NetFactory, SelectNetTemplate
-from ditto.nodes import Systems, Miner, Attacker
+from ditto.nodes import Systems, Miner, Attacker, StatusType
 from ditto.simulation import StatsRecorder, Simulator
 
 
@@ -71,7 +71,7 @@ def run_with_attack():
     factory = NetFactory(mylogger)
     params = Systems["Nakamoto"]
     net = SelectNetTemplate(factory, net_name="PeerNet", system_params=params, number_of_miners=5,
-                            block_creation_rate=10, propagation_delay_parameter=30)
+                            block_creation_rate=10, propagation_delay_parameter=10)
 
     dag_for_attacker = BlockDAG(params.dag_type)
     dag_for_attacker.set_logger(mylogger)
@@ -79,18 +79,18 @@ def run_with_attack():
     attacker.set_logger(mylogger)
 
     attacker.pre_launch(list(net.genesis_blocks)[0], params.malicious_ref, net, params.consus_algo)
-    net.add_miner(attacker, 40.0)
+    net.add_miner(attacker, 30.0)
 
     for m in net:
         if m != attacker.name:
             net[m].connect_peer(attacker.name, 0.0)
 
-    print([(m, net.get_miner_hash_rate(m)) for m in net])
-    print([(e[0], e[1], net.get_connect_delay_time(e)) for e in net.network_graph.edges])
+    # print([(m, net.get_miner_hash_rate(m)) for m in net])
+    # print([(e[0], e[1], net.get_connect_delay_time(e)) for e in net.network_graph.edges])
 
     sim = Simulator(net)
     sim.set_logger(mylogger)
-    sim.run(100)
+    sim.run(500)
 
     if net.consus_handler is not None:
         srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
@@ -104,9 +104,12 @@ def run_with_attack():
         print("The simulated latency: ", srd.compute_latency())
         print("The simulated change distribution: ", srd.compute_change_dist())
 
+        print("The consensus blocks set:", net.consus_handler.get_processed_blocks(StatusType.DECIDED))
+
     print()
     print(repr(attacker))
     print(repr(net["Miner1"]))
+    print(repr(net.total_blockdag))
 
 
 if __name__ == '__main__':

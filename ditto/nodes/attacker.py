@@ -22,6 +22,7 @@ from typing import Deque
 from ditto.nodes import Miner
 from ditto.blockdag import BlockDAG, TypeAlias, Block, BlockType
 from ditto.nodes.reference import ReferIface
+from ditto.nodes.consensus import StatusType
 
 
 class Attacker(Miner):
@@ -35,7 +36,7 @@ class Attacker(Miner):
     def __repr__(self):
         return "Attacker(name=" + repr(self._name) + \
             ", blockdag=" + repr(self._blockdag) + \
-            ", blocks_queue=" + str({hash(b) for b in self._blocks_to_attack_queue}) + ")"
+            ", blocks_queue=" + str([hash(b) for b in self._blocks_to_attack_queue]) + ")"
 
     @property
     def attack_flag(self) -> bool:
@@ -52,7 +53,23 @@ class Attacker(Miner):
         If the attack is success, sending them to neighbors.
         :return:
         """
-        pass
+        if not self._attack_flag:
+            while self._blocks_to_attack_queue:  # Clear the queue when not attacking.
+                self.network.broadcast_block(self.name, self._blocks_to_attack_queue.popleft())
+            return  # When not attacking, do nothing.
+
+        attack_success = False
+        if self.consus_handler is not None:
+            if self._target_block_id in self.consus_handler.get_processed_blocks(StatusType.DECIDED):
+                attack_success = True
+                cur_depth = len(self.blockdag.column_blocks) - self.blockdag[self._target_block_id].height
+                print(f"attack success at: {self._target_block_id}, with depth: {cur_depth}")
+
+        if attack_success:
+            self._target_block_id = 0
+            # self._attack_flag = False  # Reset the attack flag if you want to attack only once.
+            while self._blocks_to_attack_queue:
+                self.network.broadcast_block(self.name, self._blocks_to_attack_queue.popleft())
 
     def set_refer_handler(self, refer_class: type[ReferIface]):
         """
@@ -71,9 +88,15 @@ class Attacker(Miner):
         The attacker is a network black hole.
         :param block: Block
         """
-        if self._attack_flag and block.miner == self._name:
-            self.network.add_block(block)  # Add the malicious block to the network.
-            self._blocks_to_attack_queue.append(block)  # Add it to the block queue.
+        if block.miner == self._name:
+            if self._attack_flag:
+                self.network.add_block(block)  # Add the malicious block to the network.
+                self._blocks_to_attack_queue.append(block)  # Add it to the block queue.
+            else:
+                self.network.broadcast_block(self.name, block)  # when not attacking, broadcast it to neighbors.
+
+        if self._consus_handler is not None:  # Trigger the consensus like network handler.
+            self._consus_handler.trigger_consensus(hash(block))
 
         self._broadcast_blocks_queue()  # Try to complete the attack.
 
@@ -84,8 +107,13 @@ class Attacker(Miner):
         Once attacking start, new malicious blocks will be added to the queue.
         :return: Block
         """
-        if not self._attack_flag or len(self._blocks_to_attack_queue) == 0:
+        if not self._attack_flag:
             return super().create_new_block()
+
+        if len(self._blocks_to_attack_queue) == 0:  # If the queue is empty, set the target block id.
+            tar_block = super().create_new_block()
+            self._target_block_id = hash(tar_block)
+            return tar_block
 
         return Block(bid=self.network.get_next_block_id(), btype=BlockType.MINED, miner=self.name,
                      pref=self.refer_handler.get_virtual_pivot_ref(is_malicious=True),
