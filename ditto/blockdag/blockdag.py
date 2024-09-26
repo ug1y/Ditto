@@ -18,7 +18,7 @@ limitations under the License.
 """
 import logging
 from collections.abc import Collection
-from typing import Iterator, Any, Set, List
+from typing import Iterator, Set, List
 import networkx as nx
 
 from ditto.blockdag.block import Block, BlockType
@@ -27,7 +27,7 @@ from ditto.blockdag.typedef import TypeAlias, DAGType, EdgeType
 
 def caller_info() -> str:
     """
-
+    Find the caller’s module name.
     :return: str
     """
     import inspect
@@ -292,7 +292,7 @@ class BlockDAG(Collection):
 
         return False
 
-    def cut_block(self, bid: TypeAlias.BlockID) -> bool | Any:
+    def cut_block(self, bid: TypeAlias.BlockID) -> bool:
         """
         Cut the specified block and its related successors in the graph.
         :param bid: BlockID.
@@ -328,6 +328,8 @@ class BlockDAG(Collection):
     def ask_block(self, bid: TypeAlias.BlockID) -> Block | None:
         """
         Ask the specified block data in the graph.
+
+        The same function as __getitem__.
         :param bid: BlockID.
         :return: Block.
         """

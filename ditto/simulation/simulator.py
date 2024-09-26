@@ -18,11 +18,10 @@ limitations under the License.
 """
 import logging
 import time
-from typing import Union
+import simpy
+import numpy
 
-import simpy as sp
-import numpy as np
-from simpy import Event
+from typing import Union
 from simpy.core import SimTime
 from simpy.util import start_delayed
 
@@ -43,7 +42,7 @@ class Simulator(NetSimulation):
         """
         Initialize the simulator and network environment.
         """
-        self._env = sp.Environment()
+        self._env = simpy.Environment()
         self._network = network
         self._by_hash_rate = by_hash_rate  # Randomly select a miner by hash rate or not.
 
@@ -66,7 +65,7 @@ class Simulator(NetSimulation):
         return self._network
 
     @property
-    def env(self) -> sp.Environment:
+    def env(self) -> simpy.Environment:
         """
         Get the simpy environment.
         """
@@ -82,7 +81,7 @@ class Simulator(NetSimulation):
             block = miner.mine_block()
             block.data = self.env.now
             end = time.time()
-            next_mining_wait = np.random.poisson(self._network.block_creation_interval)
+            next_mining_wait = numpy.random.poisson(self._network.block_creation_interval)
 
             # print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
             if self._logger is not None:
@@ -107,7 +106,7 @@ class Simulator(NetSimulation):
         """
         self._env.step()
 
-    def run(self, until: Union[SimTime, Event, None] = None):
+    def run(self, until: Union[SimTime, simpy.Event, None] = None):
         """
         Execute until the given time.
         """

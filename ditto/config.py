@@ -56,9 +56,13 @@ class MinerFilter(logging.Filter):
 def create_logger(log_handler: logging.Handler = logging.StreamHandler(),
                   log_filter: logging.Filter = SimulatorFilter(),
                   log_level: int = logging.INFO) -> logging.Logger:
-    logger = logging.getLogger(str(uuid.uuid4()))
+    # Setting the output format
     log_handler.setFormatter(logging.Formatter(fmt='[%(levelname)s] %(message)s'))
+
+    # Every logger has a unique identifier as its name
+    logger = logging.getLogger(str(uuid.uuid4()))
     logger.addHandler(log_handler)
     logger.addFilter(log_filter)
     logger.setLevel(log_level)
+
     return logger

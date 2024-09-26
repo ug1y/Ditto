@@ -5,7 +5,7 @@ setup(
     version='0.7.0',
     author='ug1y',
     author_email='yinhao@icode.pku.edu.cn',
-    description='A Hybrid BlockDAG Simulation Framework',
+    description='Ditto: A Hybrid BlockDAG Simulation Framework',
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/ug1y/Ditto',

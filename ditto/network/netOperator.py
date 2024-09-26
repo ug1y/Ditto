@@ -18,7 +18,7 @@ limitations under the License.
 """
 from typing import Set
 
-import numpy as np
+import numpy
 
 from ditto.simulation import NetSimulation
 from ditto.nodes import Miner, ConsusIface
@@ -111,7 +111,10 @@ class NetOperator(NetContainer):
         self.network_graph.add_node(miner_name)
         self.network_graph.nodes[miner_name][NetOperator.MINER_DATA_KEY] = miner
         self.network_graph.nodes[miner_name][NetOperator.HASH_RATE_KEY] = hash_rate
-        # miner.set_network(self)  # The miner set network handler in the `pre_launch` method.
+
+        # The miner must set network handler before mining new blocks.
+        miner.set_network(self)
+
         if self._logger is not None:
             self._logger.info("%s: Add miner %s with hash rate " + str(self.get_miner_hash_rate(miner_name)),
                               self.FOR_LOG_NAME, str(miner_name))
@@ -202,9 +205,9 @@ class NetOperator(NetContainer):
             total_hash_rate += miner_hash_rate
 
         if by_hash_rate:
-            miner_name = np.random.choice(miners, p=np.array(hash_rates) / total_hash_rate)
+            miner_name = numpy.random.choice(miners, p=numpy.array(hash_rates) / total_hash_rate)
         else:
-            miner_name = np.random.choice(miners)
+            miner_name = numpy.random.choice(miners)
         return self[miner_name]
 
     def get_blockdag_type(self) -> DAGType:

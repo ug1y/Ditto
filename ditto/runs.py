@@ -33,22 +33,25 @@ def run_server(port: int = 5006):
     os.system('bokeh serve --show ' + os.path.join('ditto', 'interaction') + ' --port ' + str(port))
 
 
-def run_simulation(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto',
-                   scale: int = 6, rate: float = 10.0,
-                   interval: float = 10.0, delay: float = 30.0,
+def run_simulation(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto', scale: int = 6,
+                   rate: float = 10.0, interval: float = 10.0, delay: float = 30.0,
                    until: int = 100):
     mylogger = config.create_logger(log_level=logging.WARNING)
     factory = NetFactory(mylogger)
-    net = factory.select_template(net_name=net_template, system_params=Systems[cons_method],
+    params = Systems[cons_method]
+    net = factory.select_template(net_name=net_template, system_params=params,
                                   number_of_miners=scale, computing_hash_rate=rate,
                                   block_creation_interval=interval, propagation_delay_parameter=delay)
 
+    # Start up a simulation
     sim = Simulator(net)
     sim.set_logger(mylogger)
+
+    # Run the simulation
     sim.run(until)
     print(f"Simulation Done at {sim.env.now}!\n")
-    # print("Total blockDAG:", repr(net.total_blockdag))
 
+    # Output the simulation results
     if net.consus_handler is not None:
         srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
 
@@ -59,9 +62,8 @@ def run_simulation(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto',
         srd.output_stats()
 
 
-def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto',
-                    scale: int = 6, rate: float = 10.0,
-                    interval: float = 10.0, delay: float = 30.0,
+def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto', scale: int = 6,
+                    rate: float = 10.0, interval: float = 10.0, delay: float = 30.0,
                     until: int = 100, times: int = 0, power: float = 0.3):
     mylogger = config.create_logger(log_level=logging.WARNING)
     factory = NetFactory(mylogger)
@@ -70,30 +72,36 @@ def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto'
                                   number_of_miners=scale - 1, computing_hash_rate=rate,
                                   block_creation_interval=interval, propagation_delay_parameter=delay)
 
+    # Create an attacker.
     dag_for_attacker = BlockDAG(params.dag_type)
     dag_for_attacker.set_logger(mylogger)
     attacker = Attacker("Attacker", dag_for_attacker, True)
     attacker.set_logger(mylogger)
 
-    attacker.pre_launch(list(net.genesis_blocks)[0], params.malicious_ref, net, params.consus_algo)
+    # Configure the attacker.
+    attacker.pre_launch(list(net.genesis_blocks)[0], params.malicious_ref, params.consus_algo)
     malicious_rate = sum([net.get_miner_hash_rate(m) for m in net]) * power / (1 - power)
     net.add_miner(attacker, malicious_rate)
 
-    # Add attacker to the network.
+    # Connect attacker to all miners.
     attack_delay = 0.0
     for m in net:
         if m != attacker.name:
             net[m].connect_peer(attacker.name, attack_delay)
 
+    # Start up a simulation
     sim = Simulator(net)
     sim.set_logger(mylogger)
+
     # Set attack event to the simulation.
     attack_event = sim.env.event()
     attacker.set_attack_event(attack_event, times)
+
+    # Run the simulation
     sim.run(until=simpy.events.AnyOf(sim.env, [attack_event, sim.env.timeout(until)]))
     print(f"Simulation Done at {sim.env.now}!\n")
-    # print("Total blockDAG:", repr(net.total_blockdag))
 
+    # Output the simulation results
     if net.consus_handler is not None:
         srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
 
@@ -108,7 +116,3 @@ def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto'
 
         print("===== Statistical Records =====")
         srd.output_stats()
-
-
-if __name__ == '__main__':
-    run_with_attack()

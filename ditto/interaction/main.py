@@ -16,15 +16,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import logging
-
 from bokeh.document import Document
 from bokeh.plotting import figure, curdoc
-from bokeh.models import (Button, Select, NumericInput, Toggle, Slider, TextAreaInput, PanTool, SingleIntervalTicker,
-                          Div)
+from bokeh.models import Button, Select, Toggle, Slider, NumericInput, TextAreaInput
+from bokeh.models import Div, PanTool, SingleIntervalTicker
 from bokeh.server.callbacks import PeriodicCallback
 
-from ditto import config, __version__
+from ditto import config
+from ditto.main import __title__, __version__
 from ditto.simulation import Simulator, StatsRecorder
 from ditto.network import NetOperator, NetFactory
 from ditto.nodes import Systems
@@ -41,11 +40,11 @@ class PlottingApp:
         self.recorder: StatsRecorder = None
         self.callfunc: PeriodicCallback = None
 
-        self.title = "Ditto: A Hybrid BlockDAG Simulation Framework"
+        self.title = __title__
         self.version = __version__
 
-        self.dag_figure = figure(name="blockdag", sizing_mode='stretch_both',
-                                 tools=['wheel_zoom', 'pan', 'reset'],
+        # BlockDAG presentation.
+        self.dag_figure = figure(name="blockdag", sizing_mode='stretch_both', tools=['wheel_zoom', 'pan', 'reset'],
                                  active_drag='pan', active_scroll='wheel_zoom')
         self.dag_figure.select_one(PanTool).dimensions = "width"
         self.dag_figure.yaxis.visible = False
@@ -53,15 +52,18 @@ class PlottingApp:
         self.dag_figure.xaxis.ticker = SingleIntervalTicker(interval=1)
         self.dag_figure.xaxis.minor_tick_line_color = None
 
-        self.net_figure = figure(name="network", sizing_mode='stretch_both',
-                                 tools=['wheel_zoom', 'pan', 'reset'],
+        # Network presentation.
+        self.net_figure = figure(name="network", sizing_mode='stretch_both', tools=['wheel_zoom', 'pan', 'reset'],
                                  active_drag='pan', active_scroll='wheel_zoom')
         self.net_figure.axis.visible = False
 
+        # Logger output area.
         self.con_input = TextAreaInput(name="console", sizing_mode='stretch_both')
 
+        # Statistics presentation.
         self.stats_div = Div(name="stats", sizing_mode='stretch_both', styles={'font-size': '14px'})
 
+        # Interactively control area.
         sys_options = ["Nakamoto", "Phantom", "ULBlockDAG", "Pikavolt"]
         self.sys_select = Select(name="system", title="Choose System", height=50,
                                  options=sys_options, sizing_mode='stretch_width')

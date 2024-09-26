@@ -16,9 +16,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from ditto.blockdag import BlockDAG
-from ditto.nodes import ConsusIface, StatusType
 from ditto.simulation import Simulator
+from ditto.nodes import ConsusIface, StatusType
+from ditto.blockdag import BlockDAG
 
 
 class StatsRecorder:
@@ -50,7 +50,8 @@ class StatsRecorder:
         cur_time = self._sim.env.now
         processed = self._cons.get_processed_blocks()
         dec_blks = self._cons.get_processed_blocks(StatusType.DECIDED)
-        # the relative processing rate, the relative decided rate
+
+        # Return the relative processing rate, the relative decided rate
         return ((len(processed), len(processed) / cur_time * blk_interval),
                 (len(dec_blks), len(dec_blks) / cur_time * blk_interval))
 

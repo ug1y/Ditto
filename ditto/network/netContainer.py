@@ -22,7 +22,7 @@ from abc import abstractmethod
 from typing import Set, Collection, Iterator
 
 import networkx as nx
-import numpy as np
+import numpy
 
 from ditto.blockdag import TypeAlias, Block
 
@@ -165,7 +165,7 @@ class NetContainer(Collection):
         if self._network_graph.has_edge(miner_name, peer_name):
             return self._network_graph.edges[(miner_name, peer_name)][NetContainer.DELAY_TIME_KEY]
 
-        return np.random.poisson(self._propagation_delay_parameter)
+        return numpy.random.poisson(self._propagation_delay_parameter)
 
     @abstractmethod
     def add_block(self, block: Block):

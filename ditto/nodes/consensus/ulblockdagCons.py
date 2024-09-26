@@ -19,7 +19,7 @@ limitations under the License.
 from typing import List, Set
 
 import networkx as nx
-import numpy as np
+import numpy
 
 from ditto.blockdag import TypeAlias, BlockDAG
 from ditto.network import NetContainer
@@ -47,12 +47,12 @@ class ULBlockDAGCons(ConsusIface):
         # Compute the symmetric adjacency matrix
         sym_adj = adj + adj.T
         # Compute the degree matrix
-        deg = np.diag(np.sum(sym_adj, axis=1))
+        deg = numpy.diag(numpy.sum(sym_adj, axis=1))
         # Compute the Laplacian matrix
         lap = deg - sym_adj
 
         # Compute the eigenvalues and eigenvectors
-        eigenvalues, eigenvectors = np.linalg.eig(lap)
+        eigenvalues, eigenvectors = numpy.linalg.eig(lap)
         # Get the 2nd smallest eigenvalue
         sort_eigen = sorted(zip(eigenvalues, eigenvectors), key=lambda pair: pair[0])
         if len(sort_eigen) < 2:

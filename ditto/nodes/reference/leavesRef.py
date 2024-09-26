@@ -16,6 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from typing import Set
+
 from ditto.blockdag import TypeAlias, Block, BlockDAG, DAGType
 
 from ditto.nodes.reference import ReferIface
@@ -39,7 +41,7 @@ class LeavesRef(ReferIface):
     def get_virtual_pivot_ref(self, *args, **kwargs) -> TypeAlias.BlockID | None:
         return None
 
-    def get_virtual_common_refs(self, *args, **kwargs) -> set[TypeAlias.BlockID]:
+    def get_virtual_common_refs(self, *args, **kwargs) -> Set[TypeAlias.BlockID]:
         return self.blockdag.leaves_blocks.copy()
 
     def get_virtual_new_height(self, *args, **kwargs) -> TypeAlias.BlockHeight:

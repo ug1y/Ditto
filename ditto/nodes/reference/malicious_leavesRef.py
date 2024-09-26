@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from typing import Deque
+from typing import Deque, Set
 
 from ditto.blockdag import TypeAlias, Block, BlockDAG
 from ditto.nodes.reference import LeavesRef, SelfishHolder
@@ -29,7 +29,7 @@ class MaliciousLeavesRef(LeavesRef, SelfishHolder):
         LeavesRef.__init__(self, miner_name, genesis_block, blockdag)
         SelfishHolder.__init__(self, blocks_queue)
 
-    def get_virtual_common_refs(self, is_malicious: bool = False) -> set[TypeAlias.BlockID]:
+    def get_virtual_common_refs(self, is_malicious: bool = False) -> Set[TypeAlias.BlockID]:
         if not is_malicious:
             return LeavesRef.get_virtual_common_refs(self)
         else:

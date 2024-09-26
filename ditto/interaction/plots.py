@@ -17,8 +17,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import networkx as nx
-from bokeh.models import (GraphRenderer, ColumnDataSource, Circle, MultiLine, StaticLayoutProvider,
-                          Range1d, Rect, Text)
+from bokeh.models import GraphRenderer, ColumnDataSource, StaticLayoutProvider
+from bokeh.models import Circle, MultiLine, Rect, Text, Range1d
 from bokeh.plotting import figure
 
 from ditto.nodes import ConsusIface, StatusType

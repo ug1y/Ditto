@@ -20,7 +20,7 @@ from typing import Set, List
 
 from ditto.blockdag import TypeAlias
 
-from ditto.nodes.consensus import ConsusIface, StatusType
+from ditto.nodes.consensus import ConsusIface
 
 
 # Test for interface, useless.

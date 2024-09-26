@@ -103,20 +103,16 @@ class Miner:
         if consus_class is not None:
             self._consus_handler = consus_class(self._network, self._blockdag)
 
-    def pre_launch(self, genesis_block: Block,
-                   refer_class: type[ReferIface],
-                   network: NetContainer = None,
+    def pre_launch(self, genesis_block: Block, refer_class: type[ReferIface],
                    consus_class: type[ConsusIface] = None):
         """
         Prepare the miner for launch.
         :param genesis_block: Block
         :param refer_class: type[ReferIface]
-        :param network: NetContainer
         :param consus_class: type[ConsusIface]
         """
         self.set_genesis_block(genesis_block)
         self.set_refer_handler(refer_class)
-        self.set_network(network)  # The miner must set network handler before mining new blocks.
         self.set_consus_handler(consus_class)
 
     @property
@@ -243,14 +239,6 @@ class Miner:
 
         # Use the reference handler to select the pref and crefs.
         block = self.create_new_block()
-        # block = Block(bid=self._network.get_next_block_id(),
-        #               btype=BlockType.MINED,
-        #               miner=self._name,
-        #               pref=self.refer_handler.get_virtual_pivot_ref(),
-        #               crefs=self.refer_handler.get_virtual_common_refs(),
-        #               height=self.refer_handler.get_virtual_new_height())
-
-        # TODO: 从交易池中拿交易来构建新区块
 
         if self._logger is not None:
             self._logger.info("%s: Mined a new block %d.", self._name, hash(block))
@@ -308,6 +296,8 @@ class Miner:
         if block is None or block.btype == BlockType.ORPHAN or \
                 block.crefs is None or block.height == 0:
             return False
+
+        # Here to check any necessary conditions.
 
         return True
 

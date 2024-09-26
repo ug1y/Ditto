@@ -18,23 +18,24 @@ limitations under the License.
 """
 import click
 
-from ditto import runs, __version__
+from ditto import runs
 
-banner = """
+__banner__ = """
            __    _    __     __         
       ____/ /   (_)  / /_   / /_   ____ 
      / __  /   / /  / __/  / __/  / __ \\
     / /_/ /   / /  / /_   / /_   / /_/ /
     \__,_/   /_/   \__/   \__/   \____/
 """
-title = "Ditto: A Hybrid BlockDAG Simulation Framework"
+__title__ = "Ditto: A Hybrid BlockDAG Simulation Framework"
+__version__ = '0.7.0'
 
 
-@click.version_option(version=__version__, prog_name=title)
+@click.version_option(version=__version__, prog_name=__title__)
 @click.group()
 def cli():
-    click.echo(f">>> {title} <<<")
-    click.echo(banner)
+    click.echo(f">>> {__title__} <<<")
+    click.echo(__banner__)
 
 
 @cli.command()

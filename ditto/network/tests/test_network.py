@@ -13,9 +13,9 @@ class TestNetwork:
         assert net._total_blockdag.add_block(b1) is True
 
         m1 = Miner(name='testMiner1', blockdag=BlockDAG(), max_peer_num=10)
-        m1.pre_launch(b1, LeavesRef, net, CCC)
+        m1.pre_launch(b1, LeavesRef, CCC)
         m2 = Miner(name='testMiner2', blockdag=BlockDAG(), max_peer_num=10)
-        m2.pre_launch(b1, LeavesRef, net, CCC)
+        m2.pre_launch(b1, LeavesRef, CCC)
 
         net.add_miner(m1)
         net.add_miner(m2)
@@ -32,9 +32,9 @@ class TestNetwork:
         assert net._total_blockdag.add_block(b1) is True
 
         m1 = Miner(name='testMiner1', blockdag=BlockDAG(), max_peer_num=10)
-        m1.pre_launch(b1, LeavesRef, net, CCC)
+        m1.pre_launch(b1, LeavesRef, CCC)
         m2 = Miner(name='testMiner2', blockdag=BlockDAG(), max_peer_num=10)
-        m2.pre_launch(b1, LeavesRef, net, CCC)
+        m2.pre_launch(b1, LeavesRef, CCC)
 
         net.add_miner(m1)
         net.add_miner(m2)
@@ -63,11 +63,11 @@ class TestNetwork:
         assert net._total_blockdag.add_block(b1) is True
 
         m1 = Miner(name='testMiner1', blockdag=BlockDAG(), max_peer_num=10)
-        m1.pre_launch(b1, LeavesRef, net, CCC)
+        m1.pre_launch(b1, LeavesRef, CCC)
         m2 = Miner(name='testMiner2', blockdag=BlockDAG(), max_peer_num=10)
-        m2.pre_launch(b1, LeavesRef, net, CCC)
+        m2.pre_launch(b1, LeavesRef, CCC)
         m3 = Miner(name='testMiner3', blockdag=BlockDAG(), max_peer_num=10)
-        m3.pre_launch(b1, LeavesRef, net, CCC)
+        m3.pre_launch(b1, LeavesRef, CCC)
 
         net.add_miner(m1)
         net.add_miner(m2)

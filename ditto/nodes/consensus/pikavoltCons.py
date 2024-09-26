@@ -16,6 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from typing import Set, List
+
 import networkx as nx
 
 from ditto.blockdag import BlockDAG, TypeAlias
@@ -72,7 +74,7 @@ class PikavoltCons(ConsusIface):
             return 0.0
         return cur_wei / max_wei
 
-    def _binary_clustering(self, bids: set, graph: nx.DiGraph) -> set:
+    def _binary_clustering(self, bids: Set[TypeAlias.BlockID], graph: nx.DiGraph) -> Set[TypeAlias.BlockID]:
         """
         The binary clustering algorithm.
         :param bids: set
@@ -94,7 +96,7 @@ class PikavoltCons(ConsusIface):
         # new_bids.add(frozenset(com1).union(frozenset(com2)))
         return self._binary_clustering(new_bids, graph)
 
-    def _extend_clustering(self, bids: set, graph: nx.DiGraph) -> list:
+    def _extend_clustering(self, bids: Set[TypeAlias.BlockID], graph: nx.DiGraph) -> List[TypeAlias.BlockID]:
         """
         Extend the binary clustering by evaluate the score of clustering.
         :param bids: set
@@ -125,8 +127,8 @@ class PikavoltCons(ConsusIface):
 
         return res
 
-    def _compute_cluster(self, graph: nx.DiGraph, columns: list[set[TypeAlias.BlockID]],
-                         depth: int, height: int) -> (set, list):
+    def _compute_cluster(self, graph: nx.DiGraph, columns: List[Set[TypeAlias.BlockID]],
+                         depth: int, height: int) -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
 
         for i in range(max(0, (height - depth - 1)), (len(columns) - depth + 1)):
             # ... i ... ... ... x ... [i,x] is the slide window.
