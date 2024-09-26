@@ -6,10 +6,10 @@ setup(
     version=__version__,
     author='ug1y',
     author_email='yinhao@icode.pku.edu.cn',
-    description='A hybrid blockDAG simulation framework',
+    description='A Hybrid BlockDAG Simulation Framework',
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
-    # url='https://github.com/ug1y/ditto',
+    url='https://github.com/ug1y/Ditto',
     packages=find_packages(),
     python_requires='>=3.10',
     install_requires=[
@@ -19,13 +19,5 @@ setup(
         'bokeh==3.5.0',
         'click==8.1.7'
     ],
-    extras_require={'test': ['pytest']},
-    classifiers=[
-        'Development Status :: 1 - Planning',
-        'Intended Audience :: science/Research',
-        'Topic :: Software Development :: libraries',
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: OS Independent',
-    ]
+    extras_require={'test': ['pytest']}
 )
