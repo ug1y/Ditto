@@ -18,6 +18,7 @@ limitations under the License.
 """
 from collections import deque
 from typing import Deque
+from simpy import Event
 
 from ditto.nodes import Miner
 from ditto.blockdag import BlockDAG, TypeAlias, Block, BlockType
@@ -26,12 +27,29 @@ from ditto.nodes.consensus import StatusType
 
 
 class Attacker(Miner):
+    """
+    This is a selfish attacker, who holds the malicious blocks in a selfish behavior.
+    """
 
     def __init__(self, name: TypeAlias.MinerName, blockdag: BlockDAG, attack_flag: bool = False):
         super().__init__(name, blockdag)
         self._blocks_to_attack_queue: Deque[Block] = deque()  # Selfish blocks to attack.
         self._attack_flag: bool = attack_flag  # The flag to start the attack.
         self._target_block_id: TypeAlias.BlockID = 0  # The first block when starting the attack.
+
+        self._attack_success_counter: int = 0
+        self._attack_success_event: Event = None
+        self._attack_target_times: int = 0
+
+    def set_attack_event(self, attack_event: Event, attack_target_times: int = 0):
+        self._attack_success_counter = 0
+        self._attack_success_event = attack_event
+        self._attack_target_times = attack_target_times
+
+    def __str__(self):
+        return "Attacker " + str(self._name) + \
+            ", holding " + str(self._blockdag) + \
+            ", having " + str(len(self._blocks_to_attack_queue)) + " blocks to attack."
 
     def __repr__(self):
         return "Attacker(name=" + repr(self._name) + \
@@ -62,14 +80,19 @@ class Attacker(Miner):
         if self.consus_handler is not None:
             if self._target_block_id in self.consus_handler.get_processed_blocks(StatusType.DECIDED):
                 attack_success = True
+                self._attack_success_counter += 1
                 cur_depth = len(self.blockdag.column_blocks) - self.blockdag[self._target_block_id].height
-                print(f"attack success at: {self._target_block_id}, with depth: {cur_depth}")
+                print(f"[{self._attack_success_counter}] The attack success at: "
+                      f"{self._target_block_id}, with depth: {cur_depth}")
 
         if attack_success:
             self._target_block_id = 0
-            # self._attack_flag = False  # Reset the attack flag if you want to attack only once.
+            self._attack_flag = True  # Reset the attack flag if you want to attack only once.
             while self._blocks_to_attack_queue:
                 self.network.broadcast_block(self.name, self._blocks_to_attack_queue.popleft())
+
+            if 0 < self._attack_target_times <= self._attack_success_counter:
+                self._attack_success_event.succeed()
 
     def set_refer_handler(self, refer_class: type[ReferIface]):
         """
@@ -88,9 +111,9 @@ class Attacker(Miner):
         The attacker is a network black hole.
         :param block: Block
         """
-        if block.miner == self._name:
+        if block.miner == self._name:  # Only handle the block from the attacker.
             if self._attack_flag:
-                self.network.add_block(block)  # Add the malicious block to the network.
+                # self.network.add_block(block)  # Add the malicious block to the network.
                 self._blocks_to_attack_queue.append(block)  # Add it to the block queue.
             else:
                 self.network.broadcast_block(self.name, block)  # when not attacking, broadcast it to neighbors.
@@ -119,4 +142,3 @@ class Attacker(Miner):
                      pref=self.refer_handler.get_virtual_pivot_ref(is_malicious=True),
                      crefs=self.refer_handler.get_virtual_common_refs(is_malicious=True),
                      height=self.refer_handler.get_virtual_new_height(is_malicious=True))
-

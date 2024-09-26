@@ -35,7 +35,7 @@ class PikavoltCons(ConsusIface):
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
         self.algo_name = "Pikavolt"
-        self._depth = 6
+        self._depth = 7
         self._col_dec_set = []
         self._col_ord_lst = []
 

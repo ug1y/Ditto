@@ -7,3 +7,4 @@ from ditto.nodes.reference.chainRef import ChainRef
 from ditto.nodes.reference.gossipRef import GossipRef
 
 from ditto.nodes.reference.malicious_chainRef import MaliciousChainRef
+from ditto.nodes.reference.malicious_leavesRef import MaliciousLeavesRef

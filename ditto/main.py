@@ -57,21 +57,98 @@ def cli():
     "--scale",
     type=click.INT,
     default=6,
-    help="Set network scale, default 6.",
+    help="Set network scale (miners), default 6.",
 )
 @click.option(
     "-r",
     "--rate",
-    type=click.INT,
-    default=10,
-    help="Set block creation rate, default 10.",
+    type=click.FLOAT,
+    default=10.0,
+    help="Set miner computing hash rate, default 10.0.",
+)
+@click.option(
+    "-i",
+    "--interval",
+    type=click.FLOAT,
+    default=10.0,
+    help="Set block creation interval, default 10.0.",
 )
 @click.option(
     "-d",
     "--delay",
+    type=click.FLOAT,
+    default=30.0,
+    help="Set propagation delay, default 30.0.",
+)
+@click.option(
+    "-u",
+    "--until",
     type=click.INT,
-    default=30,
-    help="Set propagation delay, default 30.",
+    default=1000,
+    help="Run simulation until time, default 1000.",
+)
+@click.option(
+    "-t",
+    "--times",
+    type=click.INT,
+    default=0,
+    help="Set attack times, default 0 means never stop",
+)
+@click.option(
+    "-p",
+    "--power",
+    type=click.FLOAT,
+    default=0.3,
+    help="Set computing power ratio of the attacker, default 0.3.",
+)
+def attk(net_template, cons_method, scale, rate, interval, delay, until, times, power):
+    """Run a simulation in the attack mode."""
+    click.echo(f"Simulation will run until '{until}' sim times or attack until {times} times.")
+    runs.run_with_attack(net_template, cons_method, scale, rate, interval, delay, until, times, power)
+
+
+@cli.command()
+@click.option(
+    "-n",
+    "--net_template",
+    type=click.Choice(['PeerNet', 'FullNet', 'RingNet', 'StarNet', 'TreeNet']),
+    default="PeerNet",
+    help="Specify network template, default PeerNet.",
+)
+@click.option(
+    "-c",
+    "--cons_method",
+    type=click.Choice(['Nakamoto', 'Phantom', 'ULBlockDAG', 'Pikavolt']),
+    default="Nakamoto",
+    help="Choose consensus method, default Nakamoto.",
+)
+@click.option(
+    "-s",
+    "--scale",
+    type=click.INT,
+    default=6,
+    help="Set network scale (miners), default 6.",
+)
+@click.option(
+    "-r",
+    "--rate",
+    type=click.FLOAT,
+    default=10.0,
+    help="Set miner computing hash rate, default 10.0.",
+)
+@click.option(
+    "-i",
+    "--interval",
+    type=click.FLOAT,
+    default=10.0,
+    help="Set block creation interval, default 10.0.",
+)
+@click.option(
+    "-d",
+    "--delay",
+    type=click.FLOAT,
+    default=30.0,
+    help="Set propagation delay, default 30.0.",
 )
 @click.option(
     "-u",
@@ -80,12 +157,10 @@ def cli():
     default=100,
     help="Run simulation until time, default 100.",
 )
-def simu(net_template, cons_method, scale, rate, delay, until):
+def simu(net_template, cons_method, scale, rate, interval, delay, until):
     """ Run a simulation with the given parameters. """
-    # click.echo(f"Run simulation with the following parameters:")
-    # click.echo(f"(Network='{net}', Consensus='{cons}', Scale='{scale}', Rate='{rate}', Delay='{delay}')")
     click.echo(f"Simulation will run until '{until}' sim times.")
-    runs.run_simulation(until, net_template, cons_method, scale, rate, delay)
+    runs.run_simulation(net_template, cons_method, scale, rate, interval, delay, until)
 
 
 @cli.command()

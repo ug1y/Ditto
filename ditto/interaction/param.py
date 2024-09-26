@@ -35,18 +35,18 @@ class ConsoleHandler(logging.Handler):
 class ParamsConfig:
     file_name: str
     file_path: str
-    miner_num: int
-    block_rate: float
-    prop_delay: float
+    miner_number: int
+    block_interval: float
+    propagation_delay: float
 
 
 SystemRef = {
     'Nakamoto': ParamsConfig(file_name='2008_Bitcoin', file_path='interaction/static/papers/2008_Bitcoin.pdf',
-                            miner_num=6, block_rate=10.0, prop_delay=10.0),
+                             miner_number=6, block_interval=10.0, propagation_delay=10.0),
     'Phantom': ParamsConfig(file_name='2021_Phantom', file_path='interaction/static/papers/2021_Phantom.pdf',
-                            miner_num=6, block_rate=10.0, prop_delay=30.0),
+                            miner_number=6, block_interval=10.0, propagation_delay=30.0),
     'ULBlockDAG': ParamsConfig(file_name='2020_ULBlockDAG', file_path='interaction/static/papers/2020_ULBlockDAG.pdf',
-                               miner_num=6, block_rate=10.0, prop_delay=30.0),
+                               miner_number=6, block_interval=10.0, propagation_delay=30.0),
     'Pikavolt': ParamsConfig(file_name='2024_Pikavolt', file_path='interaction/static/papers/2024_Pikavolt.htm',
-                             miner_num=6, block_rate=10.0, prop_delay=30.0),
+                             miner_number=6, block_interval=10.0, propagation_delay=30.0),
 }

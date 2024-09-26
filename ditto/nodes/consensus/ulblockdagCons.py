@@ -35,7 +35,7 @@ class ULBlockDAGCons(ConsusIface):
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
         self.algo_name = "ULBlockDAG"
-        self._k = 6
+        self._k = 7  # Also the depth of applying the consensus.
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
         return self._find_list_order(self.blockdag.graph(), self.blockdag.column_blocks, self._k)
@@ -76,7 +76,7 @@ class ULBlockDAGCons(ConsusIface):
         # However, the example figure seems to be different from the algorithm.
         # It is so wired.
         i, x = 0, 0
-        blue_list = set(columns[0])
+        blue_set = set(columns[0])
         ord_list = list(columns[0])
         while i < len(columns):
             i = i + 1
@@ -94,10 +94,10 @@ class ULBlockDAGCons(ConsusIface):
             c1, c2 = self._find_clusters(g)
 
             if x > 0:
-                blue_list.update(c1 & columns[x])
+                blue_set.update(c1 & columns[x])
                 ord_list.extend(sorted(columns[x]))
 
-        return blue_list, ord_list
+        return blue_set, ord_list
 
     def _find_list_order_by_figure(self, graph: nx.DiGraph, columns: List[Set[TypeAlias.BlockID]], k: int) \
             -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
@@ -110,10 +110,10 @@ class ULBlockDAGCons(ConsusIface):
         # Find the clusters
         c1, c2 = self._find_clusters(graph)
 
-        blue_list = c1 & nodes_c
+        blue_set = c1 & nodes_c
         ord_list = [n for c in columns[:x + 1] for n in sorted(c)]
 
-        return blue_list, ord_list
+        return blue_set, ord_list
 
 
 if __name__ == '__main__':

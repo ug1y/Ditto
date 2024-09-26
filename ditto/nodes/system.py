@@ -22,7 +22,7 @@ from ditto.blockdag import DAGType
 
 from ditto.nodes.reference import ReferIface, ChainRef, LeavesRef, GossipRef
 from ditto.nodes.consensus import ConsusIface, NakamotoCons, PhantomCons, ULBlockDAGCons, PikavoltCons
-from ditto.nodes.reference import MaliciousChainRef
+from ditto.nodes.reference import MaliciousChainRef, MaliciousLeavesRef
 
 
 @dataclass
@@ -38,8 +38,8 @@ class SystemParams:
 
 Systems = {
     'Nakamoto': SystemParams(DAGType.CONVERGENCE, ChainRef, NakamotoCons, MaliciousChainRef),
-    'Phantom': SystemParams(DAGType.DIVERGENCE, LeavesRef, PhantomCons),
-    'ULBlockDAG': SystemParams(DAGType.DIVERGENCE, LeavesRef, ULBlockDAGCons),
-    'Pikavolt': SystemParams(DAGType.DIVERGENCE, LeavesRef, PikavoltCons),
+    'Phantom': SystemParams(DAGType.DIVERGENCE, LeavesRef, PhantomCons, MaliciousLeavesRef),
+    'ULBlockDAG': SystemParams(DAGType.DIVERGENCE, LeavesRef, ULBlockDAGCons, MaliciousLeavesRef),
+    'Pikavolt': SystemParams(DAGType.DIVERGENCE, LeavesRef, PikavoltCons, MaliciousLeavesRef),
     'Hashgraph': SystemParams(DAGType.PARALLEL, GossipRef, None),
 }

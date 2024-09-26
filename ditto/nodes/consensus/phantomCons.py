@@ -38,7 +38,7 @@ class PhantomCons(ConsusIface):
         self._blue_set = {}
         self._ordered_list = {}
 
-        self._depth = 6  # to compare with other schemes, set a depth to trigger consensus.
+        self._depth = 7  # to compare with other schemes, set a depth to trigger consensus.
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
 
@@ -51,10 +51,14 @@ class PhantomCons(ConsusIface):
             return set(), list()
 
         h = len(columns) - depth
-        nodes_h = {n for c in columns[:h+1] for n in c}
-        g = graph.subgraph(nodes_h)
+        nodes_h = {n for c in columns[:h+1] for n in c}  # This set meet the confirmation depth.
+        # g = graph.subgraph(nodes_h)
+        s, l = self._order_dag(graph, k)
 
-        return self._order_dag(g, k)
+        cs = nodes_h & s
+        cl = [b for b in l if b in nodes_h]
+
+        return cs, cl
 
     def _order_dag(self, graph: nx.DiGraph, k: int) -> (Set[TypeAlias.BlockID], List[TypeAlias.BlockID]):
         if len(graph) == 1:

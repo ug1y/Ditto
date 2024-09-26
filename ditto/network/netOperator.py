@@ -41,10 +41,10 @@ class NetOperator(NetContainer):
 
     def __init__(self, total_blockdag: BlockDAG,
                  propagation_delay_parameter: float = 30.0,
-                 block_creation_rate: float = 60.0):
+                 block_creation_interval: float = 60.0):
         super().__init__(propagation_delay_parameter)
 
-        self._block_creation_rate = block_creation_rate  # The block creation rate of the network.
+        self._block_creation_interval = block_creation_interval  # The block creation interval of the network.
         self._total_blockdag = total_blockdag  # The total blockDAG of the network.
         self._simulator: NetSimulation = None  # The simulator to simulate network delay.
 
@@ -63,12 +63,12 @@ class NetOperator(NetContainer):
             ", total_blockdag= " + repr(self._total_blockdag) + ")"
 
     @property
-    def block_creation_rate(self) -> float:
+    def block_creation_interval(self) -> float:
         """
-        Get the block creation rate of the network.
+        Get the block creation inteval of the network.
         :return: float
         """
-        return self._block_creation_rate
+        return self._block_creation_interval
 
     @property
     def total_blockdag(self) -> BlockDAG:
@@ -113,7 +113,7 @@ class NetOperator(NetContainer):
         self.network_graph.nodes[miner_name][NetOperator.HASH_RATE_KEY] = hash_rate
         # miner.set_network(self)  # The miner set network handler in the `pre_launch` method.
         if self._logger is not None:
-            self._logger.info("%s: Add miner %s with hash rate " + str(hash_rate),
+            self._logger.info("%s: Add miner %s with hash rate " + str(self.get_miner_hash_rate(miner_name)),
                               self.FOR_LOG_NAME, str(miner_name))
 
     def del_miner(self, miner_name: TypeAlias.MinerName):

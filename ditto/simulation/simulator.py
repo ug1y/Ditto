@@ -39,14 +39,13 @@ class Simulator(NetSimulation):
 
     FOR_LOG_NAME = "simulator"
 
-    def __init__(self, network: NetOperator, factor: float = 0):
+    def __init__(self, network: NetOperator, by_hash_rate: bool = True):
         """
         Initialize the simulator and network environment.
         """
-        self._env = sp.RealtimeEnvironment(factor=factor, strict=False) \
-            if factor > 0 else sp.Environment()
+        self._env = sp.Environment()
         self._network = network
-        self._factor = factor  # The factor to adjust the simulation speed.
+        self._by_hash_rate = by_hash_rate  # Randomly select a miner by hash rate or not.
 
         self._logger: logging.Logger = None  # Logger for this class.
 
@@ -67,24 +66,23 @@ class Simulator(NetSimulation):
         return self._network
 
     @property
-    def now(self) -> SimTime:
+    def env(self) -> sp.Environment:
         """
-        Get the current simulation time.
+        Get the simpy environment.
         """
-        return self._env.now
+        return self._env
 
     def _network_process(self):
         """
         Running the network, generating blocks at a poisson rate.
         """
         while True:
-            miner = self._network.get_random_miner(True)
+            miner = self._network.get_random_miner(by_hash_rate=self._by_hash_rate)
             start = time.time()
             block = miner.mine_block()
-            block.data = self.now
+            block.data = self.env.now
             end = time.time()
-            next_mining_wait = np.random.poisson(self._network.block_creation_rate) * \
-                               (self._factor if self._factor > 0 else 1)
+            next_mining_wait = np.random.poisson(self._network.block_creation_interval)
 
             # print("current time: %3.f , next wait: %2.f, mining: %s" % (self._env.now, next_mining_wait, block))
             if self._logger is not None:
@@ -95,7 +93,7 @@ class Simulator(NetSimulation):
     def _counter_process(self):
         while True:
             self._counter += 1
-            next_counting_wait = 1 * (self._factor if self._factor > 0 else 1)
+            next_counting_wait = 1
             print(self._env.now, self._counter)
             yield self._env.timeout(next_counting_wait)
 

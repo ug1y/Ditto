@@ -18,7 +18,7 @@ limitations under the License.
 """
 import logging
 
-import numpy as np
+import numpy
 
 from ditto.nodes import Miner, SystemParams
 from ditto.blockdag import BlockDAG, DAGType
@@ -26,17 +26,87 @@ from ditto.blockdag import BlockDAG, DAGType
 from ditto.network.netOperator import NetOperator
 
 
+def PeerNet(net: NetOperator) -> NetOperator:
+    """Peer to peer network in which the number of neighbors is one-third of network scale."""
+    for miner in net:
+        net[miner].max_peer_num = int(len(net) / 3 + 1)
+        net[miner].discover_peer()
+
+    return net
+
+
+def FullNet(net: NetOperator) -> NetOperator:
+    """Full connected network in which the miners are all connected to each other."""
+    for miner in net:
+        net[miner].max_peer_num = 0
+        net[miner].discover_peer()
+
+    return net
+
+
+def RingNet(net: NetOperator) -> NetOperator:
+    """Ring network in which the miners connecting from start to end."""
+    miners = list(net)
+    net[miners[0]].connect_peer(miners[-1])
+    for i in range(1, len(miners)):
+        # net[miners[i]].max_peer_num = 2
+        net[miners[i]].connect_peer(miners[i - 1])
+
+    return net
+
+
+def StarNet(net: NetOperator) -> NetOperator:
+    """Star network in which the miners are all connected to the first miner."""
+    miners = list(net)
+    for i in range(1, len(miners)):
+        net[miners[i]].connect_peer(miners[0])
+
+    return net
+
+
+def TreeNet(net: NetOperator) -> NetOperator:
+    """Tree network in which the miners are connected to form a binary tree."""
+    miners = list(net)
+    q = [miners[0]]
+    b = 2
+
+    for i in range(1, len(miners)):
+        miner = q[0]
+        net[miner].connect_peer(miners[i])
+        q.append(miners[i])
+        b -= 1
+        if b == 0:
+            q.pop(0)
+            b = 2
+
+    return net
+
+
 class NetFactory:
+    NetTemplates = {
+        'PeerNet': PeerNet,
+        'FullNet': FullNet,
+        'RingNet': RingNet,
+        'StarNet': StarNet,
+        'TreeNet': TreeNet
+    }
+
     def __init__(self, logger: logging.Logger = None):
         self._logger = logger
 
-    def _basic_net_init(self, system_params: SystemParams, number_of_miners: int,
-                        block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
+    def select_template(self, net_name, *args, **kwargs) -> NetOperator:
+        if net_name in self.NetTemplates.keys():
+            return self.NetTemplates[net_name](self._basic_net_init(*args, **kwargs))
+        else:
+            raise AttributeError('NetTemplates %s not found' % net_name)
+
+    def _basic_net_init(self, system_params: SystemParams, number_of_miners: int, computing_hash_rate: float,
+                        block_creation_interval: float, propagation_delay_parameter: float) -> NetOperator:
         """Initialize the basic network."""
         dag_for_net = BlockDAG(system_params.dag_type)
         dag_for_net.set_logger(self._logger)
 
-        net = NetOperator(dag_for_net, propagation_delay_parameter, block_creation_rate)
+        net = NetOperator(dag_for_net, propagation_delay_parameter, block_creation_interval)
         net.set_logger(self._logger)
         net.set_consus_handler(system_params.consus_algo)
 
@@ -58,102 +128,6 @@ class NetFactory:
                 genesis_blocks[c].miner = miner.name  # parallel blockdag record miner name in genesis blocks.
 
             miner.pre_launch(genesis_blocks[c], system_params.refer_rule, net, system_params.consus_algo)
-            net.add_miner(miner)
+            net.add_miner(miner, numpy.random.poisson(computing_hash_rate))
 
         return net
-
-    def PeerNet(self, system_params: SystemParams, number_of_miners: int,
-                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-        """Peer to peer network in which the number of neighbors is one-third of network scale."""
-        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-
-        for miner in net:
-            net[miner].max_peer_num = int(number_of_miners / 3 + 1)
-            net[miner].discover_peer()
-
-        return net
-
-    def FullNet(self, system_params: SystemParams, number_of_miners: int,
-                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-        """Full connected network in which the miners are all connected to each other."""
-        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-
-        for miner in net:
-            net[miner].max_peer_num = 0
-            net[miner].discover_peer()
-
-        return net
-
-    def RingNet(self, system_params: SystemParams, number_of_miners: int,
-                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-        """Ring network in which the miners connecting from start to end."""
-        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-
-        miners = list(net)
-        net[miners[0]].connect_peer(miners[-1])
-        for i in range(1, len(miners)):
-            # net[miners[i]].max_peer_num = 2
-            net[miners[i]].connect_peer(miners[i - 1])
-
-        return net
-
-    # def RandomNet(self, system_params: SystemParams, number_of_miners: int,
-    #               block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-    #     """Random network in which the miners are connected to random numbers of miners."""
-    #     net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-    #
-    #     for miner in net:
-    #         net[miner].max_peer_num = np.random.randint(low=1, high=number_of_miners)
-    #         net[miner].discover_peer()
-    #
-    #     return net
-
-    def StarNet(self, system_params: SystemParams, number_of_miners: int,
-                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-        """Star network in which the miners are all connected to the first miner."""
-        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-
-        miners = list(net)
-        for i in range(1, len(miners)):
-            net[miners[i]].connect_peer(miners[0])
-
-        return net
-
-    # def LineNet(self, system_params: SystemParams, number_of_miners: int,
-    #             block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-    #     """ Line network in which the miners are connected to the previous miner in a line."""
-    #     net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-    #
-    #     miners = list(net)
-    #     for i in range(1, len(miners)):
-    #         net[miners[i]].connect_peer(miners[i - 1])
-    #
-    #     return net
-
-    def TreeNet(self, system_params: SystemParams, number_of_miners: int,
-                block_creation_rate: float, propagation_delay_parameter: float) -> NetOperator:
-        """Tree network in which the miners are connected to form a binary tree."""
-        net = self._basic_net_init(system_params, number_of_miners, block_creation_rate, propagation_delay_parameter)
-
-        miners = list(net)
-        q = [miners[0]]
-        b = 2
-
-        for i in range(1, len(miners)):
-            miner = q[0]
-            net[miner].connect_peer(miners[i])
-            q.append(miners[i])
-            b -= 1
-            if b == 0:
-                q.pop(0)
-                b = 2
-
-        return net
-
-
-def SelectNetTemplate(factory: NetFactory, net_name, *args, **kwargs) -> NetOperator:
-    net_to_use = getattr(factory, net_name)
-    if callable(net_to_use):
-        return net_to_use(*args, **kwargs)
-    else:
-        raise AttributeError('NetFactory attribute %s not found' % net_name)

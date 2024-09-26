@@ -27,14 +27,5 @@ from ditto.nodes.consensus import ConsusIface, StatusType
 
 class CCC(ConsusIface):
 
-    def execute_consensus(self):
-        pass
-
-    def block_status(self, bid) -> StatusType:
-        pass
-
-    def get_processed_blocks(self, status: StatusType = None) -> Set[TypeAlias.BlockID]:
-        pass
-
-    def sort_finished_blocks(self, status: StatusType = None) -> List[TypeAlias.BlockID]:
+    def execute_consensus(self, bid: TypeAlias.BlockID):
         pass

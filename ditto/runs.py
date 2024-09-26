@@ -18,11 +18,12 @@ limitations under the License.
 """
 import logging
 import os
+import simpy
 
 from ditto import config
 from ditto.blockdag import BlockDAG
-from ditto.network import NetFactory, SelectNetTemplate
-from ditto.nodes import Systems, Miner, Attacker, StatusType
+from ditto.network import NetFactory
+from ditto.nodes import Systems, Attacker
 from ditto.simulation import StatsRecorder, Simulator
 
 
@@ -32,46 +33,42 @@ def run_server(port: int = 5006):
     os.system('bokeh serve --show ' + os.path.join('ditto', 'interaction') + ' --port ' + str(port))
 
 
-def run_simulation(until: int = 100, net_template: str = 'PeerNet', cons_method: str = 'Nakamoto',
-                   scale: int = 6, rate: float = 10.0, delay: float = 30.0):
+def run_simulation(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto',
+                   scale: int = 6, rate: float = 10.0,
+                   interval: float = 10.0, delay: float = 30.0,
+                   until: int = 100):
     mylogger = config.create_logger(log_level=logging.WARNING)
     factory = NetFactory(mylogger)
-    net = SelectNetTemplate(factory, net_name=net_template, system_params=Systems[cons_method], number_of_miners=scale,
-                            block_creation_rate=rate, propagation_delay_parameter=delay)
+    net = factory.select_template(net_name=net_template, system_params=Systems[cons_method],
+                                  number_of_miners=scale, computing_hash_rate=rate,
+                                  block_creation_interval=interval, propagation_delay_parameter=delay)
 
     sim = Simulator(net)
     sim.set_logger(mylogger)
     sim.run(until)
-
-    print("Simulation Done!\n")
-    # print(f"The simulation parameters: (Network='{net_template}', Consensus='{cons_method}', "
-    #       f"Scale='{scale}', Rate='{rate}', Delay='{delay}')")
-    print("Total blockDAG:", repr(net.total_blockdag))
-
-    # if net.consus_handler is not None:
-    #     print("The consensus blocks set:", net.consus_handler.get_processed_blocks(StatusType.DECIDED))
-    #     print("The finished blocks sorted:", net.consus_handler.sort_finished_blocks())
-    #     print("The consensus change logs:", net.consus_handler.consus_logs)
+    print(f"Simulation Done at {sim.env.now}!\n")
+    # print("Total blockDAG:", repr(net.total_blockdag))
 
     if net.consus_handler is not None:
         srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
-        print("\nStatistical Records:")
-        print("[Consensus Algorithm]", srd.get_consus_algo_name())
-        print("[Network Scale]", srd.get_network_scale())
-        print("[Block Creation Rate]", srd.get_block_creation_rate())
-        print("[Block Propagation Delay]", srd.get_block_propagation_delay_())
 
-        print("The simulated throughput: ", srd.compute_throughput())
-        print("The simulated latency: ", srd.compute_latency())
-        print("The simulated change distribution: ", srd.compute_change_dist())
+        print("===== Simulation Information =====")
+        srd.output_info()
+
+        print("===== Statistical Records =====")
+        srd.output_stats()
 
 
-def run_with_attack():
+def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto',
+                    scale: int = 6, rate: float = 10.0,
+                    interval: float = 10.0, delay: float = 30.0,
+                    until: int = 100, times: int = 0, power: float = 0.3):
     mylogger = config.create_logger(log_level=logging.WARNING)
     factory = NetFactory(mylogger)
-    params = Systems["Nakamoto"]
-    net = SelectNetTemplate(factory, net_name="PeerNet", system_params=params, number_of_miners=5,
-                            block_creation_rate=10, propagation_delay_parameter=10)
+    params = Systems[cons_method]
+    net = factory.select_template(net_name=net_template, system_params=params,
+                                  number_of_miners=scale - 1, computing_hash_rate=rate,
+                                  block_creation_interval=interval, propagation_delay_parameter=delay)
 
     dag_for_attacker = BlockDAG(params.dag_type)
     dag_for_attacker.set_logger(mylogger)
@@ -79,37 +76,38 @@ def run_with_attack():
     attacker.set_logger(mylogger)
 
     attacker.pre_launch(list(net.genesis_blocks)[0], params.malicious_ref, net, params.consus_algo)
-    net.add_miner(attacker, 30.0)
+    malicious_rate = sum([net.get_miner_hash_rate(m) for m in net]) * power / (1 - power)
+    net.add_miner(attacker, malicious_rate)
 
+    # Add attacker to the network.
+    attack_delay = 0.0
     for m in net:
         if m != attacker.name:
-            net[m].connect_peer(attacker.name, 0.0)
-
-    # print([(m, net.get_miner_hash_rate(m)) for m in net])
-    # print([(e[0], e[1], net.get_connect_delay_time(e)) for e in net.network_graph.edges])
+            net[m].connect_peer(attacker.name, attack_delay)
 
     sim = Simulator(net)
     sim.set_logger(mylogger)
-    sim.run(500)
+    # Set attack event to the simulation.
+    attack_event = sim.env.event()
+    attacker.set_attack_event(attack_event, times)
+    sim.run(until=simpy.events.AnyOf(sim.env, [attack_event, sim.env.timeout(until)]))
+    print(f"Simulation Done at {sim.env.now}!\n")
+    # print("Total blockDAG:", repr(net.total_blockdag))
 
     if net.consus_handler is not None:
         srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
-        print("\nStatistical Records:")
-        print("[Consensus Algorithm]", srd.get_consus_algo_name())
-        print("[Network Scale]", srd.get_network_scale())
-        print("[Block Creation Rate]", srd.get_block_creation_rate())
-        print("[Block Propagation Delay]", srd.get_block_propagation_delay_())
 
-        print("The simulated throughput: ", srd.compute_throughput())
-        print("The simulated latency: ", srd.compute_latency())
-        print("The simulated change distribution: ", srd.compute_change_dist())
+        print("===== Attacker Capabilities =====")
+        print("Malicious Miner Number:", 1)
+        print("Malicious Network Delay:", attack_delay)
+        print("Malicious Power Ratio:", power)
+        print()
 
-        print("The consensus blocks set:", net.consus_handler.get_processed_blocks(StatusType.DECIDED))
+        print("===== Simulation Information =====")
+        srd.output_info()
 
-    print()
-    print(repr(attacker))
-    print(repr(net["Miner1"]))
-    print(repr(net.total_blockdag))
+        print("===== Statistical Records =====")
+        srd.output_stats()
 
 
 if __name__ == '__main__':
