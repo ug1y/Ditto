@@ -1,44 +1,76 @@
 # Ditto
 
-一个图区块链系统的模拟仿真框架，通过交互式可视化界面展示区块图生成过程、共识算法执行结果，模拟多种网络攻击。项目取名为宝可梦动漫里的百变怪，寓意该框架具备变身技能，可模仿任意图区块链系统。
+A hybrid blockDAG simulation framework, where the blockDAG is the directed acyclic graph-based (DAG-based) 
+blockchain. This framework can interactively display the blockDAG generation, consensus protocol execution, 
+and byzantine attack effect. The project is named `Ditto`, a role in the Pokémon comic, implying that the 
+framework can simulate various DAG-based blockchain systems.
 
 
-## 项目目标
+### Targets
 
-以开源项目[Phantom](https://github.com/AvivYaish/PHANTOM.git)为基础，扩展其模拟框架的功能和内容：
-1. 能模拟分散型（朴素）、平行型、收敛型（主链）三种类型的图区块链。
-2. 能配置矿工行为，将收敛型图区块链退化成最长链模式，以模拟单链结构的区块链。【当前版本完成了比特币系统的模拟】
-3. 能模拟多种网络攻击，包括自私挖矿攻击（selfish mining attack）、日蚀攻击（eclipse attack）。
-4. 能设定区块包含的特殊交易，如重复交易（repeated transaction）、冲突交易（conflicted transaction）。
-5. 能控制区块生成速率，且按高度或深度组织区块，友好地交互式可视化。【当前版本已完成】
-
-
-## 项目依赖
-
-项目采用 python>=3.10 编程语言，依赖如下重要的库。
-- networkx==3.3.0  # 复杂网络分析库
-- numpy==1.26.0  # 用于计算泊松分布的数学库
-- simpy==4.1.0  # 基于过程的离散事件仿真框架
-- bokeh==3.5.0  # 面向浏览器的交互式可视化库
-- pytest  # python语言的测试框架
+Inspired by the open-source projects [PHANTOM](https://github.com/AvivYaish/PHANTOM.git) and 
+[py-swirld](https://github.com/Lapin0t/py-swirld.git) , our project expands the blockDAG simulation framework, 
+including the following functionalities:
+1. Can simulate divergence, parallel, and convergence types blockDAG
+2. Can configure the miner's behaviors, let the convergence type blockDAG degenerate into the single chain structure 
+   of Nakamoto consensus (i.e. simulate Bitcoin system)
+3. Can simulate various byzantine attacks against blockDAG, including selfish attacks, eclipse attacks
+4. Can set special transactions in blocks, such as repeated transactions, conflicted transactions, and current version leave empty
+5. Can control block generation speed, organize blocks by height, and friendly interactive visualization
 
 
-## 项目使用
+### Dependencies
 
-- 测试
+The project supports `python>=3.10` programming language, and depends on the following libraries:
+- networkx==3.3.0  # complex network analysis library
+- numpy==1.26.0  # mathematical library for computing Poisson distribution
+- simpy==4.1.0  # discrete event simulation framework library based on processes
+- bokeh==3.5.0  # interactive visualization library for browser
+- click==8.1.7  # interactive command line interface library
 
-安装测试所需的依赖包，执行项目批量测试。
+
+### Installation
+
+Clone the repository and execute the following commands to install the project.
 ```shell
-cd Ditto
-pip install .[test]
-python -m pytest
-```
-
-- 运行 
-
-安装运行所需的依赖包，执行项目入口方法。参数`simu`直接运行系统模拟，后可接模拟器执行的步数；参数`serv`则弹出浏览器显示可视化界面，后可接绑定的端口号。
-```shell
+git clone https://github.com/ug1y/Ditto.git
 cd Ditto
 pip install .
-python -m ditto.main [args]
+```
+
+If you want to develop based on the current project, install it in the following way.
+```shell
+git clone https://github.com/ug1y/Ditto.git
+cd Ditto
+pip install -e .
+```
+
+
+### Usage
+
+The entrance method is `ditto.main`, option `--help` for more details, and option `--version` for version information.
+```shell
+python -m ditto.main --help
+python -m ditto.main --version
+```
+
+The project has three run modes, use `--help` to show parameters descriptions.
+
+1. Run a simulation with the given parameters:
+```shell
+python -m ditto.main simu -n [net_template] -c [cons_method] \
+                     -s [scale] -r [rate] -i [interval] -d [delay] \
+                     -u [until] 
+```
+
+2. Run a bokeh server with the given port:
+```shell
+python -m ditto.main serv -p [port]
+```
+
+3. Run a simulation in the attack mode:
+```shell
+python -m ditto.main attk -n [net_template] -c [cons_method] \
+                     -s [scale] -r [rate] -i [interval] -d [delay] \
+                     -u [until] -t [times] -p [power]
 ```
