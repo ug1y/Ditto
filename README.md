@@ -59,8 +59,8 @@ The project has three run modes, use `--help` to show parameters descriptions.
 1. Run a simulation with the given parameters:
 ```shell
 python -m ditto.main simu -n [net_template] -c [cons_method] \
-                     -s [scale] -r [rate] -i [interval] -d [delay] \
-                     -u [until] 
+                          -s [scale] -r [rate] -i [interval] -d [delay] \
+                          -u [until] 
 ```
 
 2. Run a bokeh server with the given port:
@@ -71,6 +71,6 @@ python -m ditto.main serv -p [port]
 3. Run a simulation in the attack mode:
 ```shell
 python -m ditto.main attk -n [net_template] -c [cons_method] \
-                     -s [scale] -r [rate] -i [interval] -d [delay] \
-                     -u [until] -t [times] -p [power]
+                          -s [scale] -r [rate] -i [interval] -d [delay] \
+                          -u [until] -t [times] -p [power]
 ```
