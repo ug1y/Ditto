@@ -57,8 +57,8 @@ python -m ditto.main --version
 1. 给定参数运行一次模拟：
 ```shell
 python -m ditto.main simu -n [net_template] -c [cons_method] \
-                     -s [scale] -r [rate] -i [interval] -d [delay] \
-                     -u [until] 
+                          -s [scale] -r [rate] -i [interval] -d [delay] \
+                          -u [until] 
 ```
 
 2. 指定端口运行bokeh服务器：
@@ -69,6 +69,6 @@ python -m ditto.main serv -p [port]
 3. 在模拟中运行拜占庭攻击模式：
 ```shell
 python -m ditto.main attk -n [net_template] -c [cons_method] \
-                     -s [scale] -r [rate] -i [interval] -d [delay] \
-                     -u [until] -t [times] -p [power]
+                          -s [scale] -r [rate] -i [interval] -d [delay] \
+                          -u [until] -t [times] -p [power]
 ```
