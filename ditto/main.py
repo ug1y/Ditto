@@ -28,7 +28,7 @@ __banner__ = """
     \__,_/   /_/   \__/   \__/   \____/
 """
 __title__ = "Ditto: A Hybrid BlockDAG Simulation Framework"
-__version__ = '0.7.0'
+__version__ = '0.7.1'
 
 
 @click.version_option(version=__version__, prog_name=__title__)

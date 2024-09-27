@@ -74,13 +74,16 @@
                     <hr style="background-color: grey; height: 2px; margin-top: 12px; margin-bottom: 24px">
 
                     <div class="columns is-vcentered is-mobile">
-                        <div class="column is-4" style="padding: 0px">
+                        <div class="column is-3" style="padding: 0px">
                             {{ embed(roots.number) }}
                         </div>
-                        <div class="column is-4" style="padding: 0px">
+                        <div class="column is-3" style="padding: 0px">
+                            {{ embed(roots.rate) }}
+                        </div>
+                        <div class="column is-3" style="padding: 0px">
                             {{ embed(roots.interval) }}
                         </div>
-                        <div class="column is-4" style="padding: 0px">
+                        <div class="column is-3" style="padding: 0px">
                             {{ embed(roots.delay) }}
                         </div>
                     </div>
@@ -119,7 +122,8 @@
 
 <footer class="footer" style="padding: 24px">
     <div class="content has-text-centered">
-        <p><strong>Ditto</strong> v{{ version }} project is powered by <a href="https://github.com/ug1y">ug1y</a>.</p>
+        <p><strong>Ditto</strong> v{{ version }} project is powered by
+            <a href="https://github.com/ug1y/Ditto">ug1y</a>.</p>
     </div>
 </footer>
 

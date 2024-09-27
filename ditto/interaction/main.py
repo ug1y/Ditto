@@ -76,7 +76,10 @@ class PlottingApp:
         self.num_input = NumericInput(name="number", title="Network Scale", height=50,
                                       low=1, high=100, sizing_mode='stretch_width')
 
-        self.interval_input = NumericInput(name="interval", title="Block Creation Interval", height=50,
+        self.rate_input = NumericInput(name="rate", title="Hash Rate", height=50,
+                                       low=0, mode="float", sizing_mode='stretch_width')
+
+        self.interval_input = NumericInput(name="interval", title="Block Interval", height=50,
                                            low=0, mode="float", sizing_mode='stretch_width')
 
         self.delay_input = NumericInput(name="delay", title="Propagation Delay", height=50,
@@ -128,6 +131,7 @@ class PlottingApp:
         self.link_div.text = ("<p>View the paper: <a href='" + params.file_path +
                               "' target='_blank'>" + params.file_name + "</a><p>")
         self.num_input.value = params.miner_number
+        self.rate_input.value = params.hash_rate
         self.interval_input.value = params.block_interval
         self.delay_input.value = params.propagation_delay
 
@@ -137,6 +141,7 @@ class PlottingApp:
             self.run_toggle.button_type = "danger"
             self.sys_select.disabled = True
             self.num_input.disabled = True
+            self.rate_input.disabled = True
             self.interval_input.disabled = True
             self.delay_input.disabled = True
             self.net_select.disabled = True
@@ -149,6 +154,7 @@ class PlottingApp:
             self.run_toggle.button_type = "success"
             self.sys_select.disabled = False
             self.num_input.disabled = False
+            self.rate_input.disabled = False
             self.interval_input.disabled = False
             self.delay_input.disabled = False
             self.net_select.disabled = False
@@ -158,7 +164,7 @@ class PlottingApp:
             print("Pause the simulation...")
 
     def gen_click_event(self):
-        if self.sys_select.value == "" or self.num_input.value is None or \
+        if self.sys_select.value == "" or self.num_input.value is None or self.rate_input.value is None or \
                 self.interval_input is None or self.delay_input is None:
             print("system:", self.sys_select.value, "number:", self.num_input.value)
             return
@@ -171,7 +177,8 @@ class PlottingApp:
         factory = NetFactory(mylogger)
         system_params = Systems[self.sys_select.value]
         self.network = factory.select_template(net_name=self.net_select.value, system_params=system_params,
-                                               number_of_miners=self.num_input.value, computing_hash_rate=10.0,
+                                               number_of_miners=self.num_input.value,
+                                               computing_hash_rate=self.rate_input.value,
                                                block_creation_interval=self.interval_input.value,
                                                propagation_delay_parameter=self.delay_input.value)
         self.simulator = Simulator(self.network)
@@ -198,6 +205,7 @@ class PlottingApp:
         doc.add_root(self.sys_select)
         doc.add_root(self.link_div)
         doc.add_root(self.num_input)
+        doc.add_root(self.rate_input)
         doc.add_root(self.interval_input)
         doc.add_root(self.delay_input)
         doc.add_root(self.net_select)

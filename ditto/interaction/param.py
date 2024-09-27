@@ -36,17 +36,18 @@ class ParamsConfig:
     file_name: str
     file_path: str
     miner_number: int
+    hash_rate: float
     block_interval: float
     propagation_delay: float
 
 
 SystemRef = {
     'Nakamoto': ParamsConfig(file_name='2008_Bitcoin', file_path='interaction/static/papers/2008_Bitcoin.pdf',
-                             miner_number=6, block_interval=10.0, propagation_delay=10.0),
+                             miner_number=6, hash_rate=10.0, block_interval=10.0, propagation_delay=10.0),
     'Phantom': ParamsConfig(file_name='2021_Phantom', file_path='interaction/static/papers/2021_Phantom.pdf',
-                            miner_number=6, block_interval=10.0, propagation_delay=30.0),
+                            miner_number=6, hash_rate=10.0, block_interval=10.0, propagation_delay=30.0),
     'ULBlockDAG': ParamsConfig(file_name='2020_ULBlockDAG', file_path='interaction/static/papers/2020_ULBlockDAG.pdf',
-                               miner_number=6, block_interval=10.0, propagation_delay=30.0),
+                               miner_number=6, hash_rate=10.0, block_interval=10.0, propagation_delay=30.0),
     'Pikavolt': ParamsConfig(file_name='2024_Pikavolt', file_path='interaction/static/papers/2024_Pikavolt.htm',
-                             miner_number=6, block_interval=10.0, propagation_delay=30.0),
+                             miner_number=6, hash_rate=10.0, block_interval=10.0, propagation_delay=30.0),
 }
