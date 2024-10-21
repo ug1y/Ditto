@@ -117,14 +117,21 @@ class PlottingApp:
             throughput = self.recorder.compute_throughput()
             latency = self.recorder.compute_latency()
             change_dist = self.recorder.compute_change_dist()
-            self.stats_div.text = "<b>[The simulated throughput]</b> " + \
-                                  f"<p>processed blocks and speed: {throughput[0][0]}, {throughput[0][1]:.2f} </p>" + \
-                                  f"<p>decided blocks and speed: {throughput[1][0]}, {throughput[1][1]:.2f} </p>" + \
+            # self.stats_div.text = "<b>[The simulated throughput]</b> " + \
+            #                       f"<p>processed blocks and speed: {throughput[0][0]}, {throughput[0][1]:.2f} </p>" + \
+            #                       f"<p>decided blocks and speed: {throughput[1][0]}, {throughput[1][1]:.2f} </p>" + \
+            #                       "<br><b>[The simulated latency]</b>" + \
+            #                       f"<p>average latency: {latency[0]:.2f} </p>" + \
+            #                       "<br><b>[The simulated change distribution]</b>" + \
+            #                       f"<p>change index: {change_dist[0]:.2f} </p>" + \
+            #                       f"<p>change distribution: {change_dist[1]} </p>"
+            self.stats_div.text = f"<p>Simulated Time: {self.simulator.env.now}, and Blocks: {new_scale}</p>" + \
+                                  "<br><b>[The simulated throughput]</b> " + \
+                                  f"<p>decided blocks: {throughput:.3f}</p>" + \
                                   "<br><b>[The simulated latency]</b>" + \
-                                  f"<p>average latency: {latency[0]:.2f} </p>" + \
-                                  "<br><b>[The simulated change distribution]</b>" + \
-                                  f"<p>change index: {change_dist[0]:.2f} </p>" + \
-                                  f"<p>change distribution: {change_dist[1]} </p>"
+                                  f"<p>average latency: {latency:.3f}</p>" + \
+                                  "<br><b>[The simulated distribution]</b>" + \
+                                  f"<p>change index: {change_dist:.3f}</p>"
 
     def sys_change_event(self, attr, old, new):
         params: ParamsConfig = SystemRef[self.sys_select.value]

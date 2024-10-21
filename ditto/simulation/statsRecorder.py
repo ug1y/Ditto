@@ -52,8 +52,10 @@ class StatsRecorder:
         dec_blks = self._cons.get_processed_blocks(StatusType.DECIDED)
 
         # Return the relative processing rate, the relative decided rate
-        return ((len(processed), len(processed) / cur_time * blk_interval),
-                (len(dec_blks), len(dec_blks) / cur_time * blk_interval))
+        # return ((len(processed), len(processed) / cur_time * blk_interval),
+        #         (len(dec_blks), len(dec_blks) / cur_time * blk_interval))
+
+        return len(dec_blks) / cur_time * blk_interval
 
     def compute_latency(self):
         # Eliminate the effect of the block interval, use the unit of sim time.
@@ -65,7 +67,8 @@ class StatsRecorder:
             latencies[b] = (int(self._dag[self._cons.consus_logs[b][0]].data) - int(self._dag[b].data)) / blk_interval
 
         average_latency = (sum(latencies.values()) / len(latencies.values())) if len(latencies.values()) > 0 else 0.0
-        return average_latency, latencies
+        # return average_latency, latencies
+        return average_latency
 
     def compute_change_dist(self):
         processed_blks = self._cons.get_processed_blocks()
@@ -78,7 +81,8 @@ class StatsRecorder:
             cdist[c] += 1
 
         ratio = cdist[1] / sum([v for k, v in cdist.items() if k > 0]) if 1 in cdist else 0.0
-        return ratio, dict(sorted(cdist.items()))
+        # return ratio, dict(sorted(cdist.items()))
+        return ratio
 
     def output_info(self, is_print: bool = True):
         info = f"The Consensus Algorithm: {self.get_consus_algo_name()}\n"
