@@ -18,6 +18,8 @@ limitations under the License.
 """
 import logging
 import os
+import time
+
 import simpy
 
 from ditto import config
@@ -27,12 +29,29 @@ from ditto.nodes import Systems, Attacker
 from ditto.simulation import StatsRecorder, Simulator
 
 
+def timeit(func):
+    """A decorator to measure the execution time of a function with milliseconds precision."""
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        elapsed_time = (end_time - start_time)
+        # print(f"Function '{func.__name__}' took '{elapsed_time:.3f}' s to execute.")
+
+        # Store the elapsed time in the wrapper function's attribute
+        wrapper.last_elapsed_time = elapsed_time
+
+        return result
+    return wrapper
+
+
 def run_server(port: int = 5006):
     print('Opening Bokeh application on http://localhost:' + str(port) + '/')
     os.environ['PYTHONPATH'] = os.getcwd()  # Add the current working directory to the PYTHONPATH
     os.system('bokeh serve --show ' + os.path.join('ditto', 'interaction') + ' --port ' + str(port))
 
 
+@timeit
 def run_simulation(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto', scale: int = 6,
                    rate: float = 10.0, interval: float = 10.0, delay: float = 30.0,
                    until: int = 100):
@@ -62,6 +81,7 @@ def run_simulation(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto',
         srd.output_stats()
 
 
+@timeit
 def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto', scale: int = 6,
                     rate: float = 10.0, interval: float = 10.0, delay: float = 30.0,
                     until: int = 100, times: int = 0, power: float = 0.3):

@@ -94,7 +94,8 @@ class StatsRecorder:
         return info
 
     def output_stats(self, is_print: bool = True):
-        stats = f"The Simulated Throughput: {self.compute_throughput()}\n"
+        stats = f"The total created blocks: {len(self._dag)}\n"
+        stats += f"The Simulated Throughput: {self.compute_throughput()}\n"
         stats += f"The Simulated Latency: {self.compute_latency()}\n"
         stats += f"The Simulated Change Distribution: {self.compute_change_dist()}\n"
         if is_print:
