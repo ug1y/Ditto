@@ -45,7 +45,7 @@ class PikavoltCons(ConsusIface):
         return self._compute_cluster(self.blockdag.graph(), self.blockdag.column_blocks,
                                      self._depth, self.blockdag[bid].height)
 
-    def _capacity(self, bids: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
+    def _volume(self, bids: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
         """ Return the number of ancestors of the block or blocks. """
         bids = {bids} if isinstance(bids, TypeAlias.BlockID) else set(bids)
         return len({a for bid in bids for a in nx.ancestors(graph, bid)})
@@ -68,7 +68,7 @@ class PikavoltCons(ConsusIface):
             return 1.0
         cur_wei = sum([self._weight(bi, bj, graph)
                        for bi in bids for bj in bids if bi != bj]) / 2
-        max_wei = sum([min(self._capacity(bi, graph), self._capacity(bj, graph))
+        max_wei = sum([min(self._volume(bi, graph), self._volume(bj, graph))
                        for bi in bids for bj in bids if bi != bj]) / 2
         if max_wei == 0:
             return 0.0
@@ -83,7 +83,7 @@ class PikavoltCons(ConsusIface):
         """
         if len(bids) <= 2:
             return {frozenset({b}) if isinstance(b, TypeAlias.BlockID) else frozenset(b) for b in bids}
-        lst = [(self._weight(bi, bj, graph), min(self._capacity(bi, graph), self._capacity(bj, graph)), (bi, bj))
+        lst = [(self._weight(bi, bj, graph), min(self._volume(bi, graph), self._volume(bj, graph)), (bi, bj))
                for bi in bids for bj in bids if bi != bj]
         lst.sort(key=lambda x: (x[0], x[1]), reverse=True)
         com1, com2 = lst[0][2]
@@ -96,14 +96,14 @@ class PikavoltCons(ConsusIface):
         # new_bids.add(frozenset(com1).union(frozenset(com2)))
         return self._binary_clustering(new_bids, graph)
 
-    def _extend_clustering(self, bids: Set[TypeAlias.BlockID], graph: nx.DiGraph) -> List[TypeAlias.BlockID]:
+    def _extend_clustering(self, bids: Set[TypeAlias.BlockID], graph: nx.DiGraph) -> List[Set[TypeAlias.BlockID]]:
         """
         Extend the binary clustering by evaluate the score of clustering.
         :param bids: set
         :param graph: nx.DiGraph
         :return:
         """
-        score = lambda x: self._coefficient(x, graph) * self._capacity(x, graph)
+        score = lambda x: self._coefficient(x, graph) * self._volume(x, graph)
 
         if len(bids) == 1:
             return [bids]
@@ -118,7 +118,7 @@ class PikavoltCons(ConsusIface):
             # The score value with binary clustering
             clas = self._binary_clustering(curr, graph)
             val_clas = (sum([score(bs) for bs in clas]) -
-                        2 * pow(self._coefficient(clas, graph), 2) * self._capacity(curr, graph))
+                        2 * pow(self._coefficient(clas, graph), 2) * self._volume(curr, graph))
 
             if val_clas > val_curr:  # The condition to stop binary clustering
                 res = sorted(list(clas) + res[1:], key=lambda x: score(x), reverse=True)
