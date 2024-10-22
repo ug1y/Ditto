@@ -106,7 +106,7 @@ def attk(net_template, cons_method, scale, rate, interval, delay, until, times, 
     """Run a simulation in the attack mode."""
     click.echo(f"Simulation will run until '{until}' sim times or attack until {times} times.")
     runs.run_with_attack(net_template, cons_method, scale, rate, interval, delay, until, times, power)
-    print(f"Function 'run_with_attack' took '{runs.run_with_attack.last_elapsed_time:.3f}' seconds to execute.")
+    # print(f"Function 'run_with_attack' took '{runs.run_with_attack.last_elapsed_time:.3f}' seconds to execute.")
 
 
 @cli.command()
@@ -163,7 +163,7 @@ def simu(net_template, cons_method, scale, rate, interval, delay, until):
     """ Run a simulation with the given parameters. """
     click.echo(f"Simulation will run until '{until}' sim times.")
     runs.run_simulation(net_template, cons_method, scale, rate, interval, delay, until)
-    print(f"Function 'run_simulation' took '{runs.run_simulation.last_elapsed_time:.3f}' seconds to execute.")
+    # print(f"Function 'run_simulation' took '{runs.run_simulation.last_elapsed_time:.3f}' seconds to execute.")
 
 
 @cli.command()

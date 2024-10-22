@@ -36,7 +36,8 @@ def timeit(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         elapsed_time = (end_time - start_time)
-        # print(f"Function '{func.__name__}' took '{elapsed_time:.3f}' s to execute.")
+        if kwargs['is_print']:
+            print(f"Function '{func.__name__}' took '{elapsed_time:.3f}' seconds to execute.")
 
         # Store the elapsed time in the wrapper function's attribute
         wrapper.last_elapsed_time = elapsed_time
@@ -54,7 +55,7 @@ def run_server(port: int = 5006):
 @timeit
 def run_simulation(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto', scale: int = 6,
                    rate: float = 10.0, interval: float = 10.0, delay: float = 30.0,
-                   until: int = 100):
+                   until: int = 100, is_print: bool = True):
     mylogger = config.create_logger(log_level=logging.WARNING)
     factory = NetFactory(mylogger)
     params = Systems[cons_method]
@@ -68,23 +69,27 @@ def run_simulation(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto',
 
     # Run the simulation
     sim.run(until)
-    print(f"Simulation Done at {sim.env.now}!\n")
+    if is_print:
+        print(f"Simulation Done at {sim.env.now}!\n")
 
     # Output the simulation results
     if net.consus_handler is not None:
         srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
 
-        print("===== Simulation Information =====")
-        srd.output_info()
+        if is_print:
+            print("===== Simulation Information =====")
+            srd.output_info()
 
-        print("===== Statistical Records =====")
-        srd.output_stats()
+            print("===== Statistical Records =====")
+            srd.output_stats()
+
+        return srd
 
 
 @timeit
 def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto', scale: int = 6,
                     rate: float = 10.0, interval: float = 10.0, delay: float = 30.0,
-                    until: int = 100, times: int = 0, power: float = 0.3):
+                    until: int = 100, times: int = 0, power: float = 0.3, is_print: bool = True):
     mylogger = config.create_logger(log_level=logging.WARNING)
     factory = NetFactory(mylogger)
     params = Systems[cons_method]
@@ -119,20 +124,24 @@ def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto'
 
     # Run the simulation
     sim.run(until=simpy.events.AnyOf(sim.env, [attack_event, sim.env.timeout(until)]))
-    print(f"Simulation Done at {sim.env.now}!\n")
+    if is_print:
+        print(f"Simulation Done at {sim.env.now}!\n")
 
     # Output the simulation results
     if net.consus_handler is not None:
         srd = StatsRecorder(sim, net.total_blockdag, net.consus_handler)
 
-        print("===== Attacker Capabilities =====")
-        print("Malicious Miner Number:", 1)
-        print("Malicious Network Delay:", attack_delay)
-        print("Malicious Power Ratio:", power)
-        print()
+        if is_print:
+            print("===== Attacker Capabilities =====")
+            print("Malicious Miner Number:", 1)
+            print("Malicious Network Delay:", attack_delay)
+            print("Malicious Power Ratio:", power)
+            print()
 
-        print("===== Simulation Information =====")
-        srd.output_info()
+            print("===== Simulation Information =====")
+            srd.output_info()
 
-        print("===== Statistical Records =====")
-        srd.output_stats()
+            print("===== Statistical Records =====")
+            srd.output_stats()
+
+        return srd

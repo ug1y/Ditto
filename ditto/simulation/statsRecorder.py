@@ -43,6 +43,9 @@ class StatsRecorder:
     def get_block_propagation_delay(self) -> float:
         return self._sim.network.propagation_delay_parameter
 
+    def get_total_created_blocks(self) -> int:
+        return len(self._dag)
+
     def compute_throughput(self):
         # Eliminate the effect of the block interval, use the unit of sim time.
         blk_interval = self._sim.network.block_creation_interval
@@ -94,7 +97,7 @@ class StatsRecorder:
         return info
 
     def output_stats(self, is_print: bool = True):
-        stats = f"The total created blocks: {len(self._dag)}\n"
+        stats = f"The total created blocks: {self.get_total_created_blocks()}\n"
         stats += f"The Simulated Throughput: {self.compute_throughput()}\n"
         stats += f"The Simulated Latency: {self.compute_latency()}\n"
         stats += f"The Simulated Change Distribution: {self.compute_change_dist()}\n"
