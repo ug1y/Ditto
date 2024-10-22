@@ -11,3 +11,7 @@ dist/
 
 # Unit test / coverage reports
 .pytest_cache/
+
+# Experiments data
+*.csv
+*.json
