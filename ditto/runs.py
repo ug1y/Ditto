@@ -36,7 +36,7 @@ def timeit(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         elapsed_time = (end_time - start_time)
-        if kwargs['is_print']:
+        if 'is_print' in kwargs and kwargs['is_print']:
             print(f"Function '{func.__name__}' took '{elapsed_time:.3f}' seconds to execute.")
 
         # Store the elapsed time in the wrapper function's attribute
@@ -144,4 +144,5 @@ def run_with_attack(net_template: str = 'PeerNet', cons_method: str = 'Nakamoto'
             print("===== Statistical Records =====")
             srd.output_stats()
 
-        return srd
+        # return srd
+    return attacker.attack_success_record

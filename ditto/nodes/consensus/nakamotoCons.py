@@ -34,7 +34,7 @@ class NakamotoCons(ConsusIface):
     def __init__(self, network: NetContainer, blockdag: BlockDAG):
         super().__init__(network, blockdag)
         self.algo_name = "Nakamoto"
-        self._safe_depth = 6
+        self._safe_depth = 7
 
     def execute_consensus(self, bid: TypeAlias.BlockID):
         return self._longest_chain(self.blockdag.graph(), self.blockdag.column_blocks, self._safe_depth)

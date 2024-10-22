@@ -41,6 +41,9 @@ class Attacker(Miner):
         self._attack_success_event: Event = None
         self._attack_target_times: int = 0
 
+        # record the success attack depth
+        self.attack_success_record = []
+
     def set_attack_event(self, attack_event: Event, attack_target_times: int = 0):
         self._attack_success_counter = 0
         self._attack_success_event = attack_event
@@ -82,8 +85,9 @@ class Attacker(Miner):
                 attack_success = True
                 self._attack_success_counter += 1
                 cur_depth = len(self.blockdag.column_blocks) - self.blockdag[self._target_block_id].height
-                print(f"[{self._attack_success_counter}] The attack success at: "
-                      f"{self._target_block_id}, with depth: {cur_depth}")
+                self.attack_success_record.append(cur_depth)
+                # print(f"[{self._attack_success_counter}] The attack success at: "
+                #       f"{self._target_block_id}, with depth: {cur_depth}")
 
         if attack_success:
             self._target_block_id = 0
