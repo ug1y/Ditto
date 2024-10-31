@@ -4,9 +4,9 @@ from dataclasses import dataclass, asdict
 
 from ditto.runs import run_with_attack
 
-base_dir = 'attk_exp'
-if not os.path.exists(base_dir):
-    os.makedirs(base_dir)
+attk_base_dir = 'attk_exp'
+if not os.path.exists(attk_base_dir):
+    os.makedirs(attk_base_dir)
 
 
 @dataclass
@@ -15,6 +15,9 @@ class AttkRes:
     success_count: int
     attk_depth_avg: float
     cost_time: float
+
+    def __getitem__(self, item):
+        return getattr(self, item)
 
     def __str__(self):
         return (f"{self.exp_index}, {self.success_count}, "
@@ -38,7 +41,10 @@ def attk_exps(times: int = 100, params: dict = None):
     param_p = params['power'] if 'power' in params else 0.2
 
     filename = f'{param_c}-s{param_s}-i{param_i}-d{param_d}-u{param_u}-p{param_p:.2f}.csv'
-    filepath = os.path.join(base_dir, filename)
+    dir_c = os.path.join(attk_base_dir, param_c)
+    if not os.path.exists(dir_c):
+        os.makedirs(dir_c)
+    filepath = os.path.join(dir_c, filename)
 
     # Get the last experiment index
     index = 1
@@ -85,14 +91,25 @@ def attk_stats(filepath: str):
         json.dump(asdict(res_avg), file, indent=4)
 
 
-if __name__ == '__main__':
-    params = {"interval": 10, "until": 1000,
-              # The main control variables
-              "cons_method": 'Nakamoto',
-              "scale": 4,
-              "delay": 10,
-              "power": 0.20}
-
+def main(params: dict):
     print("Attack Experiments with params: ", params)
-    f = attk_exps(times=1000, params=params)
+    f = attk_exps(times=10, params=params)
     attk_stats(f)
+    print("Attk Exp Done!")
+
+
+if __name__ == '__main__':
+
+    params = dict(interval=10, until=1000,
+                  # The main control variables
+                  cons_method='Pikavolt',
+                  scale=32 + 1, delay=10,
+                  power=0.2)
+
+    for p in range(4, 12):
+        for c in ["Nakamoto", "Phantom", "ULBlockDAG", "Pikavolt"]:
+            for d in range(10, 110, 10):
+                params['delay'] = d
+                params['cons_method'] = c
+                params['power'] = p / 20
+                main(params)

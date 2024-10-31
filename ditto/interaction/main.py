@@ -125,7 +125,7 @@ class PlottingApp:
             #                       "<br><b>[The simulated change distribution]</b>" + \
             #                       f"<p>change index: {change_dist[0]:.2f} </p>" + \
             #                       f"<p>change distribution: {change_dist[1]} </p>"
-            self.stats_div.text = f"<p>Simulated Time: {self.simulator.env.now}, and Blocks: {new_scale}</p>" + \
+            self.stats_div.text = f"<p>Simulated Time: {self.simulator.env.now}, and generated Blocks: {new_scale}</p>" + \
                                   "<br><b>[The simulated throughput]</b> " + \
                                   f"<p>decided blocks: {throughput:.3f}</p>" + \
                                   "<br><b>[The simulated latency]</b>" + \

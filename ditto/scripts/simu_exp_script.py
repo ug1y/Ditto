@@ -3,9 +3,9 @@ from dataclasses import dataclass, asdict
 
 from ditto.runs import run_simulation
 
-base_dir = 'simu_exp'
-if not os.path.exists(base_dir):
-    os.makedirs(base_dir)
+simu_base_dir = 'simu_exp'
+if not os.path.exists(simu_base_dir):
+    os.makedirs(simu_base_dir)
 
 
 @dataclass
@@ -16,6 +16,9 @@ class SimuRes:
     latency: float
     distribution: float
     cost_time: float
+
+    def __getitem__(self, item):
+        return getattr(self, item)
 
     def __str__(self):
         return (f"{self.exp_index}, {self.num_of_blocks}, {self.throughput}, "
@@ -38,7 +41,10 @@ def simu_exps(times: int = 100, params: dict = None):
     param_u = params['until'] if 'until' in params else 10000
 
     filename = f'{param_c}-s{param_s}-i{param_i}-d{param_d}-u{param_u}.csv'
-    filepath = os.path.join(base_dir, filename)
+    dir_c = os.path.join(simu_base_dir, param_c)
+    if not os.path.exists(dir_c):
+        os.makedirs(dir_c)
+    filepath = os.path.join(dir_c, filename)
 
     # Get the last experiment index
     index = 1
@@ -91,13 +97,24 @@ def simu_stats(filepath: str):
         json.dump(asdict(res_avg), file, indent=4)
 
 
-if __name__ == '__main__':
-    params = {"interval": 10, "until": 10000,
-              # The main control variables
-              "cons_method": 'Nakamoto',
-              "scale": 32,
-              "delay": 10}
-
+def main(params: dict):
     print("Simulation Experiments with params: ", params)
     f = simu_exps(times=100, params=params)
     simu_stats(f)
+    print("Simu Exp Done!")
+
+
+if __name__ == '__main__':
+
+    params = dict(interval=10, until=1000,
+                  # The main control variables
+                  cons_method='Pikavolt',
+                  scale=4, delay=30)
+
+    for s in [2 ** i for i in range(2, 8)]:
+        for c in ["Nakamoto", "Phantom", "ULBlockDAG", "Pikavolt"]:
+            for d in range(10, 110, 10):
+                params['scale'] = s
+                params['cons_method'] = c
+                params['delay'] = d
+                main(params)

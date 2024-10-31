@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ditto',
-    version='0.7.1',
+    version='0.7.2',
     author='ug1y',
     author_email='yinhao@icode.pku.edu.cn',
     description='Ditto: A Hybrid BlockDAG Simulation Framework',

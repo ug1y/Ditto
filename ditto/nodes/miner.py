@@ -259,7 +259,9 @@ class Miner:
                 missing_blocks.add(queue_bid)
 
         for missing_block in missing_blocks:
-            if self._block_queue.nodes[missing_block][Miner.QUEUE_BLOCK_DATA_KEY] is None:  # Avoid duplicated fetch.
+            if (missing_block in self._block_queue.nodes and
+                    self._block_queue.nodes[missing_block][Miner.QUEUE_BLOCK_DATA_KEY] is None):
+                # Avoid duplicated fetch.
                 # Fetch the missing parent from network.
                 # self._network.fetch_block(self._name, missing_block)
                 self.fetch_block(missing_block)
