@@ -86,8 +86,8 @@ class Attacker(Miner):
                 self._attack_success_counter += 1
                 cur_depth = len(self.blockdag.column_blocks) - self.blockdag[self._target_block_id].height
                 self.attack_success_record.append(cur_depth)
-                # print(f"[{self._attack_success_counter}] The attack success at: "
-                #       f"{self._target_block_id}, with depth: {cur_depth}")
+                print(f"[{self._attack_success_counter}] The attack success at: "
+                      f"{self._target_block_id}, with depth: {cur_depth}")
 
         if attack_success:
             self._target_block_id = 0

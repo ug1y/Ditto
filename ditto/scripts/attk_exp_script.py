@@ -93,7 +93,7 @@ def attk_stats(filepath: str):
 
 def main(params: dict):
     print("Attack Experiments with params: ", params)
-    f = attk_exps(times=10, params=params)
+    f = attk_exps(times=100, params=params)
     attk_stats(f)
     print("Attk Exp Done!")
 

@@ -48,7 +48,7 @@ class PikavoltCons(ConsusIface):
     def _volume(self, bids: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
         """ Return the number of ancestors of the block or blocks. """
         bids = {bids} if isinstance(bids, TypeAlias.BlockID) else set(bids)
-        return len({a for bid in bids for a in nx.ancestors(graph, bid)})
+        return len({a for bid in bids for a in nx.ancestors(graph, bid)}) + len(bids)
 
     def _weight(self, bids1: set | frozenset | TypeAlias.BlockID,
                 bids2: set | frozenset | TypeAlias.BlockID, graph: nx.DiGraph) -> int:
@@ -120,7 +120,8 @@ class PikavoltCons(ConsusIface):
             val_clas = (sum([score(bs) for bs in clas]) -
                         2 * pow(self._coefficient(clas, graph), 2) * self._volume(curr, graph))
 
-            if val_clas > val_curr:  # The condition to stop binary clustering
+            # print(val_curr, val_clas)
+            if val_clas >= val_curr:  # The condition to stop binary clustering
                 res = sorted(list(clas) + res[1:], key=lambda x: score(x), reverse=True)
             else:
                 break
