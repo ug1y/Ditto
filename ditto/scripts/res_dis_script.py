@@ -50,7 +50,7 @@ def print_simu_avg_res(col: str, data: str, params: dict):
             w.append(f'{r[data]:.3f}')
         t.add_row(w)
 
-    print(t.get_csv_string())
+    print(t.get_string())
 
 
 def print_attk_avg_res(col: str, data: str, params: dict):
@@ -81,12 +81,12 @@ if __name__ == '__main__':
     params1 = dict(interval=10, until=1000, scale=32, delay=50)
     # col = scale, delay
     # data = throughput, latency, distribution, cost_time
-    print_simu_avg_res('scale', 'distribution', params1)
+    print_simu_avg_res('delay', 'distribution', params1)
 
     print()
 
     params2 = dict(interval=10, until=1000, scale=33, delay=10, power=0.2)
     # col = power, delay
     # data = success_count, attk_depth_avg, cost_time
-    # print_attk_avg_res('delay', 'success_count', params2)
+    # print_attk_avg_res('power', 'success_count', params2)
 

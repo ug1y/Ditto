@@ -41,5 +41,5 @@ Systems = {
     'Phantom': SystemParams(DAGType.DIVERGENCE, LeavesRef, PhantomCons, MaliciousLeavesRef),
     'ULBlockDAG': SystemParams(DAGType.DIVERGENCE, LeavesRef, ULBlockDAGCons, MaliciousLeavesRef),
     'Pikavolt': SystemParams(DAGType.DIVERGENCE, LeavesRef, PikavoltCons, MaliciousLeavesRef),
-    'Hashgraph': SystemParams(DAGType.PARALLEL, GossipRef, None),
+    # 'Hashgraph': SystemParams(DAGType.PARALLEL, GossipRef, None),
 }
