@@ -20,7 +20,7 @@ import click
 
 from ditto import runs
 
-__banner__ = """
+__banner__ = r"""
            __    _    __     __         
       ____/ /   (_)  / /_   / /_   ____ 
      / __  /   / /  / __/  / __/  / __ \\
