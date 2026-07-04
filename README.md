@@ -83,5 +83,6 @@ If you find this work useful or use it in your research, please cite our paper:
   journal={IEEE Transactions on Cloud Computing}, 
   title={Pikavolt: A Cloud-Native BlockDAG Consensus Protocol for Scalable Blockchain Networks}, 
   year={2026},
-  doi={10.1109/TCC.2026.3707890}}
+  doi={10.1109/TCC.2026.3707890}
+}
 ```
