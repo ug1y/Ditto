@@ -77,3 +77,12 @@ python -m ditto.main attk -n [net_template] -c [cons_method] \
 ## 引用
 
 如果您觉得本工作对您的研究有帮助，欢迎引用我们的论文：
+
+```bibtex
+@article{Yin2026Pikavolt,
+  author={Yin, Hao and Zhou, Changling and Wen, Weiping and Liu, Yiwei},
+  journal={IEEE Transactions on Cloud Computing}, 
+  title={Pikavolt: A Cloud-Native BlockDAG Consensus Protocol for Scalable Blockchain Networks}, 
+  year={2026},
+  doi={10.1109/TCC.2026.3707890}}
+```
